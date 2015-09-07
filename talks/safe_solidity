@@ -1,0 +1,44 @@
+types already makes it kind of safe
+runtime bounds checks are performed
+exceptions
+
+careful about send, call and callcode
+
+storage and memory, dangling pointers
+
+inheritance, virtual function calls
+
+how to check blockchain code against source code
+
+
+how to not lose all your money:
+ Provide a kill/suicide function
+ test on private blockchain
+ use alethzero to debug / preview transactions
+
+implement fallback function to prevent someone sending money to contract in wrong function
+ -> throw exception
+
+chehck for money in all other functions (modifier)
+
+
+formal verification
+
+Diagram showing relations between various models during compilation and verification (including the model in the programmer's brain)
+
+Contracts should not have to sign messages. Any signature made by a contract can be forged as all contract computations are public. The way to solve this is to check that the conditions required for the contract to "sign the message" are met. This can be done by calling a function of the contract and checking that it returns true. Another way would be to let the contract emit an event and then check for the presence of the event in the block chain at a later point in time as proof that the contract "signed the message".
+I hope that this answered your question.
+
+https://aakilfernandes.github.io/x-things-i-wish-i-knew-before-building-my-first-ethereum-dapp/
+
+Add asserts that revert
+Add way to transfer ether/tokens
+For receiver: if contract, make sure receiving func does not "throw"
+
+Explain exception and send/call speciality
+
+Send may also fail due to call stack depth error. - check return value!
+
+any send may call back into current contract and modify storage (but probably not enough gas)
+
+randomness
