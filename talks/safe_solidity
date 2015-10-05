@@ -42,3 +42,6 @@ Send may also fail due to call stack depth error. - check return value!
 any send may call back into current contract and modify storage (but probably not enough gas)
 
 randomness
+
+
+provoked hash collisions withlarge static arrays
