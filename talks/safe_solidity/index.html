@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>How to Write Safe Smart Contracts</title>
+
+		<meta name="author" content="Christian Reitwiessner">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/solarized.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+<style type="text/css">
+p { text-align: left; }
+.reveal .slides section .fragment.appear {
+  opacity: 0;
+  display: none;
+}
+.reveal .slides section .fragment.appear.visible {
+  opacity: 1;
+  display: block;
+}
+.reveal .slides section .fragment.appear-once {
+  opacity: 0;
+  display: none;
+}
+.reveal .slides section .fragment.appear-once.current-fragment {
+  opacity: 1;
+  display: block;
+}
+</style>
+
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+<section>
+<h2>How to Write Safe Smart Contracts</h2>
+<small><p>
+<b>Dr. Christian Reitwiessner</b><br/>
+@ethchris &nbsp; github.com/chriseth &nbsp; c@ethdev.com</p>
+<p>
+ÐΞVCON1 - London - 2015-11-10
+</p>
+</small>
+</section>
+
+<section>
+<h2>What does it mean to write safe code?</h2>
+
+<p>Code / contract does</p>
+<ul>
+<li>what programmer intended,</li>
+<li>what user is told it does,</li>
+<li>not lose any money / ether.</li>
+</ul>
+
+</section>
+
+<section>
+<h3>Compile-Time Checks</h3>
+
+<p>Solidity is statically typed. Compiler can check that<br/>
+<ul><li>all functions exist</li><li>objects are not null</li><li>operators can be applied</li><li>...</li></ul></p>
+
+<pre><code>contract C {
+  address owner; uint ownr;
+  function giveMeMyMoney() {
+    if (msg.sender == ownr) // type error
+      ownr.send(this.balance);
+      // type error: no `send` in `uint`
+  }
+}</code></pre>
+
+</section>
+
+<section>
+<h3>Runtime Checks and Exceptions</h3>
+
+<ul>
+<li>Exception for out-of-bounds access to arrays
+<br/>&rarr; reverts whole transaction if not caught</li>
+<li>Downside: Current EVM consumes all gas upon exception.</li>
+<pre class="fragment"><code>contract C {
+  uint[] data;
+  function append(uint value) { data.push(value); }
+  function replace(uint index, uint value) {
+    data[index] = value;
+  }
+}</code></pre>
+<li>Exceptions can also be used manually</li>
+<pre class="fragment"><code>contract C {
+  address owner;
+  function changeOwner(address _new) {
+    if (msg.sender != owner) throw;
+    owner = _new;
+  }
+}</code></pre>
+</ul>
+
+</section>
+
+<section>
+<h2>Be Nice</h2>
+
+<p>
+If someone uses your contract in a non-intended way, do not make them suffer.
+
+<ul>
+<li class="fragment">throw in unexpected situations</li>
+<pre class="fragment appear-once"><code>contract C {
+  uint[] data;
+  function append(uint item) {
+    if (msg.value > 0) throw;
+    data.push(item);
+  }
+}</code></pre>
+<li class="fragment">do not delete contracts, only disable them</li>
+<pre class="fragment appear-once"><code>contract C {
+  ...
+  function payout() {
+    if (msg.value < 1 ether) throw;
+    performPayout();
+    suicide(owner);
+    // contract will vanish,
+    // ether sent to address will be lost
+  }
+  ...
+}</code></pre>
+<li class="fragment">provide natspec docs</li>
+<pre class="fragment appear-once"><code>contract C {
+  ...
+  /// Sells item `name`, cannot be undone.
+  function sell(string name) {
+    ...
+  }
+}</code></pre>
+<li class="fragment">publish source code</li>
+</ul>
+</p>
+</section>
+
+<section>
+<h2>Avoid Race-Conditions</h2>
+
+<ul>
+<li>always either update the state or throw</li>
+<pre class="fragment"><code>contract C {
+  bool bought;
+  ...
+  function buy(string name) {
+    if (bought) throw;
+    bought = true;
+    ...
+  }
+}</code></pre>
+<li>use the state-machine pattern (<a href="https://ethereum.github.io/solidity//docs/state-machine/">docs</a>) with modifiers</li>
+<li>even if only one user: UI buttons are easily clicked twice</li>
+</ul>
+</section>
+
+<section>
+<h2>Formally Verify Your Code</h2>
+<pre class="fragment appear-once"><code>contract BinarySearch {
+ ///@why3
+ /// requires { forall i j: int. 0 <= i <= j < @data.length ->
+ ///                                      @data[i] <= @data[j] }
+ /// variant { @end - @begin }
+ /// ensures { @ret < UInt256.max_uint256 ->
+ ///           (@begin <= @ret < @end && @data[@ret] = @value) }
+ function find(uint[] data, uint begin, uint end, uint value)
+       internal returns (uint ret) {
+   uint len = end - begin;
+   if (len == 0 || (len == 1 && data[begin] != value)) return uint(-1);
+   uint mid = begin + len / 2;
+   if (value < data[mid]) return find(data, begin, mid, value);
+   else if (value > data[mid]) return find(data, mid + 1, end, value);
+   else return mid;
+ }
+}</code></pre>
+<img class="fragment appear-once" src="formal.jpg" style="height: 500px; margin: auto;" />
+</section>
+
+<section>
+<h2>How to Send and Receive Money</h2>
+<ul>
+<li>.send(...) only provides tiny amount of gas, but always
+triggers execution of fallback function<br/>
+&rarr; make fallback function cheap<br/>
+&rarr; prepare for callbacks (can mess up your state!)</li>
+<li>if receiver throws, transfer is reverted, but...</li>
+<li>.send(...) does not propagate exceptions<br/>
+&rarr; check the return value of `.send()`</li>
+</ul>
+</section>
+
+
+<section>
+<h2>Avoid Large Cheap Arrays</h2>
+
+<pre><code>contract C { uint[2**255] arrData; mapping(uint -> uint) mapData; }</code></pre>
+<p>
+  <code>arrData[i]</code>: stored at <code>sha3(0x00) + i</code><br/>
+  <code>mapData[x]</code>: stored at <code>sha3(0x01, x)</code>
+<ul>
+<li><code>arrData[sha3(0x01,x) - sha3(0x00)]</code> will overwrite <code>mapData[x]</code> without breaking sha3.</li>
+<li>Avoid large arrays or at least make
+  arbitrary access costly, e.g. only append
+  one element per transaction.</li>
+</ul>
+</p>
+</section>
+
+<section>
+<h2>How to Save some Gas</h2>
+<ul>
+<li>use the optimiser!</li>
+<li>use packed storage:<br/>
+small types will share single storage slot,
+optimiser tries to combine reads and writes
+<pre class="fragment appear-once"><code class="solidity">contract C {
+  struct S { uint128 a; uint64 b; uint64 c; }
+  S data;
+  function f(uint x, uint y) {
+    data.a = x;
+    data.b = data.a * y;
+    data.c = data.b;
+    // -> optimised to single write, no read.
+  }
+}</code></pre>
+</li>
+<div class="fragment">
+<li>use libraries<br/>
+re-usable "dynamically loadable" code
+</li>
+<li>move computation off-chain:<br/>
+<pre><code>function search(uint value, uint index_hint) {
+     if (data[index_hint] == value) return index_hint;
+     else { ... /* search inside data */ }
+}</code></pre>
+make sure that it is still safe!</li>
+</div>
+</ul>
+</section>
+
+<!--
+<section>
+<h2>Some Edgy Cases of Solidity</h2>
+
+
+<li>Returning dynamically-sized arrays</li>
+<pre><code>contract DynamicArrays {
+  uint[] data;
+  function returnDynamicArray() returns (uint[], bool) {
+    return (data, true);
+  }
+}</code></pre>
+</section>
+
+
+<section>
+<h2>How to use randomness</h2>
+
+
+</section>
+
+<section>
+<h2>Use unit tests</h2>
+
+
+</section>
+-->
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: false,
+
+				transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
