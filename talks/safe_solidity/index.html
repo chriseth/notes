@@ -123,15 +123,15 @@ p { text-align: left; }
 If someone uses your contract in a non-intended way, do not make them suffer.
 
 <ul>
-<li class="fragment">throw in unexpected situations</li>
-<pre class="fragment appear-once"><code>contract C {
+<li class="fragment" data-fragment-index="1">throw in unexpected situations</li>
+<pre class="fragment appear-once" data-fragment-index="1"><code>contract C {
   uint[] data;
   function append(uint item) {
     if (msg.value > 0) throw;
     data.push(item);
   }
 }</code></pre>
-<li class="fragment">do not delete contracts, only disable them</li>
+<li class="fragment" data-fragment-index="2">do not delete contracts, only disable them</li>
 <pre class="fragment appear-once"><code>contract C {
   ...
   function payout() {
@@ -218,7 +218,7 @@ triggers execution of fallback function<br/>
 <p>
   <code>arrData[i]</code>: stored at <code>sha3(0x00) + i</code><br/>
   <code>mapData[x]</code>: stored at <code>sha3(0x01, x)</code>
-<ul>
+<ul class="fragment">
 <li><code>arrData[sha3(0x01,x) - sha3(0x00)]</code> will overwrite <code>mapData[x]</code> without breaking sha3.</li>
 <li>Avoid large arrays or at least make
   arbitrary access costly, e.g. only append
