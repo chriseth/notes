@@ -201,7 +201,7 @@ If someone uses your contract in a non-intended way, do not make them suffer.
 <h2>How to Send and Receive Money</h2>
 <ul>
 <li>.send(...) only provides tiny amount of gas, but always
-triggers execution of fallback function<br/>
+triggers execution of fallback function<br/>(&nbsp;<code>function() { ...}</code>&nbsp;)<br/>
 &rarr; make fallback function cheap<br/>
 &rarr; prepare for callbacks (can mess up your state!)</li>
 <li>if receiver throws, transfer is reverted, but...</li>
