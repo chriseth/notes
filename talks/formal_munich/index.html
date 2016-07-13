@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Formal Verification of Smart Contracts</title>
+
+		<meta name="author" content="Christian Reitwiessner">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/solarized.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+<style type="text/css">
+p { text-align: left; }
+.reveal .slides section .fragment.appear {
+  opacity: 0;
+  display: none;
+}
+.reveal .slides section .fragment.appear.visible {
+  opacity: 1;
+  display: block;
+}
+.reveal .slides section .fragment.appear-once {
+  opacity: 0;
+  display: none;
+}
+.reveal .slides section .fragment.appear-once.current-fragment {
+  opacity: 1;
+  display: block;
+}
+</style>
+
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+<section>
+<h2>Formal Verification of Smart Contracts</h2>
+<small><p>
+<b>Dr. Christian Reitwiessner</b><br/>
+@ethchris &nbsp; github.com/chriseth &nbsp; chris@ethereum.org</p>
+<p>
+Oberseminar Mathematische Logik<br/>München<br/>2016-07-13
+</p>
+</small>
+</section>
+
+<section>
+<h2>Ethereum - the World Computer</h2>
+
+<ul>
+<div class="fragment">
+<li>blockchain-based system</li>
+<li>creates globally-shared and distributed computer</li>
+<li>tamper-proof, no centralized control</li>
+</div>
+<div class="fragment">
+<li>programs are called "smart contracts"</li>
+<li>cryptographic signatures for identity</li>
+<li>internal "currency" pays for operation</li>
+<li>programs can interact</li>
+<li>operations always triggered from outside</li>
+</div>
+</ul>
+
+</section>
+
+<section>
+<h3>Examples of Smart Contracts</h3>
+
+<ul>
+<li class="fragment">multi-signature "wallet"</li>
+<li class="fragment">land registry</li>
+<li class="fragment">auction</li>
+<li class="fragment">crowdfund</li>
+<li class="fragment">voting</li>
+</ul>
+
+<p class="fragment">Smart contracts can interact arbitrarily, so we can combine them:<br/>
+Use your multi-signature wallet to take part in a crowdfund
+that votes on whether the participants want to bid in an automated auction
+to buy a strip of land.</p> 
+
+</section>
+
+<section>
+<h3>Advanced Vision</h3>
+
+<ul>
+<li>"smart objects" owned by themselves</li>
+<li>fleet of autonomous cars providing taxi service</li>
+<li>nobody owns this system, it buys and sells cars on its own</li>
+</ul>
+
+</section>
+
+<section>
+<h3>Recent Events</h3>
+
+<ul>
+<li class="fragment">"The DAO" - decentralized autonomous organization</li>
+<li class="fragment">largest crowdfund in history (~150 mio USD)</li>
+<li class="fragment">tiny flaw allowed attacker to remove ~30 mio USD</li>
+<li class="fragment">details: exploited reentrance bug in "split" mechanism</li>
+</ul>
+</section>
+
+<section>
+<h3>Details about the Bug</h3>
+<p>Oversimplified example:
+<code><pre>
+// every contract has implicit "balance"
+contract DAO {
+  // shares of each participant
+  mapping(address => uint) shares;
+  function split() {
+    // send money to caller according to shares
+    msg.sender.send(shares[msg.sender]);
+    // set shares to zero
+    shares[msg.sender] = 0;
+  }
+}
+</pre></code>
+</p>
+<p class="fragment"><code>msg.sender.send()</code> executes code on the
+receiving side, that code can call back into <code>split()</code> and
+extract more money.<br/>
+Fineprint: This is not actually possible with <code>.send()</code>, but it is with
+a similar function.
+</p>
+
+</section>
+
+<section>
+<h3>The Ethereum System</h3>
+<ul class="fragment">
+<li>simple machine</li>
+<li>fully isolated</li>
+<li>no concurrency</li>
+</ul>
+<ul class="fragment">
+<p>
+System State:</p>
+<li>state: ((address: uint160) -> account)</li>
+<li>account: {code: byte array, balance: uint256, storage}</li>
+<li>storage: (uint256 -> uint256)</li>
+</ul>
+<p class="fragment">Account can only be modified by its own code,
+messages between accounts are synchronous and trigger code execution, code is immutable.
+</p>
+</section>
+
+<section>
+<h3>The Ethereum Virtual Machine</h3>
+<ul>
+<li>stack-based virtual machine</li>
+<li>256 bit words</li>
+<li>temporary memory wiped after execution</li>
+<li>storage persistent between calls</li>
+<li>execution time limited by "gas" (has to be paid)</li>
+<li>~70 opcodes:
+	<ul>
+	<li>control flow: 11</li>
+	<li>message related: 8</li> 
+	<li>arithmetics: 17</li>
+	<li>comparison: 5</li>
+	<li>data: 10</li>
+	<li>blockchain internals: 14</li>
+	</ul>
+</li>
+</ul>
+
+</section>
+
+<section>
+<h3>Formal Methods in Ethereum</h3>
+<ul>
+<li class="fragment">Luu et al.: "Making Smart Contracts Smarter": symbolic execution of Ethereum code to find bug classes</li>
+<li class="fragment">Aesthetic Integration: "Imandra": high level language with verification tools (unreleased)</li>
+<li class="fragment">Solidity ("official" high level language): translation to why3, verification using various solver backends
+	<ul>
+		<li>current stage: full model of single execution (of subset of language)</li>
+		<li>soon: use invariants to cope with modifications by external messages</li>
+		<li>future: multi-transaction reasoning using process calculus</li>
+	</ul>
+</li>
+</ul>
+</section>
+
+<section>
+<h3>Formal Verification of Binary Search</h3>
+<img style="width: 80%;" src="formal.jpg" />
+</section>
+
+<section>
+<h3>Invariants for External Effects</h3>
+<p>The previous example done right:</p>
+<pre><code>/// @why3 invariant { to_int #shares - to_int this.balance }
+contract Fund {
+  uint shares;
+  function withdraw(uint amount) {
+    if (amount < shares) {
+      // subtract the amount from the shares
+      shares -= amount;
+      // send the actual money / ether
+      if (!msg.sender.call.value(amount)())
+        throw;
+    }
+  }
+}</code></pre>
+</section>
+
+<section>
+<h3>Future Directions</h3>
+<ul>
+<li>conditions spanning multi-contract systems</li>
+<li>combine high level model with bytecode-level model (correctness of compiler)</li>
+<li>conditions spanning multiple transactions (process calculi?)</li>
+</ul>
+</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: false,
+
+				transition: 'none', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
