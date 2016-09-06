@@ -88,20 +88,27 @@ IC3-Ethereum Crypto Boot Camp<br/>2016-07-26
 <h2>How can Formal Verification Help?</h2>
 
 <p>Example (shortened):</p>
-<pre><code>contract Token {
-  mapping(address => uint) balances;
-  function transfer(address from, address to, uint amount) {
-    if (balances[from] >= amount) {
-      balances[from] -= amount;
-      balances[to] += amount
-    }
+<pre><code>contract Voting {
+  uint deadline;
+  mapping (address => uint) deposit;
+  function Voting(uint duration) {
+    deadline = now + duration;
+  }
+  function vote() {
+    if (now >= deadline) throw;
+    deposit[msg.sender] += msg.value;
+  }
+  function refund() {
+    if (now < deadline) throw;
+    deposit[msg.sender] = 0;
+    if (!msg.sender.send(deposit[msg.sender])) throw;
   }
 }
 </code></pre>
 <p>Testing would probably not find an error here (do you?).</p>
 <p>Formal verification uses techniques to "test" a program on
 <b>all</b> possible inputs and states.<br/>
-Example: Is the sum of all balances unchanged by <code>transfer()</code>?</p>
+Example: are voters always refunded the right amount?</p>
 </section>
 
 <section>
