@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Formal Verification of Smart Contracts</title>
+
+		<meta name="author" content="Christian Reitwiessner">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/solarized.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+<style type="text/css">
+p { text-align: left; }
+.reveal .slides section .fragment.appear {
+  opacity: 0;
+  display: none;
+}
+.reveal .slides section .fragment.appear.visible {
+  opacity: 1;
+  display: block;
+}
+.reveal .slides section .fragment.appear-once {
+  opacity: 0;
+  display: none;
+}
+.reveal .slides section .fragment.appear-once.current-fragment {
+  opacity: 1;
+  display: block;
+}
+</style>
+
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+<section>
+<h2>Formal Verification of Smart Contracts</h2>
+<small><p>
+<b>Dr. Christian Reitwiessner</b><br/>
+@ethchris &nbsp; github.com/chriseth &nbsp; chris@ethereum.org</p>
+<p>
+IC3-Ethereum Crypto Boot Camp<br/>2016-07-26
+</p>
+</small>
+</section>
+
+<section>
+<h2>Problem</h2>
+
+<ul>
+<li>writing code correctly is hard</li>
+<li>key goal: align mental model with machine model</li>
+<li>easy to test desired behaviour</li>
+<li>hard to check absence of undesired behaviour</li>
+<li>reason: testing catches only finite amount of cases</li>
+</ul>
+
+</section>
+
+<section>
+<h2>Important for Ethereum!</h2>
+
+<ul>
+<li>Like for a web service, attacker can be anywhere</li>
+<li>Source code often available (good and bad)</li>
+<li>Prominent example: The DAO</li>
+</ul>
+</section>
+
+<section>
+<h2>How can Formal Verification Help?</h2>
+
+<p>Example (shortened):</p>
+<pre><code>contract Token {
+  mapping(address => uint) balances;
+  function transfer(address from, address to, uint amount) {
+    if (balances[from] >= amount) {
+      balances[from] -= amount;
+      balances[to] += amount
+    }
+  }
+}
+</code></pre>
+<p>Testing would probably not find an error here (do you?).</p>
+<p>Formal verification uses techniques to "test" a program on
+<b>all</b> possible inputs and states.<br/>
+Example: Is the sum of all balances unchanged by <code>transfer()</code>?</p>
+</section>
+
+<section>
+<h2>Formal Verification in General</h2>
+<ul>
+  <li>provide formal statements</li>
+  <li>prove that code satisfies the statements</li>
+  <li>We live in 2016: there are automated provers</li>
+</ul>
+</section>
+
+<section>
+<h2>Existing Languages / Tools</h2>
+
+<ul>
+  <li>C: Frama-C</li>
+  <li>Java: Krakatoa</li>
+  <li>Ada: SPARK</li>
+  <li>SPIN</li>
+  <li>PROMELA</li>
+</ul>
+
+<p>Write program in existing language and annotate with pre- and postconditions.<br/>
+Program is compiled into language that understands these conditions
+(often <em>why3</em>). VC-generator generates verification conditions,
+automated prover verifies conditions.
+</p>
+</section>
+
+<section>
+  <h2>Example: Frama-C</h2>
+<pre><code>/*@ requires 1 < num_candidates && num_candidates < MAX_CANDIDATES;
+    assigns \nothing;
+    ensures \result >= 1 && \result < num_candidates;
+    ensures \forall integer i; 
+       1 <= i < num_candidates ==> counters[\result] >= counters[i];
+ */
+int compute_winner(void) {
+  int i, winner = 1; /* "No vote" is NOT taken into account */
+  /*@ loop invariant 2 <= i && i < MAX_CANDIDATES;
+      loop invariant \forall integer j;
+              1 <= j < i ==> counters[winner] >= counters[j];
+      loop invariant winner >= 1 && winner < num_candidates;
+   */
+  for (i = 2; i < num_candidates; i++)
+    if (counters[i] > counters[winner]) winner = i;
+  return winner;
+}
+</code></pre>
+</section>
+
+<section>
+  <h2>Formal Verification for Solidity</h2>
+  <p>Following example is verified to be safe against re-entrant calls:</p>
+<pre><code>/// @why3 ensures {
+/// @why3   to_int (old #shares) - to_int (old this.balance)
+/// @why3     = to_int #shares - to_int this.balance
+/// @why3 }
+contract Fund {
+    uint shares;
+    function withdraw(uint amount) {
+        if (amount <= shares) {
+            shares = shares - amount;
+            if (!msg.sender.call.value(amount)())
+                throw;
+        }
+    }
+}</code></pre>
+<p>Fineprint: We still have to reject incoming Ether</p>
+</section>
+
+<section>
+  <h2>Future Steps</h2>
+  <ul>
+    <li>Very near future:
+      <ul>
+        <li>Verify example token contract</li>
+        <li>Model "msg" (add msg.sender, etc.)</li>
+      </ul></li>
+    <li>Multi-contract conditions</li>
+    <li>Correlate bytecode-level model with high-level language model</li>
+    <li>Multi-transaction conditions (safety and liveness) - process calculus?</li>
+  </ul>
+  <p>In comparison to C, we are lucky: no concurrency, simple VM, simple programs, simple language.</p>
+</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: false,
+
+				transition: 'none', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
