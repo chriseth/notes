@@ -157,38 +157,52 @@ int compute_winner(void) {
 
 <section>
   <h2>Formal Verification for Solidity</h2>
-  <!-- to be replaced with a latest working example -->
-  <p>Following example is verified to be safe against re-entrant calls:</p>
-<pre><code>/// @why3 ensures {
-/// @why3   to_int (old #shares) - to_int (old this.balance)
-/// @why3     = to_int #shares - to_int this.balance
-/// @why3 }
-contract Fund {
-    uint shares;
-    function withdraw(uint amount) {
-        if (amount <= shares) {
-            shares = shares - amount;
-            if (!msg.sender.call.value(amount)())
-                throw;
-        }
-    }
-}</code></pre>
-<p>Fineprint: We still have to reject incoming Ether</p>
+  <p>This code is verified to maintain the total balance of tokens:</p>
+<pre><code>/// @why3 contract-prelude constant total : int
+/// @why3 contract-prelude axiom total_small : total <= max_uint256
+/// @why3 contract-account invariant { self.storage._balance.length = Address.max_address + 1 }
+/// @why3 contract-account invariant { BalanceSum.sum self.storage._balance 0 (Address.max_address + 1) = total }
+contract Token {
+	mapping (address => uint256) balance;
+	function transfer(address _from, address _to, uint256 _val) {
+		if (balance[_from] < _val) throw;
+		balance[_from] = balance[_from] - _val;
+		/// @why3 here assert { BalanceSum.sum this.storage._balance 0 (Address.max_address + 1) = total - to_int !(__val) };
+		/// @why3 here assert { to_int this.storage._balance[Address.to_int !(__to)] <= BalanceSum.sum this.storage._balance 0 (Address.max_address + 1) };
+		balance[_to] = balance[_to] + _val;
+		/// @why3 here assert { BalanceSum.sum this.storage._balance 0 (Address.max_address + 1) = (total - to_int _val) + to_int _val};
+		/// @why3 here assert { BalanceSum.sum this.storage._balance 0 (Address.max_address + 1) = total };
+	}
+}
+</code></pre>
+<p>assuming the total is less than 2^256.</p>
 </section>
 
 <section>
   <h2>Why3 GUI</h2>
-  <p>Add a screenshot.</p>
+  <img src="./screenshot_overflow.png">
 </section>
 
 <section>
   <h2>Yoichi Hirai (09.2016-)</h2>
-  <ol>
-	<li>Logical proofs are based on computation (Univ. Tokyo)</li>
-	<li>Spreading formal methods to the industry<br>(a research institute in Japan)</li>
-	<li>Formal methods for OS kernels (a U.S. company)</li>
-	<li>Verify smart contracts!</li>
-  </ol>
+  <table style="border: none">
+	<tr>
+	  <td>Logical proofs are based on computation<em> ...jobs?</em></td>
+	  <td>Univ. Tokyo</td>
+	</tr>
+	<tr>
+	  <td>Bring formal methods to the industry<em>...source code?</em></td>
+	  <td>Research institute in Japan</td>
+	</tr>
+	<tr>
+	  <td>Formal methods for OS kernels<br><em>...shorter specs?</em.</td>
+	  <td>U.S. company</td>
+	</tr>
+	<tr>
+	  <td>Verify smart contracts!</td>
+	  <td>Ethereum DEV</td>
+	</tr>
+  </table>
 </section>
 <!-- end Yoichi Part -->
 
@@ -197,8 +211,8 @@ contract Fund {
   <ul>
     <li>Very near future:
       <ul>
-        <li>Verify example token contract</li>
         <li>Model "msg" (add msg.sender, etc.)</li>
+        <li>Mappings to mappings (e.g. transfer allowence)</li>
       </ul></li>
     <li>Multi-contract conditions</li>
     <li>Correlate bytecode-level model with high-level language model</li>
