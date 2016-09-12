@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Blockchains und Dezentrale Anwendungen</title>
+
+		<meta name="author" content="Christian Reitwiessner">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="../reveal.js/css/reveal.css">
+		<link rel="stylesheet" href="../reveal.js/css/theme/solarized.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="../reveal.js/lib/css/zenburn.css">
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+<style type="text/css">
+p { text-align: left; }
+.reveal .slides section .fragment.appear {
+  opacity: 0;
+  display: none;
+}
+.reveal .slides section .fragment.appear.visible {
+  opacity: 1;
+  display: block;
+}
+.reveal .slides section .fragment.appear-once {
+  opacity: 0;
+  display: none;
+}
+.reveal .slides section .fragment.appear-once.current-fragment {
+  opacity: 1;
+  display: block;
+}
+</style>
+
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+ 
+<section data-markdown><script type="text/template">
+### Blockchains und Dezentrale Anwendungen
+
+> Denic-Konferenz, 2016-09-27
+
+> Christian Reitwiessner
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+#### Teil 1: kurzer Überblick über Blockchain, ausgehend von Bitcoin
+
+- Das Internet heute: zentrale Anwendungen (Facebook, GMail, Whatsapp)
+
+- Problem dabei: private Daten werden vollständig übergeben, keine Interoperabilität, im Ernstfall: Daten und Service weg
+
+- Das war nicht immer so: EMail föderiert, Domainregistrierung ähnlich
+
+- Föderiert ist gut, dezentral ist besser.
+
+- Wie kann man das Problem der Datenhoheit lösen, speziell bei gegenläufigen Interessen?
+  -> Beispiel: Grundstücksregistrierung, die Not war am größten beim Bankensystem (teilweise föderiert, zentral kontrolliert), speziell zur Finanzkrise 2009
+
+##### Bitcoin
+
+- Erfunden von "Satoshi Nakamoto" (Pseudonym) 2009. Peer-to-Peer-Netzwerk, löst Problem der zentralen Kontrolle einer Datenbank.
+
+- Beispiel: Geld per e-Mail senden
+
+- Bitcoin: Jeder kann alle Kontostände einsehen, aber nur eigenes Geld ausgeben (kryptographische Signatur)
+
+- Alle Netzwerkteilnehmer verifizieren alle Transaktionen, pseudozufällig ausgewählter "Miner" legt Reihenfolge innerhalb eines "Blocks" fest
+
+- Wert aller Bitcoins zusammen: ~10 mrd usd
+
+- Vorteil: Komplett dezentral, Manipulation oder Eingriff unmöglich, wie Bargeld.
+
+- Nachteil: Skalierbarkeit: 7 tx/sec (Visa: 2000 tx/sec, max 56000)
+- Nachteil: Strombedarf von Irland für proof of work
+- Nachteil: Anwendungen die über Geld hinausgehen schwierig bis unmöglich
+
+#### Ethereum
+
+- Vorgeschlagen von Vitalik Buterin 2013: Blockchain von Kontenbuch zu Datenbank erweitern
+- Modell: Programme in der Blockchain ("Smart Contract"), jeweils eigener Datenbereich, Ausführing ist transparent und Manipulationssicher
+- Erzeugt global verteilten virtuellen Computer, auf den jeder Zugriff hat
+- Ausführung oder Erstellen von Datenbankeinträgen kostet (kleine) Gebühr, die an "Validator" verteilt wird
+- Plan für Zukunft: PoW -> PoS, enegieeffizient + Skalierbarkeit (zur Zeit schon viel schneller)
+- auch Vorteil: Interoperabilität der Anwendungen
+
+- non-profit stiftung in der Schweiz
+
+wie viele tx/sec?
+
+#### Was kann man damit machen?
+
+Alles dezentral, es gibt keine Person, die eingreifen, manipulieren oder verhindern kann:
+
+- multi-signature "wallet" (wie Banktresor)
+- Grundstücksregister
+- Auktion
+- Crowdfunding
+- Wahlen
+
+-> Alles kombinieren!
+
+Vorteile: Transparenz, Auditierbarkeit, Manipulationsresistenz
+
+prediction markets, outsourced computation, dezentrale Speicherung von Daten (swarm)
+
+Erweiterte vision: smart fleet of cars owned by itself
+
+Namensregistrierung, Hinterlegen von Server-Zertifikaten - manipulationssicher und
+von besitzern selbst updatebar, namen können automatisch verkauft, versteigert oder transferiert werden
+
+#### Mögliche Probleme
+
+Neues Programmierparadigma, zerhacken von Aufgaben in kleine Teile, Interaktion mit eventuell
+bösartigem code (größter "Schaden" bisher: 30 mio usd).
+
+Noch frühe Phase!
+
+Abhilfe: Formale Verifikation
+
+Programmieren und Entwerfen von Mechanismen mit Ökonomischen Aspekten:
+"Im Prinzip angreifbar, ist nur sehr teuer"
+
+Beispiel DOS (herkömmlich: Unterscheiden zwischen Angriff und regulären Anfragen):
+Jede Transaktion kostet Geld, Angreifer muss viel Geld in die Hand nehmen.
+Je nach Bauart können dann mit diesem Geld neue Resources geschaffen werden (virtuelle server)
+
+Beispiel: Gertränkeautomat. DOS-attacke durch "leerkaufen". Mit Geld können neue
+Getränke gekauft werden und Automat neu bestückt werden oder sogar neue
+Automaten gekauft werden.
+
+Benötigt natürlich gute Skalierbarkeit. Noch nicht erreicht, aber bald.
+
+Private Daten: -> snarks
+
+#### Wirtschaftliche und gesellschaftliche Veränderungen
+
+- Micropayments überall, z.B. beim Besuchen von Webseiten, beim kurzzeitigen
+Laden von Elektroautos, kein verkaufen von personenbezogenen Daten mehr
+
+Großer Vorteil: Dadurch, dass die Blockchain nicht kontrolliert wird, ist
+sie für alle ein neutraler Partner, gemeinsame Schnittstellen können
+ohne Kontrollverlust benutzt werden
+
+automatisierte Versicherungen
+
+dezentrale Blockchain-Staaten
+
+- Programme, die Geld besitzen können, aber von keinem Menschen besessen werden
+
+- DAOs / DACs: Unternehmen, die nicht von Menschen geleitet werden.
+
+Beispiel: Flotte von selbstfahrenden Taxis, die mit Gebühren selbstständig
+Autos betankt, repariert, kauft und verkauft.
+
+Alle Geschäftsentscheidungen rein zur Verbesserung des Service getroffen.
+
+### Auswirkungen auf Registrare und ISPs
+
+- Mit ipfs / swarm (bezahlte, dezentrale Dateispeicherung) wird sich Datei-Hosting
+verändern: Jeder kann Daten speichern und seine Festplatte als Speicher anbieten
+
+- Kunde ist egal, wo es gespeichert wird, es wird regelmäßig kontrolliert, dass
+die Datei verfügbar ist, Bestrafung, etc
+
+- Speichern in der echten globalen Cloud -> Preisdruck
+
+Dadurch erreicht man echte dezentrale Anwendungen. Assets in swarm, traditionelle
+Server-Logik in der Blockchain. CPU/GPU-intensive Berechnungen können auf
+ähnlichen globalen Markt ausgelagert werden. Daten-Authentizität gesichert
+durch Kryptographie und Content-addressability.
+
+### Anwendung als Name-Registry
+
+Private blockchain als manipulationsresistenter Datenspeicher. In Genossenschaft
+kann jeder eine Node betreiben, Datenbank automatisch synchronisiert.
+Konflikte werden automatisch aufgelöst, Transferlogik
+als "stored procedure" in der Blockchain. Auch nach außen manipulationsresistent
+durch regelmäßiges Checkpointing.
+
+Hinterlegen von Server-Zertifikaten oder DNSSEC-Schluesseln 
+
+Ethereum Name Service
+
+Generelles Problem der fairen Verteilung knapper Ressourcen
+
+
+
+ipfs / swarm
+
+
+- Teil 2 (ausführlich)
+  - potenzielle zukünftige Anwendungen wie Smart Contracts, E-Voting etc.
+  - möglichen plattforminhärenten Problemen DOS-Attacken ...)
+  - wirtschaftliche und gesellschaftliche Veränderungen, die durch den Einsatz von Blockchain-Produkten im großen Stil ausgelöst werden könnten
+
+- Teil 3:
+  mögliche Auswirkungen der Blockchain-Technologie und darauf basierender DApps für die Zielgruppe der Veranstaltung
+(Domainbranche: Registry und Registrare bzw. weitere Internet Service Provider wie Hoster etc.
+
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+## 
+
+A paragraph with some text and a [link](http://hakim.se).
+</script></section>
+
+
+			</div>
+
+		</div>
+
+		<script src="../reveal.js/lib/js/head.min.js"></script>
+		<script src="../reveal.js/js/reveal.js"></script>
+
+		<script>
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: false,
+
+				transition: 'none', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: '../reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: '../reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../reveal.js/plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: '../reveal.js/plugin/zoom-js/zoom.js', async: true },
+					{ src: '../reveal.js/plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
