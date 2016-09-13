@@ -22,7 +22,27 @@
 		<!--[if lt IE 9]>
 		<script src="lib/js/html5shiv.js"></script>
 		<![endif]-->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
 <style type="text/css">
+@font-face {
+	font-family: PTSans;
+	src: url('./pt-sans-regular.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+}
+body, .reveal {
+	font-family: PTSans, Arial, sans-serif;
+}
+.reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+	text-transform: none;
+	font-family: PTSans, Arial, sans-serif;
+}
 p { text-align: left; }
 .reveal .slides section .fragment.appear {
   opacity: 0;
