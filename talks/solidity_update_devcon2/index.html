@@ -4,7 +4,7 @@
 	<head>
 		<meta charset="utf-8">
 
-		<title>How to Write Safe Smart Contracts</title>
+		<title>New and Future Features of Solidity</title>
 
 		<meta name="author" content="Christian Reitwiessner">
 
@@ -13,16 +13,43 @@
 
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
 
-		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/theme/solarized.css" id="theme">
+		<link rel="stylesheet" href="../reveal.js/css/reveal.css">
+		<link rel="stylesheet" href="../reveal.js/css/theme/simple.css" id="theme">
 
 		<!-- Code syntax highlighting -->
-		<link rel="stylesheet" href="lib/css/zenburn.css">
+		<link rel="stylesheet" href="../reveal.js/lib/css/zenburn.css">
 
 		<!--[if lt IE 9]>
 		<script src="lib/js/html5shiv.js"></script>
 		<![endif]-->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
 <style type="text/css">
+@font-face {
+	font-family: PTSans;
+	src: url('./pt-sans-regular.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+}
+body, .reveal {
+	font-family: PTSans, Arial, sans-serif;
+}
+.reveal .slides {
+	text-align: left;
+}
+.reveal pre {
+  width: inherit;
+}
+.reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+	text-align: center;
+	text-transform: none;
+	font-family: PTSans, Arial, sans-serif;
+}
 p { text-align: left; }
 .reveal .slides section .fragment.appear {
   opacity: 0;
@@ -40,6 +67,27 @@ p { text-align: left; }
   opacity: 1;
   display: block;
 }
+.backgrounds {
+  -webkit-filter: opacity(0%);
+  -moz-filter: opacity(0%);
+  -o-filter: opacity(0%);
+  -ms-filter: opacity(0%);
+  filter: opacity(0%);
+}
+html.blurStrong .backgrounds {
+  -webkit-filter: opacity(20%);
+  -moz-filter: opacity(20%);
+  -o-filter: opacity(20%);
+  -ms-filter: opacity(20%);
+  filter: opacity(20%);
+}
+html.blurLight .backgrounds {
+  -webkit-filter: opacity(60%);
+  -moz-filter: opacity(60%);
+  -o-filter: opacity(60%);
+  -ms-filter: opacity(60%);
+  filter: opacity(60%);
+}
 </style>
 
 	</head>
@@ -50,247 +98,219 @@ p { text-align: left; }
 
 			<!-- Any section element inside of this container is displayed as a slide -->
 			<div class="slides">
-<section>
-<h2>How to Write Safe Smart Contracts</h2>
-<small><p>
-<b>Dr. Christian Reitwiessner</b><br/>
-@ethchris &nbsp; github.com/chriseth &nbsp; c@ethdev.com</p>
-<p>
-ÐΞVCON1 - London - 2015-11-10
-</p>
+ 
+<section data-markdown data-background="z1.jpg" data-state="blurStrong"><script type="text/template">
+## New and Future Features of Solidity
+
+ÐΞVCON2 - Shanghai - 2016-09-20
+
+<small>
+Dr. Christian Reitwiessner <br/>
+@ethchris   github.com/chriseth   chris@ethereum.org
 </small>
-</section>
 
-<section>
+<p style="font-size: 0.5em; position: absolute; left: -11em; bottom: -20em;">Photo: Andrew Fogg, flickr</p>
+</script></section>
 
-What did we do since last devcon?
+<section data-markdown><script type="text/template">
+## Requirements and Goals for Solidity
 
+* statically typed
+* easily readable
+* high level
+* uses little gas
 
-
-
-
-</section>
-
-<section>
-<h3>Compile-Time Checks</h3>
-
-<p>Solidity is statically typed. Compiler can check that<br/>
-<ul><li>all functions exist</li><li>objects are not null</li><li>operators can be applied</li><li>...</li></ul></p>
-
-<pre><code>contract C {
-  address owner; uint ownr;
-  function giveMeMyMoney() {
-    if (msg.sender == ownr) // type error
-      ownr.send(this.balance);
-      // type error: no `send` in `uint`
+```
+contract Token {
+  mapping(uint => uint) public balance;
+  /// Transfers `amount` tokens from `msg.sender`
+  /// to `receiver`.
+  function transfer(uint receiver, uint amount) {
+    if (balance[msg.sender] >= amount) {
+      balance[receiver] += amount;
+      balance[msg.sender] -= amount;
+    }
   }
-}</code></pre>
+}
+```
+</script></section>
 
-</section>
+<section data-markdown data-background="london.jpg"  data-state="blurLight"><script type="text/template">
+## What happened since ÐΞVCON1?
 
-<section>
-<h3>Runtime Checks and Exceptions</h3>
-
+<div style="position: relative; left: 10em;">
 <ul>
-<li>Exception for out-of-bounds access to arrays
-<br/>&rarr; reverts whole transaction if not caught</li>
-<li>Downside: Current EVM consumes all gas upon exception.</li>
-<pre class="fragment"><code>contract C {
-  uint[] data;
-  function append(uint value) { data.push(value); }
-  function replace(uint index, uint value) {
-    data[index] = value;
+<li>flexibility</li>
+<li>usability</li>
+<li>safety</li>
+</ul></script></section>
+
+<section data-markdown data-background="tools.jpg" data-state="blurStrong"><script type="text/template">
+### Build Custom Types
+
+ - inline assembly
+ - internal library functions
+ - "`using x for y`"
+
+```
+library strings {
+  struct slice { uint _len; uint _ptr; }
+  function toSlice(string self) internal returns (slice) {
+    uint ptr;
+    assembly { ptr := add(self, 0x20) }
+    return slice(bytes(self).length, ptr);
   }
-}</code></pre>
-<li>Exceptions can also be used manually</li>
-<pre class="fragment"><code>contract C {
-  address owner;
-  function changeOwner(address _new) {
-    if (msg.sender != owner) throw;
-    owner = _new;
+  function startsWith(slice self, slice needle)
+    internal returns (bool) { ... }
+}
+contract User {
+  using strings for *;
+  function f(string s)
+    if (s.toSlice().startsWith("foo".toSlice()))
+      doSomething()
   }
-}</code></pre>
-</ul>
+}
+```
+</script></section>
 
-</section>
+<!--imports + remapping to help package managers and keep your namespace clean-->
 
-<section>
-<h2>Be Nice</h2>
+<section data-markdown><script type="text/template">
+### Assist Debugging
 
-<p>
-If someone uses your contract in a non-intended way, do not make them suffer.
+AST output for "`return x + y`":
 
-<ul>
-<li class="fragment" data-fragment-index="1">throw in unexpected situations</li>
-<pre class="fragment appear-once" data-fragment-index="1"><code>contract C {
-  uint[] data;
-  function append(uint item) {
-    if (msg.value > 0) throw;
-    data.push(item);
+```
+{
+  "id": 11442648,
+  "name": "Return",
+  "src": "63:12:0",
+  "children": [{
+    "id": 11442536,
+    "name": "BinaryOperation",
+    "src": "70:5:0",
+    "attributes": { "operator": "+", "type": "uint256" },
+    "children": [{
+      "id": 11442296,
+      "name": "Identifier",
+      "src": "70:1:0",
+      "attributes": { "type": "uint256", "value": "x" }
+    }, {
+      "id": 11442440,
+      "name": "Identifier",
+      "src": "74:1:0",
+      "attributes": { "type": "uint256", "value": "y" }
+    }]
+  }]
+}
+```
+Source mappings also for bytecode.
+</script></section>
+
+<section data-markdown  data-background="climbing.jpg" data-state="blurStrong"><script type="text/template">
+### Safety
+
+* formal verification (separate talk)
+* exceptions on
+  * failed creations,
+  * division by zero,
+  * function call to non-contract
+* payable modifier: "```function fund() payable {}```"
+* version pragma: "```pragma solidity ^0.4.0;```"
+* modifiers: do not skip tail part
+      modifier mutex() { if (!locked) { locked = true; _; locked = false; } }
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Future
+
+* formal verification
+* authenticated sources and binaries via SWARM
+  * auto-UI, source-debugging and check formal properties
+* templates
+* functions as first-class citizens
+* ...
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Algebraic Datatypes and Templates
+
+```TypeScript
+// Two states for a `Commitment[T]`-variable with additional data
+// for each state.
+enum Commitment[T] { Hidden(hash: bytes32), Revealed(value: T) }
+
+function reveal[T](c: Commitment[T], value: T, nonce: uint)
+  returns Commitment[T] 
+{
+  // Access to `c.Hidden` throws if `c` is not in the `Hidden` state
+  if (c.Hidden.hash == sha3(value, nonce))
+    return Commitment.Revealed(value)
+  else
+    return c;
+}
+
+using reveal[T] for Commitment[T];
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Functions as First-Class Citizens
+
+```TypeScript
+import Oraclize from "github.com/oraclize/api/api.sol";
+import Token from "std:Token.sol";
+
+using USDToken = Token(0x123456abcdef123456abcdef);
+
+contract USDExchange is HasTimeout {
+  /// Buy `amountInUSD` USD tokens - you have to supply enough Ether,
+  /// the surplus will be refunded.
+  function buy(amountInUSD: uint) payable returns (function()) {
+    // Creates a callback function object in storage and returns it.
+    // The callback function takes no parameters. All information
+    // is stored in storage and referenced by the function ID.
+    // HasTimeout provides a dispatcher in the fallback function.
+    let timeout: function() = createTimeout({
+      period: 1 hour,
+      // manual data for now, we might also add automatic capturing
+      data: (msg.sender, msg.value),
+      // This can be called once by oraclize during the next hour
+      during: function(
+          price: uint,
+          (buyer, amountProvided): (address, uint)
+      ) onlyOraclize {
+        // This is safe because it throws on overflow
+        let surplus = amountProvided - price * amountInUSD;
+        // assert throws if its argument is false
+        assert USDToken.transfer(buyer, amountInUSD) && sender.send(surplus);
+      },
+      // This can be called if oraclize did not call us back
+      // (or the callback threw an exception).
+      // `createTimeout` takes care that only one of them can be called.
+      onTimeout: function(buyer: address, amountProvided: uint) {
+        assert buyer.send(amountProvided);
+      }
+    });
+    // Calls oraclize to fetch the current USD price.
+    Oraclize.getPrice("USD", timeout);
+    // Also return the timeout object to the caller, so the can
+    // call `onTimeout` after the timeout.
+    return timeout;
   }
-}</code></pre>
-<li class="fragment" data-fragment-index="2">do not delete contracts, only disable them</li>
-<pre class="fragment appear-once"><code>contract C {
-  ...
-  function payout() {
-    if (msg.value < 1 ether) throw;
-    performPayout();
-    suicide(owner);
-    // contract will vanish,
-    // ether sent to address will be lost
-  }
-  ...
-}</code></pre>
-<li class="fragment">provide natspec docs</li>
-<pre class="fragment appear-once"><code>contract C {
-  ...
-  /// Sells item `name`, cannot be undone.
-  function sell(string name) {
-    ...
-  }
-}</code></pre>
-<li class="fragment">publish source code</li>
-</ul>
-</p>
-</section>
-
-<section>
-<h2>Avoid Race-Conditions</h2>
-
-<ul>
-<li>always either update the state or throw</li>
-<pre class="fragment"><code>contract C {
-  bool bought;
-  ...
-  function buy(string name) {
-    if (bought) throw;
-    bought = true;
-    ...
-  }
-}</code></pre>
-<li>use the state-machine pattern (<a href="https://ethereum.github.io/solidity//docs/state-machine/">docs</a>) with modifiers</li>
-<li>even if only one user: UI buttons are easily clicked twice</li>
-</ul>
-</section>
-
-<section>
-<h2>Formally Verify Your Code</h2>
-<pre class="fragment appear-once"><code>contract BinarySearch {
- ///@why3
- /// requires { forall i j: int. 0 <= i <= j < @data.length ->
- ///                                      @data[i] <= @data[j] }
- /// variant { @end - @begin }
- /// ensures { @ret < UInt256.max_uint256 ->
- ///           (@begin <= @ret < @end && @data[@ret] = @value) }
- function find(uint[] data, uint begin, uint end, uint value)
-       internal returns (uint ret) {
-   uint len = end - begin;
-   if (len == 0 || (len == 1 && data[begin] != value)) return uint(-1);
-   uint mid = begin + len / 2;
-   if (value < data[mid]) return find(data, begin, mid, value);
-   else if (value > data[mid]) return find(data, mid + 1, end, value);
-   else return mid;
- }
-}</code></pre>
-<img class="fragment appear-once" src="formal.jpg" style="height: 500px; margin: auto;" />
-</section>
-
-<section>
-<h2>How to Send and Receive Money</h2>
-<ul>
-<li>.send(...) only provides tiny amount of gas, but always
-triggers execution of fallback function<br/>(&nbsp;<code>function() { ...}</code>&nbsp;)<br/>
-&rarr; make fallback function cheap<br/>
-&rarr; prepare for callbacks (can mess up your state!)</li>
-<li>if receiver throws, transfer is reverted, but...</li>
-<li>.send(...) does not propagate exceptions<br/>
-&rarr; check the return value of `.send()`</li>
-</ul>
-</section>
+}
+```
 
 
-<section>
-<h2>Avoid Large Cheap Arrays</h2>
-
-<pre><code>contract C { uint[2**255] arrData; mapping(uint -> uint) mapData; }</code></pre>
-<p>
-  <code>arrData[i]</code>: stored at <code>sha3(0x00) + i</code><br/>
-  <code>mapData[x]</code>: stored at <code>sha3(0x01, x)</code>
-<ul class="fragment">
-<li><code>arrData[sha3(0x01,x) - sha3(0x00)]</code> will overwrite <code>mapData[x]</code> without breaking sha3.</li>
-<li>Avoid large arrays or at least make
-  arbitrary access costly, e.g. only append
-  one element per transaction.</li>
-</ul>
-</p>
-</section>
-
-<section>
-<h2>How to Save some Gas</h2>
-<ul>
-<li>use the optimiser!</li>
-<li>use packed storage:<br/>
-small types will share single storage slot,
-optimiser tries to combine reads and writes
-<pre class="fragment appear-once"><code class="solidity">contract C {
-  struct S { uint128 a; uint64 b; uint64 c; }
-  S data;
-  function f(uint x, uint y) {
-    data.a = x;
-    data.b = data.a * y;
-    data.c = data.b;
-    // -> optimised to single write, no read.
-  }
-}</code></pre>
-</li>
-<div class="fragment">
-<li>use libraries<br/>
-re-usable "dynamically loadable" code
-</li>
-<li>move computation off-chain:<br/>
-<pre><code>function search(uint value, uint index_hint) {
-     if (data[index_hint] == value) return index_hint;
-     else { ... /* search inside data */ }
-}</code></pre>
-make sure that it is still safe!</li>
-</div>
-</ul>
-</section>
-
-<!--
-<section>
-<h2>Some Edgy Cases of Solidity</h2>
-
-
-<li>Returning dynamically-sized arrays</li>
-<pre><code>contract DynamicArrays {
-  uint[] data;
-  function returnDynamicArray() returns (uint[], bool) {
-    return (data, true);
-  }
-}</code></pre>
-</section>
-
-
-<section>
-<h2>How to use randomness</h2>
-
-
-</section>
-
-<section>
-<h2>Use unit tests</h2>
-
-
-</section>
--->
+</script></section>
 
 			</div>
 
 		</div>
 
-		<script src="lib/js/head.min.js"></script>
-		<script src="js/reveal.js"></script>
+		<script src="../reveal.js/lib/js/head.min.js"></script>
+		<script src="../reveal.js/js/reveal.js"></script>
 
 		<script>
 			// Full list of configuration options available at:
@@ -301,16 +321,16 @@ make sure that it is still safe!</li>
 				history: true,
 				center: false,
 
-				transition: 'slide', // none/fade/slide/convex/concave/zoom
+				transition: 'none', // none/fade/slide/convex/concave/zoom
 
 				// Optional reveal.js plugins
 				dependencies: [
-					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
-					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
-					{ src: 'plugin/zoom-js/zoom.js', async: true },
-					{ src: 'plugin/notes/notes.js', async: true }
+					{ src: '../reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: '../reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: '../reveal.js/plugin/zoom-js/zoom.js', async: true },
+					{ src: '../reveal.js/plugin/notes/notes.js', async: true }
 				]
 			});
 
