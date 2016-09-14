@@ -4,7 +4,7 @@
 	<head>
 		<meta charset="utf-8">
 
-		<title>How to Fool a Blockchain - Verification of Off-Chain Computations</title>
+		<title>TrueBit - Off-Chain Computations for Smart Contracts</title>
 
 		<meta name="author" content="Christian Reitwiessner">
 
@@ -51,12 +51,12 @@ p { text-align: left; }
 			<!-- Any section element inside of this container is displayed as a slide -->
 			<div class="slides">
 <section>
-<h2>How to Fool a Blockchain - Verification of Off-Chain Computations</h2>
+<h2>TrueBit - Off-Chain Computations for Smart Contracts</h2>
 <small><p>
 <b>Dr. Christian Reitwiessner</b><br/>
 @ethchris &nbsp; github.com/chriseth &nbsp; chris@ethereum.org</p>
 <p>
-DevCon 2 - 2016-09-20
+Ethereum Meetup Berlin - 2016-06-20
 </p>
 </small>
 </section>
@@ -67,14 +67,12 @@ DevCon 2 - 2016-09-20
 <p>How does an Ethereum Smart Contract</p>
 <ul>
 <li>Verify Solidity source code?</li>
-<li>Read and write to data stored in swarm?</li>
-<li>Evaluate neural networks?</li>
-<li>Verify zkSNARKs?</li>
+<li>Retrieve data stored in swarm?</li>
 <li>Verify state transition in private chain?</li>
 <li>Become conscious?</li>
 </ul>
 
-<p>All these operations need access to the "external world" and/or are very
+<p>All these operations need access to the "external world" or are very
 expensive.</p>
 
 </section>
@@ -82,7 +80,7 @@ expensive.</p>
 <section>
 <h3>TrueBit - the Verification Game</h3>
 
-<p>Cooperation with Loi Luu (U. Singapore), Jason Teutsch (U. Alabama) and others
+<p>Cooperation with Loi Luu (U. Singapore) and Jason Teutsch (U. Alabama),
   based on <a href="https://arxiv.org/pdf/1606.05917v1.pdf">"How to verify computation with a rational network"</a>.
 </p>
 
@@ -91,10 +89,6 @@ Interactive verification mechanism proposed by
 Canetti, Riva, Rothblum: <a href="http://www.cs.tau.ac.il/~benriva/ccs11.pdf">&quot;Practical delegation of
 computation using multiple servers&quot;</a>, 2011
 </p> 
-
-<p>
-	the other paper with functional data types
-</p>
 
 <p>Make this work on a blockchain by adding economic incentives.</p>
 
@@ -127,19 +121,11 @@ if all attackers join forces. A single honest (and uncensored) actor can prevent
 <h3>Verification Game - Assumptions</h3>
 
 <ul>
-<li>Actors agree on program for class of task:
-	<ul>
-		<li>evaluate certain neural network on given inputs,</li>
-		<li>verify Dogecoin proof of work,</li>
-		<li>run given bytecode in a certain virtual machine,</li>
-		<li>evaluate given Haskell program,</li>
-		<li>...</li>
-	</ul></li>
-<li>Solvers first run natively implemented program (fast) to find and publish solution.</li>
+<li>Actors agree on program for class of task (evaluating neural network, solving proof of work for Dogecoin, ...).</li>
+<li>Solvers first run natively implemented program (fast) to find solution.</li>
 </ul>
 
-<p>If there is disagreement, verification game starts for a pair of solvers
-(run multiple games if more than two different solutions):</p>
+<p>If there is disagreement, verification game starts:</p>
 </section>
 
 <section>
@@ -148,29 +134,16 @@ if all attackers join forces. A single honest (and uncensored) actor can prevent
 <li>Both solvers re-run input on special implementation which can generate Merkle-roots
 for all memory at any step.</li>
 <li>provide root hash of first (match) and last (mismatch) step.</li>
-<li>binary search until single step from match to mismatch.</li>
+<li>Binary search until single step from match to mismatch.</li>
 <li>provide Merkle-proofs for memory access inside this step.</li>
-<li>single step is evaluated on-chain:
+<li>Single step is evaluated on-chain:
   <ul>
     <li>Merkle-proofs are identical before the step (same state root).</li>
     <li>Memory only changes locally, so Merkle-proof siblings have to be identical</li>
   </ul>
 </ul>
-</section>
 
-<section>
-<h3>Verification Game again in short</h3>
-<ul>
-<li>For a program that runs 10 000 000 steps, we only need log(10 000 000) =
-	24 rounds</li>
-<li>Each round: only submit single hash to the blockchain</li>
-<li>Only a single step is run on chain (single addition, single comparison, ...),
-plus Merkle-proof verification</li> 
-<li>Even better: Due to economic incentives and certainty of getting caught,
-verification game is never ever played.</li>
-</ul>
 </section>
-
 
 
 <section>
@@ -180,24 +153,22 @@ verification game is never ever played.</li>
 <li>Anything that can be broken into steps ("ethereum computation market")</li>
 <li>Tasks have to be implemented in Solidity and off-chain</li>
 <li>We plan to implement a simple virtual machine in Solidity ("lanai"), so
-  mechanism can work with any C/C++/Rust code without changes</li>
+  mechanism can work with any code without changes</li>
+<li>swarm as actual filesystem for smart contracts</li>
 </ul>
 </section>
 
 <section>
-<h3>Swarm as actual filesystem for smart contracts</h3>
+<h3>Numbers</h3>
 
-<ul>
-	<li>interactive verification works as long as data is publicly available</li>
-	<li>pseudo-opcodes:
-		<ul>
-			<li>read(root_hash, offset) -> value</li>
-			<li>write(root_hash, offset, value) -> updated_root_hash</li>
-		</ul>
-	</li>
-	<li>during verification, reads and writes to swarm are treated the
-		same as memory reads and writes.</li>
-</ul>
+<p>
+1 hour of computation on 4 GHz processor: 14400000000000 = 14.4 * 10<sup>12</sup> steps<br/>
+If all agree: Almost no strain on the chain<br/>
+Disagreement: Cheater found in 10 rounds with 640 bytes messages<br/>
+Commitment to root hashes plus evaluation of single step only on-chain actions.  
+</p>
+
+<p>Behaviour even better on large pre-Merkelized data (blockchain, data from swarm, ...)</p>
 
 </section>
 
