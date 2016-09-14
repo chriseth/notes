@@ -13,16 +13,43 @@
 
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
 
-		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/theme/solarized.css" id="theme">
+		<link rel="stylesheet" href="../reveal.js/css/reveal.css">
+		<link rel="stylesheet" href="../reveal.js/css/theme/simple.css" id="theme">
 
 		<!-- Code syntax highlighting -->
-		<link rel="stylesheet" href="lib/css/zenburn.css">
+		<link rel="stylesheet" href="../reveal.js/lib/css/zenburn.css">
 
 		<!--[if lt IE 9]>
 		<script src="lib/js/html5shiv.js"></script>
 		<![endif]-->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
 <style type="text/css">
+@font-face {
+	font-family: PTSans;
+	src: url('./pt-sans-regular.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+}
+body, .reveal {
+	font-family: PTSans, Arial, sans-serif;
+}
+.reveal .slides {
+	text-align: left;
+}
+.reveal pre {
+  width: inherit;
+}
+.reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+	text-align: center;
+	text-transform: none;
+	font-family: PTSans, Arial, sans-serif;
+}
 p { text-align: left; }
 .reveal .slides section .fragment.appear {
   opacity: 0;
@@ -40,6 +67,34 @@ p { text-align: left; }
   opacity: 1;
   display: block;
 }
+.backgrounds {
+  -webkit-filter: opacity(0%);
+  -moz-filter: opacity(0%);
+  -o-filter: opacity(0%);
+  -ms-filter: opacity(0%);
+  filter: opacity(0%);
+}
+html.blurStrong .backgrounds {
+  -webkit-filter: opacity(20%);
+  -moz-filter: opacity(20%);
+  -o-filter: opacity(20%);
+  -ms-filter: opacity(20%);
+  filter: opacity(20%);
+}
+html.blurLight .backgrounds {
+  -webkit-filter: opacity(60%);
+  -moz-filter: opacity(60%);
+  -o-filter: opacity(60%);
+  -ms-filter: opacity(60%);
+  filter: opacity(60%);
+}
+html.noBlur .backgrounds {
+  -webkit-filter: none;
+  -moz-filter: none;
+  -o-filter: none;
+  -ms-filter: none;
+  filter: none;
+}
 </style>
 
 	</head>
@@ -51,37 +106,53 @@ p { text-align: left; }
 			<!-- Any section element inside of this container is displayed as a slide -->
 			<div class="slides">
 <section>
-<h2>TrueBit - Off-Chain Computations for Smart Contracts</h2>
+<h2>TrueBit - How to Fool a Blockchain</h2>
 <small><p>
 <b>Dr. Christian Reitwiessner</b><br/>
 @ethchris &nbsp; github.com/chriseth &nbsp; chris@ethereum.org</p>
 <p>
-Ethereum Meetup Berlin - 2016-06-20
+ÐΞVCON2 - Shanghai - 2016-09-20
 </p>
 </small>
 </section>
 
-<section>
-<h2>Tough Tasks for Smart Contracts</h2>
-
-<p>How does an Ethereum Smart Contract</p>
+<section data-state="blurStrong" data-background-video="./turing-bombe.mp4" data-background-video-muted data-background-video-loop>
+<h3>Ethereum<br/>Turing-Complete World Computer</h3>
+Smart Contracts that can
 <ul>
-<li>Verify Solidity source code?</li>
-<li>Retrieve data stored in swarm?</li>
-<li>Verify state transition in private chain?</li>
-<li>Become conscious?</li>
+<li class="fragment">verify Solidity source code!</li>
+<li class="fragment">analyze the stock market!</li>
+<li class="fragment">verify state transitions in private chains!</li>
+<li class="fragment">evaluate neural networks!</li>
+<li class="fragment">improve their own code!</li>
+<li class="fragment">do fully-homomorphic privacy-preserving elliptic curve zkSNARK mixer stuff!</li>
 </ul>
-
-<p>All these operations need access to the "external world" or are very
-expensive.</p>
-
 </section>
+
+<section data-background="doge.jpeg" data-state="noBlur">
+<div class="fragment">
+<img src="nogas.jpg" style="width: 10em; position: relative; top: 4em; left: 8em;"  />
+<h2 style="position: relative; top: 2em; font-weight: bold; font-color: white;">Nope!</h2>
+</div>
+</section>
+
+<section data-markdown><script type="text/template">
+### Going Off-Chain
+
+- task-giver (smart contract) publishes computational task
+- workers compute solution off-chain, get reward
+- majority solution is accepted
+
+More like a Schelling-game, not water-tight.
+
+Can we do better?
+</script></section>
 
 <section>
 <h3>TrueBit - the Verification Game</h3>
 
-<p>Cooperation with Loi Luu (U. Singapore) and Jason Teutsch (U. Alabama),
-  based on <a href="https://arxiv.org/pdf/1606.05917v1.pdf">"How to verify computation with a rational network"</a>.
+<p>Cooperation with Loi Luu and Jason Teutsch,
+based on <a href="https://arxiv.org/pdf/1606.05917v1.pdf">"How to verify computation with a rational network"</a>.
 </p>
 
 <p>
@@ -90,79 +161,81 @@ Canetti, Riva, Rothblum: <a href="http://www.cs.tau.ac.il/~benriva/ccs11.pdf">&q
 computation using multiple servers&quot;</a>, 2011
 </p> 
 
-<p>Make this work on a blockchain by adding economic incentives.</p>
+<p style="padding-top: 2em;">Similar trust level as on-chain execution at fragment of costs.</p>
 
 </section>
 
-<section>
-<h3>TrueBit - Overview</h3>
-<ol>
-<li>Task Giver publishes "question"</li>
-<li>Solvers provide solutions in commit/reveal manner</li>
-<li>Disputes are resolved using the Verification Game</li>
-</ol>
+<section data-markdown data-background="chess.jpeg" data-state="blurStrong"><script type="text/template">
+### TrueBit - Properties
 
-<p>
-Task Giver provides fee, Solvers provide deposit and get rewards. Deposit
-is slashed if fraud is detected. Many parallels to
-Casper proof of stake.
-</p>
+- computation results can be *challenged*, starting a "verification game"
+- the honest actor will always win this game
+- on-chain part: storing hashes plus tiny computation step
 
-<p>
-Due to incentives, verification game
-will only be played in case of an attack. Attack is only successful
-if all attackers join forces. A single honest (and uncensored) actor can prevent any attack
-(51% attack → 100% attack).
-</p>
+Single honest verifier can prevent any attack:<br/>
+51% attack → 100% attack
 
-</section>
+Fineprint: assumes transactions are processed in time.
+</script></section>
 
-<section>
-<h3>Verification Game - Assumptions</h3>
+<section data-markdown><script type="text/template">
+### Verification Game in Detail
 
-<ul>
-<li>Actors agree on program for class of task (evaluating neural network, solving proof of work for Dogecoin, ...).</li>
-<li>Solvers first run natively implemented program (fast) to find solution.</li>
-</ul>
+Computation is broken into steps 1, ..., 1 000 000, both parties
+compute Merkle-trees of full state (memory) at certain steps
+and submit the root hashes.
 
-<p>If there is disagreement, verification game starts:</p>
-</section>
+<pre class="fragment appear-once"><code>      step: 1                                                         1 000 000
+Proposer:   input                                                       output1
+Challenger: input                                                       output2
+</code></pre>
+<pre class="fragment appear-once"><code>      step: 1                    500 000                              1 000 000
+Proposer:   input                                                       output1
+Challenger: input                                                       output2
+</code></pre>
+<pre class="fragment appear-once"><code>      step: 1                    500 000                              1 000 000
+Proposer:   input                 0x1234                                output1
+Challenger: input                 0x1234                                output2
+</code></pre>
+<pre class="fragment appear-once"><code>      step: 1                    500 000              750 000         1 000 000
+Proposer:   input                 0x1234                                output1
+Challenger: input                 0x1234                                output2
+</code></pre>
+<pre class="fragment appear-once"><code>      step: 1                    500 000              750 000         1 000 000
+Proposer:   input                 0x1234               0x7328           output1
+Challenger: input                 0x1234               0x1862           output2
+</code></pre>
+<pre class="fragment appear-once"><code>      step: 1                    500 000    625 000   750 000         1 000 000
+Proposer:   input                 0x1234               0x7328           output1
+Challenger: input                 0x1234               0x1862           output2
+</code></pre>
+<pre class="fragment appear"><code>      step: 1                    500 000    625 000   750 000         1 000 000
+Proposer:   input                 0x1234     0x8256    0x7328           output1
+Challenger: input                 0x1234     0x8256    0x1862           output2
+</code></pre>
+<p class="fragment appear">...</p>
+<pre class="fragment appear"><code>      step: 1             ...                638 295 638 296   ...    1 000 000
+Proposer:   input                             0x5423  0x7436            output1
+Challenger: input                             0x5423  0x3845            output2
+</code></pre>
+<p class="fragment appear">After 20 rounds: agreement → disagreement in one step<br/>
+Both submit Merkle-proofs, smart contract verifies with no effort and finds cheater</p>
+</script></section>
+<section data-markdown><script type="text/template">
+### The Good News
 
-<section>
-<h3>Verification Game in Detail</h3>
-<ul>
-<li>Both solvers re-run input on special implementation which can generate Merkle-roots
-for all memory at any step.</li>
-<li>provide root hash of first (match) and last (mismatch) step.</li>
-<li>Binary search until single step from match to mismatch.</li>
-<li>provide Merkle-proofs for memory access inside this step.</li>
-<li>Single step is evaluated on-chain:
-  <ul>
-    <li>Merkle-proofs are identical before the step (same state root).</li>
-    <li>Memory only changes locally, so Merkle-proof siblings have to be identical</li>
-  </ul>
-</ul>
+- 20 rounds can be further reduced
+- cheater is found with certainty: large disincentive to cheat
+- game will never be played but has to be there as fallback
 
-</section>
-
-
-<section>
-<h3>Where can it be Applied?</h3>
-
-<ul>
-<li>Anything that can be broken into steps ("ethereum computation market")</li>
-<li>Tasks have to be implemented in Solidity and off-chain</li>
-<li>We plan to implement a simple virtual machine in Solidity ("lanai"), so
-  mechanism can work with any code without changes</li>
-<li>swarm as actual filesystem for smart contracts</li>
-</ul>
-</section>
+(many parallels to Casper and state channels)
+</script></section>
 
 <section>
 <h3>Numbers</h3>
 
 <p>
-1 hour of computation on 4 GHz processor: 14400000000000 = 14.4 * 10<sup>12</sup> steps<br/>
+1 hour of computation on 4 GHz processor:<br/>14400000000000 = 14.4 * 10<sup>12</sup> steps<br/>
 If all agree: Almost no strain on the chain<br/>
 Disagreement: Cheater found in 10 rounds with 640 bytes messages<br/>
 Commitment to root hashes plus evaluation of single step only on-chain actions.  
@@ -172,29 +245,40 @@ Commitment to root hashes plus evaluation of single step only on-chain actions.
 
 </section>
 
-<section>
-<h3>Plans for Completion</h3>
+<section data-markdown><script type="text/template">
+### How to use it?
 
-<ul>
-<li>Successfully applied for Wanxiang Blockchain Labs grant (small)</li>
-<li>Looking for further funding and implementation help</li>
-<li>Milestones:
-  <ul>
-    <li>Finish verification game for Dogecoin Scrypt</li>
-    <li>Implement and test cryptoeconomics</li>
-    <li>Implement generic verifier using lanai architecture</li>
-  </ul>
-</ul>
+- implement task in C/C++/Rust, compile via LLVM to Lanai
+- post task with source code and fee
 
-</section>
+- potential bonus: swarm as read/write filesystem for smart contracts
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+### Current State
+
+- successfully applied for Wanxiang Blockchain Labs grant
+- looking for further funding and implementation help
+- some PoC code (untested)
+- working on incentive/penalty structure
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Milestones
+
+- finish abstract verification game
+- implement and test cryptoeconomics
+- implement generic Lanai verifier
+</script></section>
 
 
 			</div>
 
 		</div>
 
-		<script src="lib/js/head.min.js"></script>
-		<script src="js/reveal.js"></script>
+		<script src="../reveal.js/lib/js/head.min.js"></script>
+		<script src="../reveal.js/js/reveal.js"></script>
 
 		<script>
 			// Full list of configuration options available at:
@@ -205,16 +289,16 @@ Commitment to root hashes plus evaluation of single step only on-chain actions.
 				history: true,
 				center: false,
 
-				transition: 'slide', // none/fade/slide/convex/concave/zoom
+				transition: 'none', // none/fade/slide/convex/concave/zoom
 
 				// Optional reveal.js plugins
 				dependencies: [
-					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
-					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
-					{ src: 'plugin/zoom-js/zoom.js', async: true },
-					{ src: 'plugin/notes/notes.js', async: true }
+					{ src: '../reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: '../reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: '../reveal.js/plugin/zoom-js/zoom.js', async: true },
+					{ src: '../reveal.js/plugin/notes/notes.js', async: true }
 				]
 			});
 
