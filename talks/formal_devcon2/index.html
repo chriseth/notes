@@ -13,16 +13,43 @@
 
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
 
-		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/theme/solarized.css" id="theme">
+		<link rel="stylesheet" href="../reveal.js/css/reveal.css">
+		<link rel="stylesheet" href="../reveal.js/css/theme/solarized.css" id="theme">
 
 		<!-- Code syntax highlighting -->
-		<link rel="stylesheet" href="lib/css/zenburn.css">
+		<link rel="stylesheet" href="../reveal.js/lib/css/zenburn.css">
 
 		<!--[if lt IE 9]>
 		<script src="lib/js/html5shiv.js"></script>
 		<![endif]-->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
 <style type="text/css">
+@font-face {
+	font-family: PTSans;
+	src: url('./pt-sans-regular.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+}
+body, .reveal {
+	font-family: PTSans, Arial, sans-serif;
+}
+.reveal .slides {
+	text-align: left;
+}
+.reveal pre {
+  width: inherit;
+}
+.reveal h1, .reveal h3, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+	text-align: center;
+	text-transform: none;
+	font-family: PTSans, Arial, sans-serif;
+}
 p { text-align: left; }
 .reveal .slides section .fragment.appear {
   opacity: 0;
@@ -40,6 +67,34 @@ p { text-align: left; }
   opacity: 1;
   display: block;
 }
+.backgrounds {
+  -webkit-filter: opacity(0%);
+  -moz-filter: opacity(0%);
+  -o-filter: opacity(0%);
+  -ms-filter: opacity(0%);
+  filter: opacity(0%);
+}
+html.blurStrong .backgrounds {
+  -webkit-filter: opacity(20%);
+  -moz-filter: opacity(20%);
+  -o-filter: opacity(20%);
+  -ms-filter: opacity(20%);
+  filter: opacity(20%);
+}
+html.blurLight .backgrounds {
+  -webkit-filter: opacity(60%);
+  -moz-filter: opacity(60%);
+  -o-filter: opacity(60%);
+  -ms-filter: opacity(60%);
+  filter: opacity(60%);
+}
+html.noBlur .backgrounds {
+  -webkit-filter: none;
+  -moz-filter: none;
+  -o-filter: none;
+  -ms-filter: none;
+  filter: none;
+}
 </style>
 
 	</head>
@@ -51,7 +106,7 @@ p { text-align: left; }
 			<!-- Any section element inside of this container is displayed as a slide -->
 			<div class="slides">
 <section>
-<h2>Formal Verification of Smart Contracts</h2>
+<h3>Formal Verification of Smart Contracts</h3>
 <small><p>
 <b>Dr. Christian Reitwiessner</b><br/>
 @ethchris &nbsp; github.com/chriseth &nbsp; chris@ethereum.org</p>
@@ -65,7 +120,7 @@ DEVCON 2<br/>2016-09-20
 </section>
 
 <section>
-<h2>Problem</h2>
+<h3>Problem</h3>
 
 <ul>
 <li>writing code correctly is hard</li>
@@ -74,35 +129,10 @@ DEVCON 2<br/>2016-09-20
 <li>hard to check absence of undesired behaviour</li>
 <li>reason: testing catches only finite amount of cases</li>
 </ul>
-
 </section>
 
 <section>
-<h2>Important for Ethereum!</h2>
-
-<ul>
-<li>Like for a web service, attacker can be anywhere</li>
-<li>Source code often available (good and bad)</li>
-<li>Prominent example: The DAO</li>
-</ul>
-</section>
-
-<section>
-<h2>Formal Verification is Coming!</h2>
-<p>Many big names are already in the field.</p>
-<ul>
-<li>Ten authors from Microsoft Research, INRIA, Harvard<br>"Short Paper: Formal Verification of Smart Contracts"</li>
-<li>Loi Luu et al. (NUS) "Making Smart Contracts Smarter"</li>
-<li>Herlihy "Blockchains and the Logic of Accountability" <br>(LICS 2016 invited talk)</li>
-</ul>
-
-<p>Blockchains are a paradise for formal verification
-<br>(Yoichi will tell why).</p>
-
-</section>
-
-<section>
-<h2>How can Formal Verification Help?</h2>
+<h3>How can Formal Verification Help?</h3>
 
 <p>Example (shortened):</p>
 <pre><code>contract Token {
@@ -122,23 +152,43 @@ Example: Is the sum of all balances unchanged by <code>transfer()</code>?</p>
 </section>
 
 <section>
-<h2>Formal Verification in General</h2>
+<h3>Formal Verification in General</h3>
 <ul>
   <li>provide formal statements</li>
   <li>prove that code satisfies the statements</li>
   <li>We live in 2016: there are automated provers</li>
 </ul>
+<p/>
+<ul class="fragment">
+	<li>No silver bullet - source code is already formal statement!</li>
+	<li>Formal specification useless if not understandable</li>
+	<li>Key purpose of FV: reduction of complexity by probing properties ("is the sum of balances unchanged?")</li>
+</ul>
 </section>
 
+
 <section>
-<h2>Existing Languages / Tools</h2>
+<h3>Formal Verification is Coming!</h3>
+<p>Many big names are already in the field.</p>
+<ul>
+<li>Ten authors from Microsoft Research, INRIA, Harvard<br>"Short Paper: Formal Verification of Smart Contracts"</li>
+<li>Loi Luu et al. (NUS) "Making Smart Contracts Smarter"</li>
+<li>Herlihy "Blockchains and the Logic of Accountability" <br>(LICS 2016 invited talk)</li>
+</ul>
+
+<p>Blockchains are a paradise for formal verification
+<br>(Yoichi will tell why).</p>
+
+</section>
+
+
+<section>
+<h3>Existing Languages / Tools</h3>
 
 <ul>
   <li>C: Frama-C</li>
   <li>Java: Krakatoa</li>
   <li>Ada: SPARK</li>
-  <li>SPIN</li>
-  <li>PROMELA</li>
 </ul>
 
 <p>Write program in existing language and annotate with pre- and postconditions.<br/>
@@ -149,7 +199,7 @@ automated prover verifies conditions.
 </section>
 
 <section>
-  <h2>Example: Frama-C</h2>
+  <h3>Example: Frama-C</h3>
 <pre><code>/*@ requires 1 < num_candidates && num_candidates < MAX_CANDIDATES;
     assigns \nothing;
     ensures \result >= 1 && \result < num_candidates;
@@ -173,7 +223,7 @@ int compute_winner(void) {
 <!-- begin Yoichi Part -->
 
 <section>
-  <h2>Formal Verification for Solidity</h2>
+  <h3>Formal Verification for Solidity</h3>
   <p>This code is verified to maintain the total balance of tokens:</p>
 <pre><code>/// @why3 contract-prelude constant total : int
 /// @why3 contract-prelude axiom total_small : total <= max_uint256
@@ -192,16 +242,16 @@ contract Token {
 	}
 }
 </code></pre>
-<p>assuming the total is less than 2^256.</p>
+<p>assuming the total is less than 2<sup>256</sup>.</p>
 </section>
 
 <section>
-  <h2>Why3 GUI</h2>
+  <h3>Why3 GUI</h3>
   <img style="max-width: 100%; max-height: 100%;" src="./screenshot_overflow.png">
 </section>
 
 <section>
-  <h2>Yoichi Hirai (09.2016-)</h2>
+  <h3>Yoichi Hirai (09.2016-)</h3>
   <table style="border: none">
 	<tr>
 	  <td>Logical proofs are based on computation<em> ...jobs?</em></td>
@@ -224,7 +274,7 @@ contract Token {
 <!-- end Yoichi Part -->
 
 <section>
-  <h2>Future Steps</h2>
+  <h3>Future Steps</h3>
   <ul>
     <li>Very near future:
       <ul>
@@ -244,8 +294,8 @@ contract Token {
 
 		</div>
 
-		<script src="lib/js/head.min.js"></script>
-		<script src="js/reveal.js"></script>
+		<script src="../reveal.js/lib/js/head.min.js"></script>
+		<script src="../reveal.js/js/reveal.js"></script>
 
 		<script>
 			// Full list of configuration options available at:
@@ -260,12 +310,12 @@ contract Token {
 
 				// Optional reveal.js plugins
 				dependencies: [
-					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
-					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-					{ src: 'plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
-					{ src: 'plugin/zoom-js/zoom.js', async: true },
-					{ src: 'plugin/notes/notes.js', async: true }
+					{ src: '../reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: '../reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: '../reveal.js/plugin/zoom-js/zoom.js', async: true },
+					{ src: '../reveal.js/plugin/notes/notes.js', async: true }
 				]
 			});
 
