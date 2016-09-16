@@ -14,7 +14,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
 
 		<link rel="stylesheet" href="../reveal.js/css/reveal.css">
-		<link rel="stylesheet" href="../reveal.js/css/theme/solarized.css" id="theme">
+		<link rel="stylesheet" href="../reveal.js/css/theme/simple.css" id="theme">
 
 		<!-- Code syntax highlighting -->
 		<link rel="stylesheet" href="../reveal.js/lib/css/zenburn.css">
@@ -39,7 +39,19 @@
 body, .reveal {
 	font-family: PTSans, Arial, sans-serif;
 }
+.reveal section img {
+	border: none;
+	vertical-align: middle;
+	box-shadow: none;
+}
+.reveal .slides {
+	text-align: left;
+}
+.reveal pre {
+  width: inherit;
+}
 .reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+	text-align: center;
 	text-transform: none;
 	font-family: PTSans, Arial, sans-serif;
 }
@@ -60,6 +72,34 @@ p { text-align: left; }
   opacity: 1;
   display: block;
 }
+.backgrounds {
+  -webkit-filter: opacity(0%);
+  -moz-filter: opacity(0%);
+  -o-filter: opacity(0%);
+  -ms-filter: opacity(0%);
+  filter: opacity(0%);
+}
+html.blurStrong .backgrounds {
+  -webkit-filter: opacity(20%);
+  -moz-filter: opacity(20%);
+  -o-filter: opacity(20%);
+  -ms-filter: opacity(20%);
+  filter: opacity(20%);
+}
+html.blurLight .backgrounds {
+  -webkit-filter: opacity(60%);
+  -moz-filter: opacity(60%);
+  -o-filter: opacity(60%);
+  -ms-filter: opacity(60%);
+  filter: opacity(60%);
+}
+html.noBlur .backgrounds {
+  -webkit-filter: none;
+  -moz-filter: none;
+  -o-filter: none;
+  -ms-filter: none;
+  filter: none;
+}
 </style>
 
 	</head>
@@ -74,14 +114,33 @@ p { text-align: left; }
 <section data-markdown><script type="text/template">
 ### Blockchains und Dezentrale Anwendungen
 
-> Denic-Konferenz, 2016-09-27
-
-> Christian Reitwiessner
-
+<small><p>
+<b>Dr. Christian Reitwiessner</b><br/>
+@ethchris &nbsp; github.com/chriseth &nbsp; chris@ethereum.org</p>
+<p>
+Denic-Konferenz - 2016-09-27
+</p>
+</small>
 </script></section>
 
 <section data-markdown><script type="text/template">
-#### Teil 1: kurzer Überblick über Blockchain, ausgehend von Bitcoin
+### Das Internet
+<div style="float: left; text-align: center; width: 100%;">
+<img src="facebook.svg" style="width: 2em; padding-right: 2em;" />
+<img src="gmail.svg"  style="width: 2em; padding-right: 2em;" />
+<img src="flickr.png"  style="width: 2em; padding-right: 2em;" />
+<img src="twitter.png"  style="width: 2em; padding-right: 2em;" />
+</div>
+
+ - zentrale Dienste
+ - Interoperabilität? <!-- .element: class="fragment" -->
+ - persönliche Daten? <!-- .element: class="fragment" -->
+ - Ausfallsicherheit? <!-- .element: class="fragment" -->
+ - war nicht immer so! (e-mail, usenet, rss, xmpp, ...) <!-- .element: class="fragment" -->
+
+Note:
+
+ausfallsicherheit: Dienste löschen Daten eigenmächtig
 
 - Das Internet heute: zentrale Anwendungen (Facebook, GMail, Whatsapp)
 
@@ -90,17 +149,37 @@ p { text-align: left; }
 - Das war nicht immer so: EMail föderiert, Domainregistrierung ähnlich
 
 - Föderiert ist gut, dezentral ist besser.
+</script></section>
 
+<section data-markdown><script type="text/template">
+### Kontrolle
+
+ - peer-to-peer-Netze gibt es schon länger, aber:
+ - Datenbank ohne zentrale Kontrolle?
+ - Konsistenz speziell bei gegenläufigen Interessen?
+ - Geld per e-Mail senden?
+
+Note:
 - Wie kann man das Problem der Datenhoheit lösen, speziell bei gegenläufigen Interessen?
   -> Beispiel: Grundstücksregistrierung, die Not war am größten beim Bankensystem (teilweise föderiert, zentral kontrolliert), speziell zur Finanzkrise 2009
 
-##### Bitcoin
+</script></section>
 
-- Erfunden von "Satoshi Nakamoto" (Pseudonym) 2009. Peer-to-Peer-Netzwerk, löst Problem der zentralen Kontrolle einer Datenbank.
+<section data-markdown><script type="text/template">
+#### Bitcoin
 
-- Beispiel: Geld per e-Mail senden
+- Dezentrales Währungssystem
+- "Satoshi Nakamoto" (Pseudonym) 2009
+- Geld ausgeben durch digital signierte Transaktionen
+- ca. alle 10 Minuten: zufällig ausgewählter Rechner darf Reihenfolge bestimmen ("mining")
 
-- Bitcoin: Jeder kann alle Kontostände einsehen, aber nur eigenes Geld ausgeben (kryptographische Signatur)
+zentrale Kontrolle weder nötig noch möglich
+</script></section>
+
+<section data-markdown><script type="text/template">
+#### Dezentrales Kontenbuch
+
+- Jeder kann alle Kontostände einsehen, aber nur eigenes Geld ausgeben (kryptographische Signatur)
 
 - Alle Netzwerkteilnehmer verifizieren alle Transaktionen, pseudozufällig ausgewählter "Miner" legt Reihenfolge innerhalb eines "Blocks" fest
 
@@ -112,19 +191,31 @@ p { text-align: left; }
 - Nachteil: Strombedarf von Irland für proof of work
 - Nachteil: Anwendungen die über Geld hinausgehen schwierig bis unmöglich
 
+</script></section>
+
+<section data-markdown><script type="text/template">
 #### Ethereum
 
 - Vorgeschlagen von Vitalik Buterin 2013: Blockchain von Kontenbuch zu Datenbank erweitern
-- Modell: Programme in der Blockchain ("Smart Contract"), jeweils eigener Datenbereich, Ausführing ist transparent und Manipulationssicher
+- Modell: Programme in der Blockchain ("Smart Contract"), jeweils eigener Datenbereich, Ausführung ist transparent und Manipulationssicher
 - Erzeugt global verteilten virtuellen Computer, auf den jeder Zugriff hat
 - Ausführung oder Erstellen von Datenbankeinträgen kostet (kleine) Gebühr, die an "Validator" verteilt wird
-- Plan für Zukunft: PoW -> PoS, enegieeffizient + Skalierbarkeit (zur Zeit schon viel schneller)
+- Plan für Zukunft: PoW -> PoS, enegieeffizient + Skalierbarkeit (zur Zeit schon viel schneller als Bitcoin)
 - auch Vorteil: Interoperabilität der Anwendungen
 
-- non-profit stiftung in der Schweiz
+Man kann konkret ausgeführten Code sehen. echte open-source anwendungen, quelltext kann verifiziert werden (cloud: wird nur behauptet)
+
+- non-profit stiftung in der Schweiz, viele for-profit Unternehmen bauen Anwendungen, die auf die Plattform aufsetzen
 
 wie viele tx/sec?
 
+warm? Gleichberechtigung diensteanbieter und verbraucher, zur zeit starke schieflage
+
+
+
+</script></section>
+
+<section data-markdown><script type="text/template">
 #### Was kann man damit machen?
 
 Alles dezentral, es gibt keine Person, die eingreifen, manipulieren oder verhindern kann:
@@ -146,7 +237,16 @@ Erweiterte vision: smart fleet of cars owned by itself
 Namensregistrierung, Hinterlegen von Server-Zertifikaten - manipulationssicher und
 von besitzern selbst updatebar, namen können automatisch verkauft, versteigert oder transferiert werden
 
+Weitere Komponenten: swarm (funktioniert nur mit blockchain, micropayments, langzeit-deposit)
+
+</script></section>
+
+<section data-markdown><script type="text/template">
 #### Mögliche Probleme
+
+Skalierbarkeit
+
+Quelltext (bytecode) einsehbar (Vorteil und Nachteil)
 
 Neues Programmierparadigma, zerhacken von Aufgaben in kleine Teile, Interaktion mit eventuell
 bösartigem code (größter "Schaden" bisher: 30 mio usd).
@@ -170,6 +270,9 @@ Benötigt natürlich gute Skalierbarkeit. Noch nicht erreicht, aber bald.
 
 Private Daten: -> snarks
 
+</script></section>
+
+<section data-markdown><script type="text/template">
 #### Wirtschaftliche und gesellschaftliche Veränderungen
 
 - Micropayments überall, z.B. beim Besuchen von Webseiten, beim kurzzeitigen
@@ -192,6 +295,9 @@ Autos betankt, repariert, kauft und verkauft.
 
 Alle Geschäftsentscheidungen rein zur Verbesserung des Service getroffen.
 
+</script></section>
+
+<section data-markdown><script type="text/template">
 ### Auswirkungen auf Registrare und ISPs
 
 - Mit ipfs / swarm (bezahlte, dezentrale Dateispeicherung) wird sich Datei-Hosting
@@ -221,29 +327,19 @@ Ethereum Name Service
 
 Generelles Problem der fairen Verteilung knapper Ressourcen
 
-
-
 ipfs / swarm
 
+</script></section>
 
-- Teil 2 (ausführlich)
+<!--- Teil 2 (ausführlich)
   - potenzielle zukünftige Anwendungen wie Smart Contracts, E-Voting etc.
   - möglichen plattforminhärenten Problemen DOS-Attacken ...)
   - wirtschaftliche und gesellschaftliche Veränderungen, die durch den Einsatz von Blockchain-Produkten im großen Stil ausgelöst werden könnten
 
 - Teil 3:
   mögliche Auswirkungen der Blockchain-Technologie und darauf basierender DApps für die Zielgruppe der Veranstaltung
-(Domainbranche: Registry und Registrare bzw. weitere Internet Service Provider wie Hoster etc.
+(Domainbranche: Registry und Registrare bzw. weitere Internet Service Provider wie Hoster etc.-->
 
-
-</script></section>
-
-
-<section data-markdown><script type="text/template">
-## 
-
-A paragraph with some text and a [link](http://hakim.se).
-</script></section>
 
 
 			</div>
@@ -269,7 +365,7 @@ A paragraph with some text and a [link](http://hakim.se).
 					{ src: '../reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
 					{ src: '../reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
 					{ src: '../reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-					{ src: '../reveal.js/plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: '../reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
 					{ src: '../reveal.js/plugin/zoom-js/zoom.js', async: true },
 					{ src: '../reveal.js/plugin/notes/notes.js', async: true }
 				]
