@@ -229,21 +229,19 @@ int compute_winner(void) {
 <section>
   <h3>Formal Verification for Solidity</h3>
   <p>This code is verified to maintain the total balance of tokens:</p>
-<pre><code>/// @why3 contract-prelude constant total : int
+<pre><code language="JavaScript">/// @why3 contract-prelude constant total : int
 /// @why3 contract-prelude axiom total_small : total <= max_uint256
-/// @why3 contract-account invariant { self.storage._balance.length = Address.max_address + 1 }
-/// @why3 contract-account invariant { BalanceSum.sum self.storage._balance 0 (Address.max_address + 1) = total }
+/// @why3 contract-account invariant { sum #balance = total }
 contract Token {
-	mapping (address => uint256) balance;
-	function transfer(address _from, address _to, uint256 _val) {
-		if (balance[_from] < _val) throw;
-		balance[_from] = balance[_from] - _val;
-		/// @why3 here assert { BalanceSum.sum this.storage._balance 0 (Address.max_address + 1) = total - to_int !(__val) };
-		/// @why3 here assert { to_int this.storage._balance[Address.to_int !(__to)] <= BalanceSum.sum this.storage._balance 0 (Address.max_address + 1) };
-		balance[_to] = balance[_to] + _val;
-		/// @why3 here assert { BalanceSum.sum this.storage._balance 0 (Address.max_address + 1) = (total - to_int _val) + to_int _val};
-		/// @why3 here assert { BalanceSum.sum this.storage._balance 0 (Address.max_address + 1) = total };
-	}
+  mapping (address => uint256) balance;
+    function transfer(address _from, address _to, uint256 _val) {
+    if (balance[_from] < _val) throw;
+    balance[_from] = balance[_from] - _val;
+    /// @why3 here assert { sum #balance = total - to_int !(__val) };
+    /// @why3 here assert { to_int #balance[_to] <= sum #balance };
+    balance[_to] = balance[_to] + _val;
+    /// @why3 here assert { sum #balance = (total - to_int _val) + to_int _val};
+  }
 }
 </code></pre>
 <p>assuming the total is less than 2<sup>256</sup>.</p>
