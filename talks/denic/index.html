@@ -4,7 +4,7 @@
 	<head>
 		<meta charset="utf-8">
 
-		<title>Blockchains und Dezentrale Anwendungen</title>
+		<title>Blockchain - die dezentrale Revolution?</title>
 
 		<meta name="author" content="Christian Reitwiessner">
 
@@ -112,10 +112,11 @@ html.noBlur .backgrounds {
 			<div class="slides">
  
 <section data-markdown><script type="text/template">
-### Blockchains und Dezentrale Anwendungen
+### Blockchain - die dezentrale Revolution?
 
 <small><p>
 <b>Dr. Christian Reitwiessner</b><br/>
+Lead Developer Ethereum<br/>
 @ethchris &nbsp; github.com/chriseth &nbsp; chris@ethereum.org</p>
 <p>
 Denic-Konferenz - 2016-09-27
@@ -124,19 +125,22 @@ Denic-Konferenz - 2016-09-27
 </script></section>
 
 <section data-markdown><script type="text/template">
-### Das Internet
+### Das zentralisierte Internet
 <div style="float: left; text-align: center; width: 100%;">
 <img src="facebook.svg" style="width: 2em; padding-right: 2em;" />
 <img src="gmail.svg"  style="width: 2em; padding-right: 2em;" />
 <img src="flickr.png"  style="width: 2em; padding-right: 2em;" />
 <img src="twitter.png"  style="width: 2em; padding-right: 2em;" />
+<img src="youtube.svg"  style="width: 2em; padding-right: 2em;" />
 </div>
 
- - zentrale Dienste
  - Interoperabilität? <!-- .element: class="fragment" -->
  - persönliche Daten? <!-- .element: class="fragment" -->
  - Ausfallsicherheit? <!-- .element: class="fragment" -->
- - war nicht immer so! (e-mail, usenet, rss, xmpp, ...) <!-- .element: class="fragment" -->
+
+Starke Schieflage zwischen Diensteanbietern und Kunden <!-- .element: class="fragment" -->
+
+War nicht immer so! (e-mail, usenet, rss, xmpp, ...) <!-- .element: class="fragment" -->
 
 Note:
 
@@ -152,12 +156,12 @@ ausfallsicherheit: Dienste löschen Daten eigenmächtig
 </script></section>
 
 <section data-markdown><script type="text/template">
-### Kontrolle
+### Kontrolle Dezentralisieren
 
- - peer-to-peer-Netze gibt es schon länger, aber:
- - Datenbank ohne zentrale Kontrolle?
+ - peer-to-peer-Netze: file-sharing
+ - Datenbank ohne zentrale Kontrolle (Bankkonto?)
+ - Geld per e-Mail senden ("double-spend")?
  - Konsistenz speziell bei gegenläufigen Interessen?
- - Geld per e-Mail senden?
 
 Note:
 - Wie kann man das Problem der Datenhoheit lösen, speziell bei gegenläufigen Interessen?
@@ -165,72 +169,73 @@ Note:
 
 </script></section>
 
-<section data-markdown><script type="text/template">
-#### Bitcoin
+<section data-markdown data-background="bitcoin_Antana_flickr.jpg" data-state="blurStrong"><script type="text/template">
+### Bitcoin
 
-- Dezentrales Währungssystem
 - "Satoshi Nakamoto" (Pseudonym) 2009
-- Geld ausgeben durch digital signierte Transaktionen
+- Kontostände für alle einsehbar (und verifizierbar)
+- Geld transferieren durch digital signierte Transaktionen
 - ca. alle 10 Minuten: zufällig ausgewählter Rechner darf Reihenfolge bestimmen ("mining")
 
 zentrale Kontrolle weder nötig noch möglich
+
+<span style="position: absolute; left: -14em; bottom: -14em; font-size: 20px;">Photo: Antana (flickr)</span>
 </script></section>
 
 <section data-markdown><script type="text/template">
-#### Dezentrales Kontenbuch
+### Zahlen zu Bitcoin
 
-- Jeder kann alle Kontostände einsehen, aber nur eigenes Geld ausgeben (kryptographische Signatur)
-
-- Alle Netzwerkteilnehmer verifizieren alle Transaktionen, pseudozufällig ausgewählter "Miner" legt Reihenfolge innerhalb eines "Blocks" fest
-
-- Wert aller Bitcoins zusammen: ~10 mrd usd
-
+- Wert aller Bitcoins zusammen: ~10 mrd USD
 - Vorteil: Komplett dezentral, Manipulation oder Eingriff unmöglich, wie Bargeld.
-
 - Nachteil: Skalierbarkeit: 7 tx/sec (Visa: 2000 tx/sec, max 56000)
 - Nachteil: Strombedarf von Irland für proof of work
 - Nachteil: Anwendungen die über Geld hinausgehen schwierig bis unmöglich
 
 </script></section>
 
-<section data-markdown><script type="text/template">
-#### Ethereum
+<section data-markdown data-background="ethereum_london.jpg" data-state="blurStrong"><script type="text/template">
+### Ethereum
 
-- Vorgeschlagen von Vitalik Buterin 2013: Blockchain von Kontenbuch zu Datenbank erweitern
-- Modell: Programme in der Blockchain ("Smart Contract"), jeweils eigener Datenbereich, Ausführung ist transparent und Manipulationssicher
-- Erzeugt global verteilten virtuellen Computer, auf den jeder Zugriff hat
+- Vitalik Buterin 2013: Programmierbare Datenbank in der Blockchain
+- Programme ("Smart Contract") haben eigenen Datenbereich, Ausführung transparent und manipulationssicher
+- Globaler virtueller Computer, auf den jeder Zugriff hat
 - Ausführung oder Erstellen von Datenbankeinträgen kostet (kleine) Gebühr, die an "Validator" verteilt wird
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Ethereum Community
+
+- non-profit Stiftung in der Schweiz
+- 200 Meetups weltweit
+- viele for-profit Unternehmen bauen Anwendungen, die auf die Plattform aufsetzen
+- devcon two, Shanghai: 700 TeilnehmerInnen, darunter Firmen wie Microsoft und IBM
+
+Note:
 - Plan für Zukunft: PoW -> PoS, enegieeffizient + Skalierbarkeit (zur Zeit schon viel schneller als Bitcoin)
 - auch Vorteil: Interoperabilität der Anwendungen
 
 Man kann konkret ausgeführten Code sehen. echte open-source anwendungen, quelltext kann verifiziert werden (cloud: wird nur behauptet)
 
-- non-profit stiftung in der Schweiz, viele for-profit Unternehmen bauen Anwendungen, die auf die Plattform aufsetzen
 
 wie viele tx/sec?
-
-warm? Gleichberechtigung diensteanbieter und verbraucher, zur zeit starke schieflage
-
-
 
 </script></section>
 
 <section data-markdown><script type="text/template">
-#### Was kann man damit machen?
+### Was kann man damit machen?
 
-Alles dezentral, es gibt keine Person, die eingreifen, manipulieren oder verhindern kann:
-
-- multi-signature "wallet" (wie Banktresor)
-- Grundstücksregister
-- Auktion
+- multi-signature "wallet"
 - Crowdfunding
 - Wahlen
+- Vorhersagemärkte
+- Auktionen
+- Grundstücksregister
 
--> Alles kombinieren!
+-> Alles kombinierbar!
 
 Vorteile: Transparenz, Auditierbarkeit, Manipulationsresistenz
 
-prediction markets, outsourced computation, dezentrale Speicherung von Daten (swarm)
+Note:
 
 Erweiterte vision: smart fleet of cars owned by itself
 
@@ -242,16 +247,21 @@ Weitere Komponenten: swarm (funktioniert nur mit blockchain, micropayments, lang
 </script></section>
 
 <section data-markdown><script type="text/template">
-#### Mögliche Probleme
+### Mögliche Probleme
 
-Skalierbarkeit
+- Skalierbarkeit (im Prinzip DoS-resistent durch Gebühren)
+- Neues Programmierparadigma ("DAO hack")
+- Programme und Daten einsehbar (Vorteil und Nachteil)
+- Probleme im Protokoll selbst (bisher immer behebbar)
 
-Quelltext (bytecode) einsehbar (Vorteil und Nachteil)
+Note:
 
 Neues Programmierparadigma, zerhacken von Aufgaben in kleine Teile, Interaktion mit eventuell
 bösartigem code (größter "Schaden" bisher: 30 mio usd).
 
 Noch frühe Phase!
+
+dos angriffe wegen diskrepanzen im gas model 
 
 Abhilfe: Formale Verifikation
 
@@ -266,29 +276,37 @@ Beispiel: Gertränkeautomat. DOS-attacke durch "leerkaufen". Mit Geld können ne
 Getränke gekauft werden und Automat neu bestückt werden oder sogar neue
 Automaten gekauft werden.
 
+Zur zeit: Aufstellraum für Automaten beschränkt
+
 Benötigt natürlich gute Skalierbarkeit. Noch nicht erreicht, aber bald.
 
 Private Daten: -> snarks
 
 </script></section>
 
-<section data-markdown><script type="text/template">
-#### Wirtschaftliche und gesellschaftliche Veränderungen
+<section data-markdown data-background="self_driving_flickr_roman_boed.jpg" data-state="blurStrong"><script type="text/template">
+### Wirtschaftliche und gesellschaftliche Veränderungen
 
-- Micropayments überall, z.B. beim Besuchen von Webseiten, beim kurzzeitigen
+- Micropayments, z.B. beim Besuchen von Webseiten, beim kurzzeitigen
 Laden von Elektroautos, kein verkaufen von personenbezogenen Daten mehr
+- Programme, die Geld verwalten, aber von keinem Menschen kontrolliert werden
+- Blockchain ist neutraler Partner, offene Schnittstellen ohne Kontrollverlust
 
-Großer Vorteil: Dadurch, dass die Blockchain nicht kontrolliert wird, ist
-sie für alle ein neutraler Partner, gemeinsame Schnittstellen können
-ohne Kontrollverlust benutzt werden
+<span style="position: absolute; left: -14em; bottom: -9em; font-size: 20px;">Photo: Roman Boed (flickr)</span>
 
-automatisierte Versicherungen
+</script></section>
 
-dezentrale Blockchain-Staaten
+<section data-markdown data-background="self_driving_flickr_roman_boed.jpg" data-state="blurStrong"><script type="text/template">
+### Wirtschaftliche und gesellschaftliche Veränderungen
 
-- Programme, die Geld besitzen können, aber von keinem Menschen besessen werden
+- DAOs / DACs: Unternehmen, die nicht von Menschen geleitet werden: dezentrales Uber
+- "zero-margin economy"
+- automatisierte Versicherungen
+- dezentrale Blockchain-Staaten (Estland)
 
-- DAOs / DACs: Unternehmen, die nicht von Menschen geleitet werden.
+<span style="position: absolute; left: -14em; bottom: -14em; font-size: 20px;">Photo: Roman Boed (flickr)</span>
+
+Note:
 
 Beispiel: Flotte von selbstfahrenden Taxis, die mit Gebühren selbstständig
 Autos betankt, repariert, kauft und verkauft.
@@ -298,10 +316,15 @@ Alle Geschäftsentscheidungen rein zur Verbesserung des Service getroffen.
 </script></section>
 
 <section data-markdown><script type="text/template">
-### Auswirkungen auf Registrare und ISPs
+### Zukünftiges Hosting
 
-- Mit ipfs / swarm (bezahlte, dezentrale Dateispeicherung) wird sich Datei-Hosting
-verändern: Jeder kann Daten speichern und seine Festplatte als Speicher anbieten
+- Datei-Hosting mit ipfs / swarm:
+Jeder kann Daten speichern und seine Festplatte als Speicher anbieten
+- Ähnlicher Markt für Berechnungen
+- Dezentrale Anwendungen: Server-Logik in Smart Contracts, Assets in swarm
+- Globale, dezentrale Cloud
+
+Note:
 
 - Kunde ist egal, wo es gespeichert wird, es wird regelmäßig kontrolliert, dass
 die Datei verfügbar ist, Bestrafung, etc
@@ -313,7 +336,17 @@ Server-Logik in der Blockchain. CPU/GPU-intensive Berechnungen können auf
 ähnlichen globalen Markt ausgelagert werden. Daten-Authentizität gesichert
 durch Kryptographie und Content-addressability.
 
+</script></section>
+
+<section data-markdown><script type="text/template">
 ### Anwendung als Name-Registry
+
+- Namecoin
+- gesamter Geschäftsprozess in Smart Contract (Registrierung, Transfer, Auktion, ...)
+- SSL-Zertifikate in Blockchain
+- private Chain zwischen Mitgliedern
+
+Note:
 
 Private blockchain als manipulationsresistenter Datenspeicher. In Genossenschaft
 kann jeder eine Node betreiben, Datenbank automatisch synchronisiert.
@@ -326,8 +359,6 @@ Hinterlegen von Server-Zertifikaten oder DNSSEC-Schluesseln
 Ethereum Name Service
 
 Generelles Problem der fairen Verteilung knapper Ressourcen
-
-ipfs / swarm
 
 </script></section>
 
