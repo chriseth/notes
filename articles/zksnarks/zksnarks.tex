@@ -1,0 +1,544 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{latexsym,amsbsy,amssymb,amsmath,amsfonts}
+\usepackage{amsthm}
+\usepackage{epsfig}
+\usepackage{euscript}
+\usepackage{fullpage}
+\usepackage{multirow,multicol,booktabs}
+\usepackage[bf]{caption}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\hypersetup{
+ pdfauthor={Christian Reitwießner},
+ pdftitle={zkSNARKs in a Nutshell}
+  unicode,
+  breaklinks,
+  colorlinks=false,
+  pdfborder={0 0 0}
+}
+
+\date{}
+
+\renewcommand{\captionfont}{\small}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\hfuzz=0mm
+\tolerance=10000
+\hbadness=1000
+
+
+\setlength{\parindent}{0mm}
+\setlength{\parskip}{2ex plus0.5ex minus0.5ex}
+
+
+\newcommand{\Sum}{\sum\limits}
+\newcommand{\Prod}{\prod\limits}
+
+
+\newtheorem{dummytheorem}{Dummy-Theorem}[section]
+\newtheorem{definition}[dummytheorem]{Definition}
+\newtheorem{lemma}[dummytheorem]{Lemma}
+\newtheorem{theorem}[dummytheorem]{Theorem}
+\newtheorem{proposition}[dummytheorem]{Proposition}
+\newtheorem{property}[dummytheorem]{Property}
+\newtheorem{corollary}[dummytheorem]{Corollary}
+\newtheorem{example}[dummytheorem]{Example}
+\newtheorem{remark}[dummytheorem]{Remark}
+\newtheorem{fact}[dummytheorem]{Fact}
+\newtheorem{claim}[dummytheorem]{Claim}
+\newtheorem{subclaim}{Subclaim}[dummytheorem]
+\newtheorem{conjecture}[dummytheorem]{Conjecture}
+
+\newcommand{\uint}{\mathbb{N}}
+\newcommand{\rational}{\mathbb{Q}}
+
+\newcommand{\oli}[1]{\overline{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\newcommand{\eps}{\varepsilon}
+\newcommand{\card}[1]{\##1}
+\newcommand{\length}[1]{\mathrm{length}({#1})}
+
+\newcommand{\pn}[1]{\textnormal{#1}}
+
+\newcommand{\norm}[1]{||{#1}||}
+\newcommand{\Norm}[1]{\left|\left|{#1}\right|\right|}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+\selectlanguage{english}
+
+
+\title{zkSNARKs in a Nutshell}
+
+\author{Christian Reitwießner \\ 
+{\tt chris@ethereum.org}}
+
+
+\maketitle
+
+
+\begin{abstract}
+\noindent The possibilities of zkSNARKs are impressive, you can verify the correctness of computations without having to execute them and you will not even learn what was executed – just that it was done correctly. Unfortunately, most explanations of zkSNARKs resort to hand-waving at some point and thus they remain something "magical", suggesting that only the most enlightened actually understand how and why (and if?) they work. The reality is that zkSNARKs can be reduced to four simple techniques and this blog post aims to explain them. Anyone who can understand how the RSA cryptosystem works, should also get a pretty good understanding of currently employed zkSNARKs. Let’s see if it will achieve its goal!
+\end{abstract}
+
+
+As a very short summary, zkSNARKs as currently implemented, have 4 main ingredients (don’t worry, we will explain all the terms in later sections):
+
+\begin{itemize}
+\item[A)] Encoding as a polynomial problem
+
+The program that is to be checked is compiled into a quadratic equation of polynomials: $t(x) h(x) = w(x) v(x)$, where the equality holds if and only if the program is computed correctly. The prover wants to convince the verifier that this equality holds.
+
+\item[B)] Succinctness by random sampling
+
+The verifier chooses a secret evaluation point s to reduce the problem from multiplying polynomials and verifying polynomial function equality to simple multiplication and equality check on numbers: t(s)h(s) = w(s)v(s)
+
+This reduces both the proof size and the verification time tremendously.
+
+\item[C)] Homomorphic encoding / encryption
+
+An encoding/encryption function $E$ is used that has some homomorphic properties (but is not fully homomorphic, something that is not yet practical). This allows the prover to compute $E(t(s))$, $E(h(s))$, $E(w(s))$, $E(v(s))$ without knowing $s$, she only knows $E(s)$ and some other helpful encrypted values.
+
+\item[D)] Zero Knowledge
+
+The prover obfuscates the values $E(t(s))$, $E(h(s))$, $E(w(s))$, $E(v(s))$ by multiplying with a number so that the verifier can still check their correct structure without knowing the actual encoded values.
+
+The very rough idea is that checking $t(s)h(s) = w(s)v(s)$ is identical to checking $t(s)h(s) k = w(s)v(s) k$ for a random secret number $k$ (which is not zero), with the difference that if you are sent only the numbers $(t(s)h(s) k)$ and $(w(s)v(s) k)$, it is impossible to derive $t(s)h(s)$ or $w(s)v(s)$.
+
+\end{itemize}
+
+This was the hand-waving part so that you can understand the essence of zkSNARKs, and now we get into the details.
+
+\section{RSA and Zero-Knowledge Proofs}
+
+Let us start with a quick reminder of how RSA works, leaving out some nit-picky details. Remember that we often work with numbers modulo some other number instead of full integers. The notation here is ``$a + b  \equiv  c \pmod{n}$'', which means ``$(a + b) \mathbin{\%} n = c \mathbin{\%} n$''. Note that the ``$(\text{mod}\ n)$'' part does not apply to the right hand side ``$c$'' but actually to the ``$ \equiv $'" and all other ``$ \equiv $'' in the same equation. This makes it quite hard to read, but I promise to use it sparingly. Now back to RSA:
+
+The prover comes up with the following numbers:
+\begin{itemize}
+\item $p$, $q$: two random secret primes
+\item $n := p q$
+\item $d$: random number such that $1 < d < n - 1$
+\item $e$: a number such that  $d e  \equiv  1 \pmod{(p-1)(q-1)}$.
+\end{itemize}
+The public key is $(e, n)$ and the private key is $d$. The primes $p$ and $q$ can be discarded but should not be revealed.
+
+The message m is encrypted via
+    \[ E(m) := m^e \mathbin{\%} n \]
+and $c = E(m)$ is decrypted via
+    \[ D(c) := c^d \mathbin{\%} n.\]
+
+Because of the fact that $c^d  \equiv  (m^e \mathbin{\%} n)^d  \equiv  m^{ed} \pmod{n}$ and multiplication in the exponent of m behaves like multiplication in the group modulo $(p-1)(q-1)$, we get $m^{ed}  \equiv  m \pmod{n}$. Furthermore, the security of RSA relies on the assumption that $n$ cannot be factored efficiently and thus $d$ cannot be computed from $e$ (if we knew $p$ and $q$, this would be easy).
+
+One of the remarkable feature of RSA is that it is \textit{multiplicatively homomorphic}. In general, two operations are homomorphic if you can exchange their order without affecting the result. In the case of homomorphic encryption, this is the property that you can perform computations on encrypted data. \textit{Fully homomorphic encryption}, something that exists, but is not practical yet, would allow to evaluate arbitrary programs on encrypted data. Here, for RSA, we are only talking about group multiplication. More formally: $E(x) E(y)  \equiv  x^ey^e  \equiv  (xy)^{e}  \equiv  E(x y) \pmod{n}$, or in words: The product of the encryption of two messages is equal to the encryption of the product of the messages.
+
+
+This homomorphicity already allows some kind of zero-knowledge proof of multiplication: The prover knows some secret numbers $x$ and $y$ and computes their product, but sends only the encrypted versions $a = E(x), b = E(y)$ and $c = E(x y)$ to the verifier. The verifier now checks that $(a b) \mathbin{\%} n  \equiv  c \mathbin{\%} n$ and the only thing the verifier learns is the encrypted version of the product and that the product was correctly computed, but she neither knows the two factors nor the actual product. If you replace the product by addition, this already goes into the direction of a blockchain where the main operation is to add balances.
+
+\subsection{Interactive Verification}
+
+
+Having touched a bit on the zero-knowledge aspect, let us now focus on the other main feature of zkSNARKs, the succinctness. As you will see later, the succinctness is the much more remarkable part of zkSNARKs, because the zero-knowledge part will be given ``for free'' due to a certain encoding that allows for a limited form of homomorphic encoding.
+
+
+SNARKs are short for \textit{succinct non-interactive arguments of knowledge}. In this general setting of so-called interactive protocols, there is a \textit{prover} and a \textit{verifier} and the prover wants to convince the verifier about a statement (e.g. that $f(x) = y$) by exchanging messages. The generally desired properties are that no prover can convince the verifier about a wrong statement (\textit{soundness}) and there is a certain strategy for the prover to convince the verifier about any true statement (\textit{completeness}). The individual parts of the acronym have the following meaning:
+
+\begin{itemize}
+\item Succinct: the sizes of the messages are tiny in comparison to the length of the actual computation
+\item Non-interactive: there is no or only little interaction. For zkSNARKs, there is usually a setup phase and after that a single message from the prover to the verifier. Furthermore, SNARKs often have the so-called ``public verifier'' property meaning that anyone can verify without interacting anew, which is important for blockchains.
+\item ARguments: the verifier is only protected against computationally limited provers. Provers with enough computational power can create proofs/arguments about wrong statements (Note that with enough computational power, any public-key encryption can be broken). This is also called ``computational soundness'', as opposed to ``perfect soundness''.
+\item of Knowledge: it is not possible for the prover to construct a proof/argument without knowing a certain so-called \textit{witness} (for example the address she wants to spend from, the preimage of a hash function or the path to a certain Merkle-tree node).
+\end{itemize}
+
+
+
+If you add the \textit{zero-knowledge} prefix, you also require the property (roughly speaking) that during the interaction, the verifier learns nothing apart from the validity of the statement. The verifier especially does not learn the \textit{witness string} -- we will see later what that is exactly.
+
+As an example, let us consider the following transaction validation computation:
+
+$f(\sigma_{1}, \sigma_{2}, s, r, v, p_{s}, p_{r}, v) = 1$ if and only if $\sigma_{1}$ and $\sigma_{2}$ are the root hashes of account Merkle-trees (the pre- and the post-state), $s$ and $r$ are sender and receiver accounts and $p_{s}$, $p_{r}$ are Merkle-tree proofs that testify that the balance of $s$ is at least $v$ in $\sigma_{1}$ and they hash to $\sigma_{2}$ instead of $\sigma_{1}$ if $v$ is moved from the balance of $s$ to the balance of $r$.
+
+It is relatively easy to verify the computation of $f$ if all inputs are known. Because of that, we can turn $f$ into a zkSNARK where only $\sigma_{1}$ and $\sigma_{2}$ are publicly known and $(s, r, v, p_{s}, p_{r}, v)$ is the witness string. The zero-knowledge property now causes the verifier to be able to check that the prover knows some witness that turns the root hash from $\sigma_{1}$ to $\sigma_{2}$ in a way that does not violate any requirement on correct transactions, but she has no idea who sent how much money to whom.
+
+
+The formal definition (still leaving out some details) of zero-knowledge is that there is a \textit{simulator} that, having also produced the setup string, but does not know the secret witness, can interact with the verifier -- but an outside observer is not able to distinguish this interaction from the interaction with the real prover.
+
+\section{NP and Complexity-Theoretic Reductions}
+
+
+In order to see which problems and computations zkSNARKs can be used for, we have to define some notions from complexity theory. If you do not care about what a ``witness'' is, what you will \textit{not} know after ``reading'' a zero-knowledge proof or why it is fine to have zkSNARKs only for a specific problem about polynomials, you can skip this section.
+
+\subsection{P and NP}
+
+
+First, let us restrict ourselves to functions that only output $0$ or $1$ and call such functions \textit{problems}. Because you can query each bit of a longer result individually, this is not a real restriction, but it makes the theory a lot easier. Now we want to measure how ``complicated'' it is to solve a given problem (compute the function). For a specific machine implementation $M$ of a mathematical function $f$, we can always count the number of steps it takes to compute $f$ on a specific input $x$ -- this is called the \textit{runtime} of $M$ on $x$. What exactly a ``step'' is, is not too important in this context. Since the program usually takes longer for larger inputs, this runtime is always measured in the size or length (in number of bits) of the input. This is where the notion of e.g.\ an ``$n^{2}$ algorithm''  comes from -- it is an algorithm that takes at most $n^{2}$ steps on inputs of size $n$. The notions ``algorithm'' and ``program'' are largely equivalent here.
+
+
+Programs whose runtime is at most $n^{k}$ for some $k$ are also called ``polynomial-time programs''.
+
+Two of the main classes of problems in complexity theory are P and NP:
+\begin{quote}P is the class of problems $L$ that have polynomial-time programs.\end{quote}
+
+Even though the exponent $k$ can be quite large for some problems, P is considered the class of ``feasible'' problems and indeed, for non-artificial problems, $k$ is usually not larger than $4$. Verifying a bitcoin transaction is a problem in P, as is evaluating a polynomial (and restricting the value to $0$ or $1$). Roughly speaking, if you only have to compute some value and not ``search'' for something, the problem is almost always in P. If you have to search for something, you mostly end up in a class called NP.
+
+\subsection{The Class NP}
+
+
+There are zkSNARKs for all problems in the class NP and actually, the practical zkSNARKs that exist today can be applied to all problems in NP in a generic fashion. It is unknown whether there are zkSNARKs for any problem outside of NP.
+
+
+All problems in NP always have a certain structure, stemming from the definition of NP:
+\begin{quote}
+NP is the class of problems $L$ that have a polynomial-time program $V$ that can be used to verify a fact given a polynomially-sized so-called witness for that fact. More formally:
+
+$L(x) = 1$ if and only if there is some polynomially-sized string $w$ (called the \textit{witness} such that $V(x, w) = 1$
+\end{quote}
+
+
+As an example for a problem in NP, let us consider the problem of boolean formula satisfiability (SAT). For that, we define a boolean formula using an inductive definition:
+\begin{itemize}
+\item any variable $x_{1}$, $x_{2}$, $x_{3}$, \dots \ is a boolean formula (we also use any other character to denote a variable)
+\item if $f$ is a boolean formula, then $\neg f$ is a boolean formula (negation)
+\item if $f$ and g are boolean formulas, then $(f \land g)$ and $(f \lor g)$ are boolean formulas (conjunction / and, disjunction / or).
+\end{itemize}
+
+
+The string ``$((x_{1}\land x_{2}) \land \neg x_{2})$'' would be a boolean formula.
+
+A boolean formula is \textit{satisfiable} if there is a way to assign truth values to the variables so that the formula evaluates to true (where $\neg$true is false, $\neg$false is true, true $\land$ false is false and so on, the regular rules). The satisfiability problem SAT is the set of all satisfiable boolean formulas.
+\begin{quote}
+$\mathrm{SAT}(f) := 1$ if $f$ is a satisfiable boolean formula and $0$ otherwise
+\end{quote}
+
+
+The example above, ``$((x_{1}\land x_{2}) \land \neg x_{2})$'', is not satisfiable and thus does not lie in SAT. The witness for a given formula is its satisfying assignment and verifying that a variable assignment is satisfying is a task that can be solved in polynomial time.
+
+\subsection{P = NP?}
+
+
+If you restrict the definition of NP to witness strings of length zero, you capture the same problems as those in P. Because of that, every problem in P also lies in NP. One of the main tasks in complexity theory research is showing that those two classes are actually different -- that there is a problem in NP that does not lie in P. It might seem obvious that this is the case, but if you can prove it formally, you can win US\$ 1 million. Oh and just as a side note, if you can prove the converse, that P and NP are equal, apart from also winning that amount, there is a big chance that cryptocurrencies will cease to exist from one day to the next. The reason is that it will be much easier to find a solution to a proof of work puzzle, a collision in a hash function or the private key corresponding to an address. Those are all problems in NP and since you just proved that P = NP, there must be a polynomial-time program for them. But this article is not to scare you, most researchers believe that P and NP are not equal.
+
+\subsection{NP-Completeness}
+
+Let us get back to SAT. The interesting property of this seemingly simple problem is that it does not only lie in NP, it is also NP-complete. The word ``complete'' here is the same complete as in ``Turing-complete''. It means that it is one of the hardest problems in NP, but more importantly -- and that is the definition of NP-complete -- an input to any problem in NP can be transformed to an equivalent input for SAT in the following sense:
+
+
+For any NP-problem $L$ there is a so-called \textit{reduction function} $f$, which is computable in polynomial time such that:
+\[ L(x) = SAT(f(x)) \]
+
+Such a reduction function can be seen as a compiler: It takes source code written in some programming language and transforms in into an equivalent program in another programming language, typically a machine language, which has the some semantic behaviour. Since SAT is NP-complete, such a reduction exists for any possible problem in NP, including the problem of checking whether e.g. a bitcoin transaction is valid given an appropriate block hash. There is a reduction function that translates a transaction into a boolean formula, such that the formula is satisfiable if and only if the transaction is valid.
+
+\subsection{Reduction Example}
+
+In order to see such a reduction, let us consider the problem of evaluating polynomials. First, let us define a polynomial (similar to a boolean formula) as an expression consisting of integer constants, variables, addition, subtraction, multiplication and (correctly balanced) parentheses. Now the problem we want to consider is
+\begin{quote}
+$\mathrm{PolyZero}(f) := 1$ if $f$ is a polynomial which has a zero where its variables are taken from the set $\{0, 1\}$
+\end{quote}
+
+
+We will now construct a reduction from SAT to PolyZero and thus show that PolyZero is also NP-complete (checking that it lies in NP is left as an exercise).
+
+
+It suffices to define the reduction function $r$ on the structural elements of a boolean formula. The idea is that for any boolean formula $f$, the value $r(f)$ is a polynomial with the same number of variables and $f(a_{1},..,a_{k})$ is true if and only if $r(f)(a_{1},..,a_{k})$ is zero, where true corresponds to 1 and false corresponds to 0, and $r(f)$ only assumes the value $0$ or $1$ on variables from $\{0, 1\}$:
+\begin{itemize}
+\item $r(x_{i}) := (1 - x_{i})$
+\item $r(\neg f) := (1 - r(f))$
+\item $r((f \land g)) := (1 - (1 - r(f))(1 - r(g)))$
+\item $r((f \lor  g)) := r(f)r(g)$
+\end{itemize}
+
+
+One might have assumed that $r((f \land g))$ would be defined as $r(f) + r(g)$, but that will take the value of the polynomial out of the $\{0, 1\}$ set.
+
+
+Using $r$, the formula $((x \land y) \lor \neg x)$ is translated to $(1 - (1 - (1 - x))(1 - (1 - y))(1 - (1 - x))$.
+
+
+Note that each of the replacement rules for $r$ satisfies the goal stated above and thus $r$ correctly performs the reduction:
+\begin{quote}
+$\mathrm{SAT}(f) = \mathrm{PolyZero}(r(f))$ or $f$ is satisfiable if and only if $r(f)$ has a zero in $\{0, 1\}$
+\end{quote}
+
+
+\subsection{Witness Preservation}
+
+
+From this example, you can see that the reduction function only defines how to translate the input, but when you look at it more closely (or read the proof that it performs a valid reduction), you also see a way to transform a valid witness together with the input. In our example, we only defined how to translate the formula to a polynomial, but with the proof we explained how to transform the witness, the satisfying assignment. This simultaneous transformation of the witness is not required for a transaction, but it is usually also done. This is quite important for zkSNARKs, because the the only task for the prover is to convince the verifier that such a witness exists, without revealing information about the witness.
+
+\section{Quadratic Span Programs}
+
+
+In the previous section, we saw how computational problems inside NP can be reduced to each other and especially that there are NP-complete problems that are basically only reformulations of all other problems in NP - including transaction validation problems. This makes it easy for us to find a generic zkSNARK for all problems in NP: We just choose a suitable NP-complete problem. So if we want to show how to validate transactions with zkSNARKs, it is sufficient to show how to do it for a certain problem that is NP-complete and perhaps much easier to work with theoretically.
+
+
+This and the following section is based on the paper ``Quadratic Span Programs and Succinct NIZKs without PCPs'' by Gennaro, Gentry, Parno and Raykova (the technical report at \texttt{https://eprint.iacr.org/2012/215.pdf} has much more information than the journal paper), where the authors found that the problem called Quadratic Span Programs (QSP) is particularly well suited for zkSNARKs. A Quadratic Span Program consists of a set of polynomials and the task is to find a linear combination of those that is a multiple of another given polynomial. Furthermore, the individual bits of the input string restrict the polynomials you are allowed to use. In detail (the general QSPs are a bit more relaxed, but we already define the \textit{strong} version because that will be used later):
+
+
+A QSP over a field $F$ for inputs of length $n$ consists of
+\begin{itemize}
+\item polynomials $v_{0}$, \dots,$v_{m}$, $w_{0}$, \dots,$w_{m}$ over this field $F$,
+\item a polynomial $t$ over $F$ (the target polynomial),
+\item an injective function $f\colon \{(i, j) \mid 1 \le  i \le  n, j \in  \{0, 1\}\} \rightarrow \{1,  \dots, m\}$
+\end{itemize}
+
+
+The task here is roughly, to multiply the polynomials by factors and add them so that the sum (which is called a \textit{linear combination}) is a multiple of $t$. For each binary input string $u$, the function $f$ restricts the polynomials that can be used, or more specific, their factors in the linear combinations. For formally:
+
+
+An input u is \textit{accepted} (verified) by the QSP if and only if there are tuples $a = (a_{1}, \dots,a_{m})$, $b = (b_{1}, \dots,b_{m})$ from the field $F$ such that
+\begin{itemize}
+\item  $a_{k},b_{k} = 1$ if $k = f(i, u\lbrack i\rbrack)$ for some $i$, ($u\lbrack i\rbrack$ is the $i$th bit of $u$)
+\item  $a_{k},b_{k} = 0$ if $k = f(i, 1 - u\lbrack i\rbrack)$ for some $i$ and
+\item the target polynomial $t$ divides $v_{a} w_{b}$ where $v_{a} = v_{0} + a_{1} v_{0} +  \dots  + a_{m}v_{m}$ and $w_{b} = w_{0} + b_{1} w_{0} +  \dots  + b_{m}w_{m}$.
+\end{itemize}
+
+
+Note that there is still some freedom in choosing the tuples $a$ and $b$ if $2n$ is smaller than $m$. This means QSP only makes sense for inputs up to a certain size -- this problem is removed by using non-uniform complexity, a topic we will not dive into now, let us just note that it works well for cryptography where inputs are generally small.
+
+
+As an analogy to satisfiability of boolean formulas, you can see the factors $a_{1}$, \dots,$a_{m}$, $b_{1}$, \dots,$b_{m}$ as the assignments to the variables, or in general, the NP witness. To see that QSP lies in NP, note that all the verifier has to do (once she knows the factors) is checking that the polynomial $t$ divides $v_{a} w_{b}$, which is a polynomial-time problem.
+
+We will not talk about the reduction from generic computations or circuits to QSP here, as it does not contribute to the understanding of the general concept, so you have to believe me that QSP is NP-complete (or rather complete for some non-uniform analogue like NP/poly). In practice, the reduction is the actual ``engineering'' part -- it has to be done in a clever way such that the resulting QSP will be as small as possible and also has some other nice features.
+
+
+One thing about QSPs that we can already see is how to verify them much more efficiently: The verification task consists of checking whether one polynomial divides another polynomial. This can be facilitated by the prover in providing another polynomial $h$ such that $t h = v_{a} w_{b}$ which turns the task into checking a polynomial identity or put differently, into checking that $t h - v_{a} w_{b} = 0$, i.e.\ checking that a certain polynomial is the zero polynomial. This looks rather easy, but the polynomials we will use later are quite large (the degree is roughly $100$ times the number of gates in the original circuit) so that multiplying two polynomials is not an easy task.
+
+
+So instead of actually computing $v_{a}, w_{b}$ and their product, the verifier chooses a secret random point $s$ (this point is part of the ``toxic waste'' of zCash), computes the numbers $t(s)$, $v_{k}(s)$ and $w_{k}(s)$ for all $k$ and from them,  $v_{a}(s)$ and $w_{b}(s)$ and only checks that $t(s) h(s) = v_{a}(s) w_{b} (s)$. So a bunch of polynomial additions, multiplications with a scalar and a polynomial product is simplified to field multiplications and additions.
+
+
+Checking a polynomial identity only at a single point instead of at all points of course reduces the security, but the only way the prover can cheat in case $t h - v_{a} w_{b}$ is not the zero polynomial is if she manages to hit a zero of that polynomial, but since she does not know $s$ and the number of zeros is tiny (the degree of the polynomials) when compared to the possibilities for $s$ (the number of field elements), this is very safe in practice.
+
+\section{The zkSNARK in Detail}
+
+
+We now describe the zkSNARK for QSP in detail. It starts with a setup phase that has to be performed for every single QSP. In zCash, the circuit (the transaction verifier) is fixed, and thus the polynomials for the QSP are fixed which allows the setup to be performed only once and re-used for all transactions, which only vary the input $u$. For the setup, which generates the \textit{common reference string} (CRS), the verifier chooses a random and secret field element $s$ and encrypts the values of the polynomials at that point. The verifier uses some specific encryption $E$ and publishes $E(v_{k}(s))$ and $E(w_{k}(s))$ in the CRS. The CRS also contains several other values which makes the verification more efficient and also adds the zero-knowledge property. The encryption $E$ used there has a certain homomorphic property, which allows the prover to compute $E(v(s))$ without actually knowing $v_{k}(s)$.
+
+\subsection{How to Evaluate a Polynomial Succinctly and with Zero-Knowledge}
+
+
+Let us first look at a simpler case, namely just the encrypted evaluation of a polynomial at a secret point, and not the full QSP problem.
+
+
+For this, we fix a group (an elliptic curve is usually chosen here) and a generator $g$. Remember that a group element is called \textit{generator} if there is a number $n$ (the \textit{group order}) such that the list $g^{0}$, $g^{1}$, $g^{2}$,  \dots, $g^{n-1}$ contains all elements in the group exactly once. The encryption is simply $E(x) := g^{x}$. Now the verifier chooses a secret field element $s$ and publishes (as part of the CRS)
+\begin{quote}
+$E(s^{0})$, $E(s^{1})$,  \dots, $E(s^{d})$ -- $d$ is the maximum degree of all polynomials.
+\end{quote}
+
+
+After that, $s$ can be (and has to be) forgotten. This is exactly what zCash calls toxic waste, because if someone can recover this and the other secret values chosen later, they can arbitrarily spoof proofs by finding zeros in the polynomials.
+
+
+Using these values, the prover can compute $E(f(s))$ for arbitrary polynomials $f$ without knowing $s$: Assume our polynomial is $f(x) = 4x^{2} + 2x + 4$ and we want to compute $E(f(s))$, then we get $E(f(s)) = E(4s^{2} + 2s + 4) = g^{4s^2 + 2s + 4} = E(s^{2})^{4} E(s^{1})^{2} E(s^{0})^{4}$, which can be computed from the published CRS without knowing $s$.
+
+
+The only problem here is that, because $s$ was destroyed, the verifier cannot check that the prover evaluated the polynomial correctly. For that, we also choose another secret field element, $\alpha$, and publish the following ``shifted'' values:
+\begin{quote}
+$E(\alpha s^{0})$, $E(\alpha s^{1})$,  \dots, $E(\alpha s^{d})$
+\end{quote}
+
+
+As with $s$, the value $\alpha$  is also destroyed after the setup phase and neither known to the prover nor the verifier. Using these encrypted values, the prover can similarly compute $E(\alpha  f(s))$, in our example this is $E(4\alpha s^{2} + 2\alpha s + 4\alpha ) = E(\alpha s^{2})^{4} E(\alpha s^{1})^{2} E(\alpha s^{0})^{4}$. So the prover publishes $A := E(f(s))$ and $B := E(\alpha  f(s)))$ and the verifier has to check that these values match. She does this by using another main ingredient: A so-called \textit{pairing function} $e$. The elliptic curve and the pairing function have to be chosen together, so that the following property holds for all $x, y$:
+
+\[ e(g^{x}, g^{y}) = e(g, g)^{xy} \]
+
+
+Using this pairing function, the verifier checks that $e(A, g^{\alpha }) = e(B, g)$ -- note that $g^{\alpha }$ is known to the verifier because it is part of the CRS as $E(\alpha s^{0})$. In order to see that this check is valid if the prover does not cheat, let us look at the following equalities:
+
+\begin{align*}
+e(A, g^{\alpha }) &= e(g^{f(s)}, g^{\alpha }) = e(g, g)^{\alpha  f(s)} \\
+e(B, g) &= e(g^{\alpha  f(s)}, g) = e(g, g)^{\alpha  f(s)}
+\end{align*}
+
+The more important part, though, is the question whether the prover can somehow come up with values $A, B$ that fulfill the check $e(A, g^{\alpha }) = e(B, g)$ but are not $E(f(s))$ and $E(\alpha  f(s)))$, respectively. The answer to this question is ``we hope not''. Seriously, this is called the ``d-power knowledge of exponent assumption'' and it is unknown whether a cheating prover can do such a thing or not. This assumption is an extension of similar assumptions that are made for proving the security of other public-key encryption schemes and which are similarly unknown to be true or not.
+
+
+Actually, the above protocol does not really allow the verifier to check that the prover evaluated the polynomial $f(x) = 4x^{2} + 2x + 4$, the verifier can only check that the prover evaluated \textit{some} polynomial at the point $s$. The zkSNARK for QSP will contain another value that allows the verifier to check that the prover did indeed evaluate the correct polynomial.
+
+
+What this example does show is that the verifier does not need to evaluate the full polynomial to confirm this, it suffices to evaluate the pairing function. In the next step, we will add the zero-knowledge part so that the verifier cannot reconstruct anything about $f(s)$, not even $E(f(s))$ -- the encrypted value.
+
+
+For that, the prover picks a random $\delta$  and instead of $A := E(f(s))$ and $B := E(\alpha  f(s)))$, she sends over $A' := E(\delta  + f(s))$ and $B := E(\alpha  (\delta  + f(s))))$. If we assume that the encryption cannot be broken, the zero-knowledge property is quite obvious. We now have to check two things: 1. the prover can actually compute these values and 2. the check by the verifier is still true.
+
+
+For 1., note that $A' = E(\delta  + f(s)) = g^{\delta  + f(s)} = g^{\delta }g^{f(s)} = E(\delta ) E(f(s)) = E(\delta ) A$ and similarly, $B' = E(\alpha  (\delta  + f(s)))) = E(\alpha  \delta  + \alpha  f(s))) = g^{\alpha  \delta  + \alpha  f(s)} = g^{\alpha  \delta } g^{\alpha  f(s)} = E(\alpha )^{\delta }E(\alpha  f(s)) = E(\alpha )^{\delta } B$.
+
+
+For 2., note that the only thing the verifier checks is that the values $A$ and $B$ she receives satisfy the equation $A = E(a)$ und $B = E(\alpha  a)$ for some value $a$, which is obviously the case for $a = \delta  + f(s)$ as it is the case for $a = f(s)$.
+
+
+Ok, so we now know a bit about how the prover can compute the encrypted value of a polynomial at an encrypted secret point without the verifier learning anything about that value. Let us now apply that to the QSP problem.
+
+\subsection{A SNARK for the QSP Problem}
+
+
+Remember that in the QSP we are given polynomials $v_{0}$, \dots,$v_{m}$, $w_{0}$, \dots,$w_{m}$, a target polynomial $t$ (of degree at most $d$) and a binary input string $u$. The prover finds $a_{1}$, \dots,$a_{m}$, $b_{1}$, \dots,$b_{m}$ (that are somewhat restricted depending on $u$) and a polynomial $h$ such that
+\[
+t h = (v_{0} + a_{1}v_{1} +  \dots  + a_{m}v_{m}) (w_{0} + b_{1}w_{1} +  \dots  + b_{m}w_{m}).
+\]
+
+
+In the previous section, we already explained how the common reference string (CRS) is set up. We choose secret numbers $s$ and $\alpha$  and publish
+\begin{quote}
+$E(s^{0})$, $E(s^{1})$,  \dots, $E(s^{d})$ \quad and \quad $E(\alpha s^{0})$, $E(\alpha s^{1})$,  \dots, $E(\alpha s^{d})$
+\end{quote}
+
+Because we do not have a single polynomial, but sets of polynomials that are fixed for the problem, we also publish the evaluated polynomials right away:
+\begin{itemize}
+\item $E(t(s))$, $E(\alpha  t(s))$,
+\item $E(v_{0}(s))$,  \dots, $E(v_{m}(s))$, $E(\alpha  v_{0}(s))$,  \dots, $E(\alpha  v_{m}(s))$,
+\item $E(w_{0}(s))$,  \dots, $E(w_{m}(s))$, $E(\alpha  w_{0}(s))$,  \dots, $E(\alpha  w_{m}(s))$,
+\end{itemize}
+
+
+and we need further secret numbers $\beta _{v}$, $\beta _{w}$, $\gamma$  (they will be used to verify that those polynomials were evaluated and not some arbitrary polynomials) and publish
+\begin{itemize}
+\item $E(\gamma )$, $E(\beta _{v} \gamma )$, $E(\beta _{w} \gamma )$,
+\item $E(\beta _{v} v_{1}(s))$,  \dots, $E(\beta _{v} v_{m}(s))$
+\item $E(\beta _{w} w_{1}(s))$,  \dots, $E(\beta _{w} w_{m}(s))$
+\item $E(\beta _{v} t(s))$, $E(\beta _{w} t(s))$
+\end{itemize}
+
+
+This is the full common reference string. In practical implementations, some elements of the CRS are not needed, but that would complicate the presentation.
+
+
+Now what does the prover do? She uses the reduction explained above to find the polynomial $h$ and the values $a_{1}$, \dots,$a_{m }$, $b_{1}$, \dots,$b_{m}$. Here it is important to use a witness-preserving reduction (see above) because only then, the values $a_{1}$, \dots,$a_{m}$, $b_{1}$, \dots,$b_{m}$ can be computed together with the reduction and would be very hard to find otherwise. In order to describe what the prover sends to the verifier as proof, we have to go back to the definition of the QSP.
+
+
+There was an injective function $f\colon \{(i, j) \mid 1 \le  i \le  n, j \in  \{0, 1\}\} \rightarrow \{1,  \dots, m\}$ which restricts the values of $a_{1}$, \dots,$a_{m}$, $b_{1}$, \dots,$b_{m}$. Since $m$ is relatively large, there are numbers which do not appear in the output of $f$ for any input. These indices are not restricted, so let us call them $I_{\mathrm{free}}$ and define $v_\mathrm{free}(x) = \sum_{k} a_{k}v_{k}(x)$ where the $k$ ranges over all indices in $I_\mathrm{free}$. For $w(x) = b_{1}w_{1}(x) +  \dots  + b_{m}w_{m}(x)$, the proof now consists of
+\begin{itemize}
+\item $V_\mathrm{free} := E(v_\mathrm{free}(s))$, \quad   $W := E(w(s))$, \quad   $H := E(h(s))$,
+\item $V'_\mathrm{free} := E(\alpha  v_\mathrm{free}(s))$, \quad   $W' := E(\alpha  w(s))$, \quad   $H' := E(\alpha  h(s))$,
+\item $Y := E(\beta _{v} v_\mathrm{free}(s) + \beta _{w} w(s)))$
+\end{itemize}
+
+
+where the last part is used to check that the correct polynomials were used (this is the part we did not cover yet in the other example). Note that all these encrypted values can be generated by the prover knowing only the CRS.
+
+
+The task of the verifier is now the following:
+
+Since the values of $a_{k}$, where $k$ is not a ``free'' index can be computed directly from the input $u$ (which is also known to the verifier, this is what is to be verified), the verifier can compute the missing part of the full sum for $v$:
+\begin{quote}
+$E(v_{in}(s)) = E(\sum_{k} a_{k}v_{k}(s))$ where the $k$ ranges over all indices \textit{not} in $I_\mathrm{free}$.
+\end{quote}
+
+
+With that, the verifier now confirms the following equalities using the pairing function $e$ (don't be scared):
+\begin{enumerate}
+\item $e(V'_\mathrm{free}, g) = e(V_\mathrm{free}, g^{\alpha })$, \quad    $ e(W', E(1)) = e(W, E(\alpha ))$, \quad   $  e(H', E(1)) = e(H, E(\alpha ))$
+\item $e(E(\gamma ), Y) = e(E(\beta _{v} \gamma ),  V_\mathrm{free}) e(E(\beta _{w} \gamma ), W)$
+\item $e\Big(E(v_{0}(s)) E(v_{in}(s)) V_\mathrm{free},\, E(w_{0}(s)) W\Big) = e(H,   E(t(s)))$
+\end{enumerate}
+
+
+To grasp the general concept here, you have to understand that the pairing function allows us to do some limited computation on encrypted values: We can do arbitrary additions but just a single multiplication. The addition comes from the fact that the encryption itself is already additively homomorphic and the single multiplication is realized by the two arguments the pairing function has. So $e(W', E(1)) = e(W, E(\alpha ))$ basically multiplies $W'$ by $1$ in the encrypted space and compares that to $W$ multiplied by $\alpha$  in the encrypted space. If you look up the value $W$ and $W'$ are supposed to have -- $E(w(s))$ and $E(\alpha  w(s))$ -- this checks out if the prover supplied a correct proof.
+
+
+If you remember from the section about evaluating polynomials at secret points, these three first checks basically verify that the prover did evaluate some polynomial built up from the parts in the CRS. The second item is used to verify that the prover used the correct polynomials $v$ and $w$ and not just some arbitrary ones. The idea behind is that the prover has no way to compute the encrypted combination $E(\beta _{v} v_\mathrm{free}(s) + \beta _{w} w(s)))$ by some other way than from the exact values of $E(v_\mathrm{free}(s))$ and $E(w(s))$. The reason is that the values $\beta _{v}$ are not part of the CRS in isolation, but only in combination with the values $v_{k}(s)$ and $\beta _{w}$ is only known in combination with the polynomials $w_{k}(s)$. The only way to ``mix'' them is via the equally encrypted $\gamma$.
+
+
+Assuming the prover provided a correct proof, let us check that the equality works out. The left and right hand sides are, respectively
+\begin{align*}
+e(E(\gamma ), Y) &= e(E(\gamma ), E(\beta _{v} v_\mathrm{free}(s) + \beta _{w} w(s)))\\ &= e(g, g)^{\gamma (\beta _{v} v_\mathrm{free}(s) + \beta _{w} w(s))} \\
+e(E(\beta _{v} \gamma ), V_\mathrm{free}) e(E(\beta _{w} \gamma ), W) &= e(E(\beta _{v} \gamma ), E(v_\mathrm{free}(s))) e(E(\beta _{w} \gamma ), E(w(s)))\\ &= e(g, g)^{(\beta _{v} \gamma ) v_\mathrm{free}(s)} e(g, g)^{(\beta _{w} \gamma ) w(s)}\\ &= e(g, g)^{\gamma (\beta _{v} v_\mathrm{free}(s) + \beta _{w} w(s))}
+\end{align*}
+
+
+The third item essentially checks that $(v_{0}(s) + a_{1}v_{1}(s) +  \dots  + a_{m}v_{m}(s)) (w_{0}(s) + b_{1}w_{1}(s) +  \dots  + b_{m}w_{m}(s)) = h(s) t(s)$, the main condition for the QSP problem. Note that multiplication on the encrypted values translates to addition on the unencrypted values because $E(x) E(y) = g^{x} g^{y} = g^{x+y} = E(x + y)$.
+
+\subsection{Adding Zero-Knowledge}
+
+
+As I said in the beginning, the remarkable feature about zkSNARKS is rather the succinctness than the zero-knowledge part. We will see now how to add zero-knowledge and the next section will be touch a bit more on the succinctness.
+
+
+The idea is that the prover ``shifts'' some values by a random secret amount and balances the shift on the other side of the equation. The prover chooses random $\delta _\mathrm{free}$, $\delta _{w}$ and performs the following replacements in the proof
+\begin{itemize}
+\item $v_\mathrm{free}(s)$ is replaced by $v_\mathrm{free}(s) + \delta _\mathrm{free} t(s)$
+\item $w(s)$ is replaced by $w(s) + \delta _{w} t(s)$.
+\end{itemize}
+
+
+By these replacements, the values $V_\mathrm{free}$ and $W$, which contain an encoding of the witness factors, basically become indistinguishable form randomness and thus it is impossible to extract the witness. Most of the equality checks are ``immune'' to the modifications, the only value we still have to correct is $H$ or $h(s)$. We have to ensure that
+\[ (v_{0}(s) + a_{1}v_{1}(s) +  \dots  + a_{m}v_{m}(s)) (w_{0}(s) + b_{1}w_{1}(s) +  \dots  + b_{m}w_{m}(s)) = h(s) t(s)\]
+or in other words
+\[(v_{0}(s) + v_{in}(s) + v_\mathrm{free}(s)) (w_{0}(s) + w(s)) = h(s) t(s).\]
+still holds. With the modifications, we get
+\[ (v_{0}(s) + v_{in}(s) + v_\mathrm{free}(s) + \delta _\mathrm{free} t(s)) (w_{0}(s) + w(s) + \delta _{w} t(s))
+\]
+and by expanding the product, we see that replacing $h(s)$ by
+\[
+    h(s) + \delta _\mathrm{free} (w_{0}(s) + w(s)) + \delta _{w} (v_{0}(s) + v_{in}(s) + v_\mathrm{free}(s)) + (\delta _\mathrm{free} \delta _{w}) t(s)
+\]
+will do the trick.
+
+\section{Tradeoff between Input and Witness Size}
+
+
+As you have seen in the preceding sections, the proof consists only of 7 elements of a group (typically an elliptic curve). Furthermore, the work the verifier has to do is checking some equalities involving pairing functions and computing $E(v_{in}(s))$, a task that is linear in the input size. Remarkably, neither the size of the witness string nor the computational effort required to verify the QSP (without SNARKs) play any role in verification. This means that SNARK-verifying extremely complex problems and very simple problems all take the same effort. The main reason for that is because we only check the polynomial identity for a single point, and not the full polynomial. Polynomials can get more and more complex, but a point is always a point. The only parameters that influence the verification effort is the level of security (i.e.\ the size of the group) and the maximum size for the inputs.
+
+
+It is possible to reduce the second parameter, the input size, by shifting some of it into the witness:
+
+
+Instead of verifying the function $f(u, w)$, where $u$ is the input and $w$ is the witness, we take a hash function $h$ and verify
+\begin{quote}
+$f'(H, (u, w)) := f(u, w) \land h(u) = H$.
+\end{quote}
+
+
+This means we replace the input $u$ by a hash of the input $h(u)$ (which is supposed to be much shorter) and verify that there is some value $x$ that hashes to $H(u)$ (and thus is very likely equal to $u$) in addition to checking $f(x, w)$. This basically moves the original input $u$ into the witness string and thus increases the witness size but decreases the input size to a constant.
+
+
+This is remarkable, because it allows us to verify arbitrarily complex statements in constant time.
+
+\section{How is this Relevant to Ethereum}
+
+
+Since verifying arbitrary computations is at the core of the Ethereum blockchain, zkSNARKs are of course very relevant to Ethereum. With zkSNARKs, it becomes possible to not only perform secret arbitrary computations that are verifiable by anyone, but also to do this efficiently.
+
+
+Although Ethereum uses a Turing-complete virtual machine, it is currently not yet possible to implement a zkSNARK verifier in Ethereum. The verifier tasks might seem simple conceptually, but a pairing function is actually very hard to compute and thus it would use more gas than is currently available in a single block. Elliptic curve multiplication is already relatively complex and pairings take that to another level.
+
+
+Existing zkSNARK systems like zCash use the same problem / circuit / computation for every task. In the case of zCash, it is the transaction verifier. On Ethereum, zkSNARKs would not be limited to a single computational problem, but instead, everyone could set up a zkSNARK system for their specialized computational problem without having to launch a new blockchain. Every new zkSNARK system that is added to Ethereum requires a new secret trusted setup phase (some parts can be re-used, but not all), i.e.\ a new CRS has to be generated. It is also possible to do things like adding a zkSNARK system for a ``generic virtual machine''. This would not require a new setup for a new use-case in much the same way as you do not need to bootstrap a new blockchain for a new smart contract on Ethereum.
+
+\subsection{Getting zkSNARKs to Ethereum}
+
+
+There are multiple ways to enable zkSNARKs for Ethereum. All of them reduce the actual costs for the pairing functions and elliptic curve operations (the other required operations are already cheap enough) and thus allows also the gas costs to be reduced for these operations.
+\begin{enumerate}
+\itemsep0em 
+\item improve the (guaranteed) performance of the EVM
+\item improve the performance of the EVM only for certain pairing functions and elliptic curve multiplications
+\end{enumerate}
+
+
+The first option is of course the one that pays off better in the long run, but is harder to achieve. We are currently working on adding features and restrictions to the EVM which would allow better just-in-time compilation and also interpretation without too many required changes in the existing implementations. The other possibility is to swap out the EVM completely and use something like eWASM.
+
+
+The second option can be realized by forcing all Ethereum clients to implement a certain pairing function and multiplication on a certain elliptic curve as a so-called precompiled contract. The benefit is that this is probably much easier and faster to achieve. On the other hand, the drawback is that we are fixed on a certain pairing function and a certain elliptic curve. Any new client for Ethereum would have to re-implement these precompiled contracts. Furthermore, if there are advancements and someone finds better zkSNARKs, better pairing functions or better elliptic curves, or if a flaw is found in the elliptic curve, pairing function or zkSNARK, we would have to add new precompiled contracts.
+
+\end{document}
