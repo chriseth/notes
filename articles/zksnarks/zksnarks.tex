@@ -481,7 +481,7 @@ The idea is that the prover ``shifts'' some values by a random secret amount and
 \end{itemize}
 
 
-By these replacements, the values $V_\mathrm{free}$ and $W$, which contain an encoding of the witness factors, basically become indistinguishable form randomness and thus it is impossible to extract the witness. Most of the equality checks are ``immune'' to the modifications, the only value we still have to correct is $H$ or $h(s)$. We have to ensure that
+By these replacements, the values $V_\mathrm{free}$ and $W$, which contain an encoding of the witness factors, basically become indistinguishable from randomness and thus it is impossible to extract the witness. Most of the equality checks are ``immune'' to the modifications, the only value we still have to correct is $H$ or $h(s)$. We have to ensure that
 \[ (v_{0}(s) + a_{1}v_{1}(s) +  \dots  + a_{m}v_{m}(s)) (w_{0}(s) + b_{1}w_{1}(s) +  \dots  + b_{m}w_{m}(s)) = h(s) t(s)\]
 or in other words
 \[(v_{0}(s) + v_{in}(s) + v_\mathrm{free}(s)) (w_{0}(s) + w(s)) = h(s) t(s).\]
