@@ -1,0 +1,173 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{latexsym,amsbsy,amssymb,amsmath,amsfonts}
+\usepackage{amsthm}
+\usepackage{epsfig}
+\usepackage{euscript}
+\usepackage{fullpage}
+\usepackage{multirow,multicol,booktabs}
+\usepackage[bf]{caption}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\hypersetup{
+ pdfauthor={Christian Reitwießner},
+ pdftitle={Casper Slashing Conditions}
+  unicode,
+  breaklinks,
+  colorlinks=false,
+  pdfborder={0 0 0}
+}
+
+\date{}
+
+\renewcommand{\captionfont}{\small}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\hfuzz=0mm
+\tolerance=10000
+\hbadness=1000
+
+
+\setlength{\parindent}{0mm}
+\setlength{\parskip}{2ex plus0.5ex minus0.5ex}
+
+
+\newcommand{\Sum}{\sum\limits}
+\newcommand{\Prod}{\prod\limits}
+
+
+\newtheorem{dummytheorem}{Dummy-Theorem}[section]
+\newtheorem{definition}[dummytheorem]{Definition}
+\newtheorem{lemma}[dummytheorem]{Lemma}
+\newtheorem{theorem}[dummytheorem]{Theorem}
+\newtheorem{proposition}[dummytheorem]{Proposition}
+\newtheorem{property}[dummytheorem]{Property}
+\newtheorem{corollary}[dummytheorem]{Corollary}
+\newtheorem{example}[dummytheorem]{Example}
+\newtheorem{remark}[dummytheorem]{Remark}
+\newtheorem{fact}[dummytheorem]{Fact}
+\newtheorem{claim}[dummytheorem]{Claim}
+\newtheorem{subclaim}{Subclaim}[dummytheorem]
+\newtheorem{conjecture}[dummytheorem]{Conjecture}
+
+\newcommand{\uint}{\mathbb{N}}
+\newcommand{\rational}{\mathbb{Q}}
+
+\newcommand{\oli}[1]{\overline{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\newcommand{\eps}{\varepsilon}
+\newcommand{\card}[1]{\##1}
+\newcommand{\length}[1]{\mathrm{length}({#1})}
+
+\newcommand{\pn}[1]{\textnormal{#1}}
+
+\newcommand{\norm}[1]{||{#1}||}
+\newcommand{\Norm}[1]{\left|\left|{#1}\right|\right|}
+\newcommand{\eqdef}{:=}
+
+\newcommand{\validators}{\mathcal{V}}
+\newcommand{\messages}{\mathcal{M}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+\selectlanguage{english}
+
+
+\title{Casper Slashing Conditions}
+
+\author{Christian Reitwießner \\
+{\tt chris@ethereum.org}}
+
+
+\maketitle
+
+\subsection{Basic Definitions}
+
+Let $\validators$ be the (finite) set of \emph{validators}. We assume it to be fixed
+for now. Let $\mathcal{H}$ be the (finite) set of \emph{hash values}, usually
+the set of bitstrings of 256 bits. Finally, $\uint \eqdef \{0, 1, \dots\}$
+is the set of natural numbers.
+
+Since hashes in $\mathcal{H}$ correspond to blocks in a blockchain, we assume every hash
+has a \emph{parent} $\mathrm{parent}(H)$.
+
+\subsection*{Valid Messages}
+
+Every validator can broadcast messages, which can be either \emph{prepare} messages from
+the set
+\[
+  \mathcal{P} \eqdef \{(v, H, n, n_0) \mid
+  v \in \validators, H \in \mathcal{H}, n,n_0 \in \uint,
+  n > n_0
+  \}
+\]
+or \emph{commit} messages
+\[
+  \mathcal{C} \eqdef \{(v, H, n) \mid
+  v \in \validators, H \in \mathcal{H}, n \in \uint, n > 0\}.
+\]
+
+Signatures ensure that only the validator $v$ can send messages $(v, H, n, n_0)$
+and $(v, H, n)$.
+
+\subsection*{Slashing Conditions}
+
+Let $\messages \subseteq \mathcal{P} \cup \mathcal{C}$ be the set of messages
+visible to the Casper contract at a certain point in time. Depending on
+this set, the contract will slash the deposit of validators. To ease notation,
+let us define some notions:
+
+The \emph{prepare ratio} of a hash $H \in \mathcal{H}$ at a view $n \in \uint$ depending
+on the view $n_0 \in \uint$ is
+\[
+\mathrm{prepratio}_{\messages}(H, n, n_0) =
+\frac{\#\{v \in \validators \mid (v, H, n, n_0) \in \messages \}}{\#\validators}
+\]
+and the prepare ration of $H$ at the view $n$ is
+\[
+\mathrm{prepratio}_{\messages}(H, n) = \max_{n_0 \in \uint} \mathrm{prepratio}_\messages(H, n, n_0)
+\]
+
+Note: If the validator set can change, the above definitions will get more
+complicated.
+
+The Casper contract slashes the deposit of a validator $v_0$ if any of the following conditions
+are met:
+
+\begin{enumerate}
+\item $(v_0, H, n) \in \messages$ for some $H \in \mathcal{H}$, $n \in \uint$,
+and $\mathrm{prepratio}_\messages(H, n) < \frac{2}{3}$.\\
+-- A hash was commited that was not properly prepared.
+\item $(v_0, H, n, n_0) \in \messages$ for some $H \in \mathcal{H}$, $n \in \uint$,
+$n_0 > 0$ and $\mathrm{prepratio}_\messages(\mathrm{parent}^{n-n_0}(H), n_0) < \frac{2}{3}$.\\
+-- A hash was prepared based on an ancestor that was not properly prepared.
+\item $(v_0, H, n), (v_0, H', n', n_0') \in \messages$ for some $H,H' \in \mathcal{H}$, $n, n', n_0' \in \uint$
+and $n_0' < n < n'$.\\
+-- A hash was prepared ignoring an already committed hash.
+\item $(v_0, H, n, n_0), (v_0, H', n, n_0') \in \messages$ for some $H, H' \in \mathcal{H}$,
+$n, n_0, n_0' \in \uint$ and $(H, n_0) \neq (H', n_0')$.
+-- Two different prepare messages were sent for the same view.
+\end{enumerate}
+
+Note that both $\mathrm{prepratio}_\messages$ functions are monotonous in $\messages$
+and thus also the conditions are monotonous in $\messages$.
+
+\end{document}
