@@ -99,7 +99,7 @@
 
 \maketitle
 
-\subsection{Basic Definitions}
+\subsection*{Basic Definitions}
 
 Let $\validators$ be the (finite) set of \emph{validators}, where each
 $v \in \validators$ has a positive deposit $\mathrm{w}(v)$ ("weight"). We assume neither those
@@ -165,5 +165,38 @@ and $n_0' < n < n'$.\\
 $n, n_0, n_0' \in \uint$ and $(H, n_0) \neq (H', n_0')$.
 -- Two different prepare messages were sent for the same view.
 \end{enumerate}
+
+Defined $\mathrm{slashed}_\messages(v_0)$ to be true if and only if at least
+one of these conditions are met for $v_0$.
+
+\subsection*{Properties}
+
+\begin{conjecture}[Accountable Safety]
+If $(v_1, X, n_1), (v_2, Y, n_2) \in \messages$, $X \neq Y$ and there is no
+$k \in \uint$ such that $X = \mathrm{parent}^k(Y)$ or $Y = \mathrm{parent}^k(X)$,
+then
+\[
+  \sum\{\mathrm{w}(v) \mid v \in \mathcal{V}, \mathrm{slashed}_\messages(v)\}
+  \ge \frac{1}{3} \sum\{\mathrm{w}(v) \mid v \in \mathcal{V}\}.
+\]
+\end{conjecture}
+
+\begin{conjecture}[Plausible Liveness]
+Let $\messages \subseteq \mathcal{C} \cup \mathcal{P}$ be finite such that
+less than a third of the validators are slashed, i.e.
+\[
+  \sum\{\mathrm{w}(v) \mid v \in \mathcal{V}, \mathrm{slashed}_\messages(v)\} < \frac{1}{3} \sum\{\mathrm{w}(v) \mid v \in \mathcal{V}\}.
+\]
+Then there is a set of messages $\messages' \supseteq \messages$ and a hash
+$H \in \mathcal{H}$ such that
+\begin{enumerate}
+\item $(v, X, n) \in \messages' \setminus \messages \Rightarrow \neg \mathrm{slashed}_\messages(v)$
+(only contains new messages from unslashed validators)
+\item there is no $(v, H, n) \in \messages$ ($H$ has not been commited previously)
+\item there is some $(v, H, n) \in \messages'$ ($H$ is commited now)
+\item for all $v \in \validators$ if $\mathrm{slashed}_{\messages'}(v)$
+then $\mathrm{slashed}_{\messages}(v)$ (no newly slashed validator)
+\end{enumerate}
+\end{conjecture}
 
 \end{document}
