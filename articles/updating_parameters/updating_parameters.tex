@@ -1,0 +1,142 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{latexsym,amsbsy,amssymb,amsmath,amsfonts}
+\usepackage{amsthm}
+\usepackage{epsfig}
+\usepackage{euscript}
+\usepackage{fullpage}
+\usepackage{multirow,multicol,booktabs}
+\usepackage[bf]{caption}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\hypersetup{
+ pdfauthor={Vitalik Buterin, Christian Reitwießner},
+ pdftitle={Updating zkSNARK Public Parameters}
+  unicode,
+  breaklinks,
+  colorlinks=false,
+  pdfborder={0 0 0}
+}
+
+\date{}
+
+\renewcommand{\captionfont}{\small}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\hfuzz=0mm
+\tolerance=10000
+\hbadness=1000
+
+
+\setlength{\parindent}{0mm}
+\setlength{\parskip}{2ex plus0.5ex minus0.5ex}
+
+
+\newcommand{\Sum}{\sum\limits}
+\newcommand{\Prod}{\prod\limits}
+
+
+\newtheorem{dummytheorem}{Dummy-Theorem}[section]
+\newtheorem{definition}[dummytheorem]{Definition}
+\newtheorem{lemma}[dummytheorem]{Lemma}
+\newtheorem{theorem}[dummytheorem]{Theorem}
+\newtheorem{proposition}[dummytheorem]{Proposition}
+\newtheorem{property}[dummytheorem]{Property}
+\newtheorem{corollary}[dummytheorem]{Corollary}
+\newtheorem{example}[dummytheorem]{Example}
+\newtheorem{remark}[dummytheorem]{Remark}
+\newtheorem{fact}[dummytheorem]{Fact}
+\newtheorem{claim}[dummytheorem]{Claim}
+\newtheorem{subclaim}{Subclaim}[dummytheorem]
+\newtheorem{conjecture}[dummytheorem]{Conjecture}
+
+\newcommand{\uint}{\mathbb{N}}
+\newcommand{\rational}{\mathbb{Q}}
+
+\newcommand{\oli}[1]{\overline{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\newcommand{\eps}{\varepsilon}
+\newcommand{\card}[1]{\##1}
+\newcommand{\length}[1]{\mathrm{length}({#1})}
+
+\newcommand{\pn}[1]{\textnormal{#1}}
+
+\newcommand{\norm}[1]{||{#1}||}
+\newcommand{\Norm}[1]{\left|\left|{#1}\right|\right|}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+\selectlanguage{english}
+
+
+\title{Updating zkSNARK Public Parameters}
+
+\author{Vitalik Buterin\\
+{\tt vitalik@ethereum.org}
+\and
+Christian Reitwießner\\
+{\tt chris@ethereum.org}}
+
+
+\maketitle
+
+
+\begin{abstract}
+\noindent 
+\end{abstract}
+
+
+
+\section{GGPR}
+
+Remember that in the QSP we are given polynomials $v_{0}$, \dots,$v_{m}$, $w_{0}$, \dots,$w_{m}$, a target polynomial $t$ (of degree at most $d$) and a binary input string $u$. The prover finds $a_{1}$, \dots,$a_{m}$, $b_{1}$, \dots,$b_{m}$ (that are somewhat restricted depending on $u$) and a polynomial $h$ such that
+\[
+t h = (v_{0} + a_{1}v_{1} +  \dots  + a_{m}v_{m}) (w_{0} + b_{1}w_{1} +  \dots  + b_{m}w_{m}).
+\]
+
+
+In the previous section, we already explained how the common reference string (CRS) is set up. We choose secret numbers $s$ and $\alpha$  and publish
+\begin{quote}
+$E(s^{0})$, $E(s^{1})$,  \dots, $E(s^{d})$ \quad and \quad $E(\alpha s^{0})$, $E(\alpha s^{1})$,  \dots, $E(\alpha s^{d})$
+\end{quote}
+
+Because we do not have a single polynomial, but sets of polynomials that are fixed for the problem, we also publish the evaluated polynomials right away:
+\begin{itemize}
+\item $E(t(s))$, $E(\alpha  t(s))$,
+\item $E(v_{0}(s))$,  \dots, $E(v_{m}(s))$, $E(\alpha  v_{0}(s))$,  \dots, $E(\alpha  v_{m}(s))$,
+\item $E(w_{0}(s))$,  \dots, $E(w_{m}(s))$, $E(\alpha  w_{0}(s))$,  \dots, $E(\alpha  w_{m}(s))$,
+\end{itemize}
+
+
+and we need further secret numbers $\beta _{v}$, $\beta _{w}$, $\gamma$  (they will be used to verify that those polynomials were evaluated and not some arbitrary polynomials) and publish
+\begin{itemize}
+\item $E(\gamma )$, $E(\beta _{v} \gamma )$, $E(\beta _{w} \gamma )$,
+\item $E(\beta _{v} v_{1}(s))$,  \dots, $E(\beta _{v} v_{m}(s))$
+\item $E(\beta _{w} w_{1}(s))$,  \dots, $E(\beta _{w} w_{m}(s))$
+\item $E(\beta _{v} t(s))$, $E(\beta _{w} t(s))$
+\end{itemize}
+
+
+This is the full common reference string. In practical implementations, some elements of the CRS are not needed, but that would complicate the presentation.
+
+
+\end{document}
