@@ -108,7 +108,7 @@ Christian Reitwießner\\
 
 \section{GGPR}
 
-Remember that in the QSP we are given polynomials $v_{0}$, \dots,$v_{m}$, $w_{0}$, \dots,$w_{m}$, a target polynomial $t$ (of degree at most $d$) and a binary input string $u$. The prover finds $a_{1}$, \dots,$a_{m}$, $b_{1}$, \dots,$b_{m}$ (that are somewhat restricted depending on $u$) and a polynomial $h$ such that
+Remember that in the QSP (more specifically, strong QSPs) we are given polynomials $v_{0}$, \dots,$v_{m}$, $w_{0}$, \dots,$w_{m}$, a target polynomial $t$ (of degree at most $d$) and a binary input string $u$. The prover finds $a_{1}$, \dots,$a_{m}$, $b_{1}$, \dots,$b_{m}$ (that are somewhat restricted depending on $u$) and a polynomial $h$ such that
 \[
 t h = (v_{0} + a_{1}v_{1} +  \dots  + a_{m}v_{m}) (w_{0} + b_{1}w_{1} +  \dots  + b_{m}w_{m}).
 \]
@@ -137,6 +137,22 @@ and we need further secret numbers $\beta _{v}$, $\beta _{w}$, $\gamma$  (they w
 
 
 This is the full common reference string. In practical implementations, some elements of the CRS are not needed, but that would complicate the presentation.
+
+\section{Generating the CRS}
+
+Assume we have already generated $E(\gamma)$, $E(s^{0})$, $E(s^{1})$,  \dots, $E(s^{d})$.
+Then the remaining parts of the CRS can be generated in an associative way building on the
+fact that $E$ is additive. More specifically, it is possible to generate the full CRS
+by combining the private parameters, $\alpha'$, $\beta_v'$ and $\beta_w'$ 
+and $\alpha''$, $\beta_v''$ and $\beta_w''$ from two CRS sets, marked by $'$ and $''$
+in the following way:
+
+$\alpha'$ and $\alpha''$ are combined to $\alpha' + \alpha''$\\
+$\beta_v'$ and $\beta_v''$ are combined to $\beta_v' + \beta_v''$\\
+$\beta_w'$ and $\beta_w''$ are combined to $\beta_w' + \beta_w''$
+
+The CRS can be computed without having access to the private parameters, because
+the private parameters are always a linear factor.
 
 
 \end{document}
