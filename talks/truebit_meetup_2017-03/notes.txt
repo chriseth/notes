@@ -1,0 +1,71 @@
+Introduction
+
+Scalability problem
+- blocks full in bitcoin
+- what is scalability? "something scales if it performs equally well as it gets used more"
+- main source of problems: every node has to process every block
+-> blockchain - adding nodes does not help, increase popularity is bad for performance
+- scalability also active research area in Ethereum
+- proposals:
+ - sharding: scale state space
+ - Raiden: scale transactions
+ - TrueBit: scale computations
+ - Requires fork: only sharding - flexibility of Ethereum
+
+Example computations, Applications
+
+"run Ethereum contracts and forget about the gas limit"
+"run Ethereum contracts written in any programming language"
+
+Evaluating a Neural Network
+Computing hash functions to link multiple chains
+Verify correctness of Golem computations
+much more complex smart contract programming languages (logic based programming languages)
+livepeer: Video streaming, TrueBit can enforce encoding quality
+
+How is TrueBit different from Golem, iex.ec and others:
+ - others focus on throughput, TrueBit focues on correctness
+ - TrueBit only requires a single honest participant and this property
+   is enforced by economic incentives
+ - TrueBit can be used for and by smart contracts, others only for "cloud computing"
+
+
+
+Technical part
+
+How to scale computations?
+ - require less people to run the computation
+ - but we still want trustless execution!
+ - -> make "a few" people run the computation and allow them to go to court (blockchain) if they disagree
+   (actually anyone can challenge)
+ - settling an error claim in court has to be magnitudes faster than running the whole computation, otherwise no gain
+ - fortunately: binary research
+ -> show animation
+
+Verifier's Dilemma
+ - Select one "Solver", anyone can verify and receive bonus for found error
+ - -> nobody will verify
+
+Solution: Forced errors
+ - pseudorandomly force solver to publish incorrect result
+ - verifiers get rewards for finding forced errors (like mining reward)
+ - solver is not punished for such errors
+
+ - what if solver notifiers certain verifiers about error?
+ - what if verifiers create multiple accounts?
+
+Information sharing problem
+ - Select multiple Solvers: How to check that they did run independently and not just shared the result?
+
+Solution:
+ - Reward for finding error is halved for each new submission
+ - (need "fake submissions" and commit / reveal mechanism)
+ -> Solver also submits claim and thus reward would decrease if shared
+
+ Limitations:
+ - censoring transactions makes the verification game invalid (but ethereum is hard to censor)
+ - potentially high fluctuation in rewardsd for verifiers, will have to see whether this is a problem in practice.
+
+
+Looking for developers and funding
+Link to Whitepaper

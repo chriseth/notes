@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>TrueBit - Scalable Computation</title>
+
+		<meta name="author" content="Christian Reitwiessner">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="../reveal.js/css/reveal.css">
+		<link rel="stylesheet" href="../reveal.js/css/theme/simple.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="../reveal.js/lib/css/zenburn.css">
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+<style type="text/css">
+@font-face {
+	font-family: PTSans;
+	src: url('./pt-sans-regular.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+}
+body, .reveal {
+	font-family: PTSans, Arial, sans-serif;
+}
+.reveal .slides {
+	text-align: left;
+}
+.reveal pre {
+  width: inherit;
+}
+.reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+	text-align: center;
+	text-transform: none;
+	font-family: PTSans, Arial, sans-serif;
+	margin-bottom: 1em;
+}
+p { text-align: left; }
+.reveal .slides section .fragment.appear {
+  opacity: 0;
+  display: none;
+}
+.reveal .slides section .fragment.appear.visible {
+  opacity: 1;
+  display: block;
+}
+.reveal .slides section .fragment.appear-once {
+  opacity: 0;
+  display: none;
+}
+.reveal .slides section .fragment.appear-once.current-fragment {
+  opacity: 1;
+  display: block;
+}
+</style>
+
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+<section>
+<h2>TrueBit - Scalable Computation</h2>
+<small><p>
+Jason Teutsch<br/>and<br/>
+<b>Christian Reitwiessner</b><br/>
+@ethchris &nbsp; github.com/chriseth &nbsp; chris@ethereum.org</p>
+<p>
+Ethereum Meetup Berlin - 2017-03-28
+</p>
+</small>
+</section>
+
+<section>
+<h3>What is Scalability?</h3>
+<center><img src="bitcoin_tx.png" style="width: 100%; border: none;"/></center>
+</section>
+
+<section>
+<h3>What is Scalability?</h3>
+<center><img src="ethereum_tx.png" style="width: 100%; border: none;"/></center>
+</section>
+
+<section>
+<h3>What is Scalability?</h3>
+<ul>
+<li>X scales if it performs equally well as it grows</li>
+<li>Blockchains: Every full node has to process every block</li>
+<li>Adding nodes does not help</li>
+</ul>
+</section>
+
+<section>
+<h3>Scalability in Ethereum</h3>
+<ul>
+<li><b>Casper</b>: scale state space and transactions via <b>sharding</b></li>
+<li><b>Raiden</b>: scale transactions via <b>state channels</b></li>
+<li><b>TrueBit</b>: scale computations via <b>interactive verification</b></li>
+</ul>
+<p>Only sharding requires fork</p>
+</section>
+
+<section data-markdown><script type="text/template">
+### Why Scalable Computation?
+
+Ethereum smart contracts 
+
+- without gas limit
+- written in any programming language
+- driven by neural networks
+- with filesystem access to Swarm
+
+</section>
+
+<section data-markdown><script type="text/template">
+### Why Scalable Computation?
+
+- Link multiple blockchains (Dogecoin)
+- Verify Golem computations
+- Verify live video encoding (livepeer)
+</script></section>
+
+<section data-markdown><script type="text/template">
+### TrueBit has Unanimous Consensus
+
+- single honest verifier can outrule anyone ("99.9% attack")
+- presence of honest verifier ensured by economic incentives
+
+Difference to Golem / iExec / Sonm:
+
+- TrueBit: scaling up verified computation
+- Others: using blockchain to pay for cloud services
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+### How to Scale Computation?
+
+- only few people perform computation off-chain
+- if anyone disagrees, they go to court (blockchain)
+- on-chain settling must be magnitudes faster
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Verification Game
+
+Parties compute Merkle-trees of full state (memory) at every single
+computation step and submit roots at certain steps.
+
+<pre class="fragment appear-once"><code>      step: 1                                                         1 000 000
+Proposer:   input                                                       output1
+Challenger: input                                                       output2
+</code></pre>
+<pre class="fragment appear-once"><code>      step: 1                    500 000                              1 000 000
+Proposer:   input                                                       output1
+Challenger: input                                                       output2
+</code></pre>
+<pre class="fragment appear-once"><code>      step: 1                    500 000                              1 000 000
+Proposer:   input                 0x1234                                output1
+Challenger: input                 0x1234                                output2
+</code></pre>
+<pre class="fragment appear-once"><code>      step: 1                    500 000              750 000         1 000 000
+Proposer:   input                 0x1234                                output1
+Challenger: input                 0x1234                                output2
+</code></pre>
+<pre class="fragment appear-once"><code>      step: 1                    500 000              750 000         1 000 000
+Proposer:   input                 0x1234               0x7328           output1
+Challenger: input                 0x1234               0x1862           output2
+</code></pre>
+<pre class="fragment appear-once"><code>      step: 1                    500 000    625 000   750 000         1 000 000
+Proposer:   input                 0x1234               0x7328           output1
+Challenger: input                 0x1234               0x1862           output2
+</code></pre>
+<pre class="fragment appear"><code>      step: 1                    500 000    625 000   750 000         1 000 000
+Proposer:   input                 0x1234     0x8256    0x7328           output1
+Challenger: input                 0x1234     0x8256    0x1862           output2
+</code></pre>
+<p class="fragment appear">...</p>
+<pre class="fragment appear"><code>      step: 1             ...                638 295 638 296   ...    1 000 000
+Proposer:   input                             0x5423  0x7436            output1
+Challenger: input                             0x5423  0x3845            output2
+</code></pre>
+<p class="fragment appear">After 20 rounds: agreement → disagreement in one step<br/>
+Both submit Merkle-proofs, smart contract verifies with no effort and finds cheater</p>
+</script></section>
+
+<section data-markdown><script type="text/template">
+### The Good News
+
+- 20 rounds can be further reduced
+- cheater is found with certainty: large disincentive to cheat
+- game will never be played but has to be there as fallback
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Problem: Verifier's Dilemma
+
+- only need single verifier, but has to be altruistic
+- over time, verifiers will stop looking because system works
+- system breaks down
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Solution: Forced Errors
+
+- pseudorandomly inject forced errors
+- verifiers get reward for finding forced errors
+- solver is not punished if forced error is found
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Problem: Information Sharing
+
+- solver can notify certain verifiers about error
+- verifiers can create multiple accounts
+- how to ensure computation was actually run?
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+### Solution: Reduce Reward with every Challenge
+
+- solver can also challenge
+- *total* error-finding reward is halved for each report
+
+Payouts:
+
+- 1 challenge: 100 = 100
+- 2 challenges: 25 + 25 = 50
+- 3 challenges: 8.333 + 8.333 + 8.333 = 25
+- ...
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Wrapup
+
+- TrueBit scales trusted computations with unanimous consensus
+- Website: http://truebit.io
+- Technical Whitepaper: https://people.cs.uchicago.edu/~teutsch/papers/truebit.pdf
+- Looking for developers and funding to make this happen!
+
+</script></section>
+
+
+			</div>
+
+		</div>
+
+		<script src="../reveal.js/lib/js/head.min.js"></script>
+		<script src="../reveal.js/js/reveal.js"></script>
+
+		<script>
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: false,
+
+				transition: 'none', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: '../reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: '../reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: '../reveal.js/plugin/zoom-js/zoom.js', async: true },
+					{ src: '../reveal.js/plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
