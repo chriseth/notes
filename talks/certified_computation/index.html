@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Scalable Certified Computations</title>
+
+		<meta name="author" content="Christian Reitwiessner">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="../reveal.js/css/reveal.css">
+		<link rel="stylesheet" href="../reveal.js/css/theme/simple.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="../reveal.js/lib/css/zenburn.css">
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+<style type="text/css">
+@font-face {
+	font-family: PTSans;
+	src: url('./pt-sans-regular.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+}
+body, .reveal {
+	font-family: PTSans, Arial, sans-serif;
+}
+.reveal .slides {
+	text-align: left;
+}
+.reveal pre {
+  width: inherit;
+}
+.reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+	text-align: center;
+	text-transform: none;
+	font-family: PTSans, Arial, sans-serif;
+	margin-bottom: 1em;
+}
+p { text-align: left; }
+.reveal .slides section .fragment.appear {
+  opacity: 0;
+  display: none;
+}
+.reveal .slides section .fragment.appear.visible {
+  opacity: 1;
+  display: block;
+}
+.reveal .slides section .fragment.appear-once {
+  opacity: 0;
+  display: none;
+}
+.reveal .slides section .fragment.appear-once.current-fragment {
+  opacity: 1;
+  display: block;
+}
+.backgrounds {
+  -webkit-filter: opacity(0%);
+  -moz-filter: opacity(0%);
+  -o-filter: opacity(0%);
+  -ms-filter: opacity(0%);
+  filter: opacity(0%);
+}
+html.blurStrong .backgrounds {
+  -webkit-filter: opacity(20%);
+  -moz-filter: opacity(20%);
+  -o-filter: opacity(20%);
+  -ms-filter: opacity(20%);
+  filter: opacity(20%);
+}
+html.blurLight .backgrounds {
+  -webkit-filter: opacity(60%);
+  -moz-filter: opacity(60%);
+  -o-filter: opacity(60%);
+  -ms-filter: opacity(60%);
+  filter: opacity(60%);
+}
+html.noBlur .backgrounds {
+  -webkit-filter: none;
+  -moz-filter: none;
+  -o-filter: none;
+  -ms-filter: none;
+  filter: none;
+}
+</style>
+
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+<section>
+<h2>Scalable Certified Computations</h2>
+<small><p>
+Christian Reitwiessner<br/>
+@ethchris &nbsp; github.com/chriseth &nbsp; chris@ethereum.org</p>
+<p>
+Blockchain for Science Meetup Berlin - 2017-08-22
+</p>
+</small>
+</section>
+
+<section data-markdown data-background="atlas.jpg" data-state="blurStrong"><script type="text/template">
+### What is Computation?
+
+- Processing LHC's sensor output (multiple gigabytes per second)
+</script></section>
+
+<section data-markdown data-background="proteins.png" data-state="blurStrong"><script type="text/template">
+### What is Computation?
+
+- Folding proteins
+</script></section>
+
+<section data-markdown data-background="xray.jpg" data-state="blurStrong"><script type="text/template">
+### What is Computation?
+
+- Detecting certain structures (or the absence thereof) in x-ray images
+</script></section>
+
+<section data-markdown><script type="text/template">
+### What is Computation?
+
+- Processing LHC's sensor output (multiple gigabytes per second)
+- Folding proteins
+- Detecting certain structures (or the absence thereof) in x-ray images
+
+Fixed, formalized procedure applied to certain inputs that yields certain outputs
+
+Difference between "searching" and "processing", problem of negation.
+</script></section>
+
+<section data-markdown><script type="text/template">
+### How to Certify Computations?
+
+- In the worst case: re-compute to check
+- Search problems are much easier to certify
+- Hash functions help
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Smart-Contract Blockchains as Neutral "Certifier"
+
+- Smart-contract blockchains can run arbitrary code in a "trusted" way
+- Problem: Scalability
+</script></section>
+
+<section data-background="bitcoin_tx.png" data-state="blurLight">
+<h3>What is Scalability?</h3>
+<ul>
+<li>A process scales if it performs equally well as it grows</li>
+<li>Blockchains: Every full node has to process every block</li>
+<li>Adding nodes does not help, as fast as single computer</li>
+<li>-> There is a strict limit of what can be done in a transaction</li>
+</ul>
+</section>
+
+<section>
+<h3>Scalability in Ethereum</h3>
+<ul>
+<li><b>Casper</b>: scale state space and transactions via <b>sharding</b></li>
+<li><b>zkSNARKs</b>: scale computations by encoding them as polynomials on elliptic curves</li>
+</ul>
+<p>Not practical yet, requires fork (but scheduled soon).</p>
+
+Workaround: Only use blockchain as central hub or <b>supreme court</b>.
+<ul>
+<li><b>Raiden</b>: scale transactions via <b>state channels</b></li>
+<li><b>TrueBit</b>: scale computations via <b>interactive verification</b></li>
+</ul>
+</section>
+
+<section data-markdown><script type="text/template">
+### TrueBit has Unanimous Consensus
+
+- single honest verifier can outrule anyone ("99.9% attack")
+- presence of honest verifier ensured by economic incentives
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+### How to Scale Computation?
+
+- only few people perform computation off-chain
+- if anyone disagrees, they go to court (blockchain)
+- on-chain settling must be magnitudes faster
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Verification Game
+
+Parties compute Merkle-trees of full state (memory) at every single
+computation step and submit roots at certain steps.
+
+<pre class="fragment appear-once"><code>      step: 1                                                         1 000 000
+Proposer:   input                                                       output1
+Challenger: input                                                       output2
+</code></pre>
+<pre class="fragment appear-once"><code>      step: 1                    500 000                              1 000 000
+Proposer:   input                                                       output1
+Challenger: input                                                       output2
+</code></pre>
+<pre class="fragment appear-once"><code>      step: 1                    500 000                              1 000 000
+Proposer:   input                 0x1234                                output1
+Challenger: input                 0x1234                                output2
+</code></pre>
+<pre class="fragment appear-once"><code>      step: 1                    500 000              750 000         1 000 000
+Proposer:   input                 0x1234                                output1
+Challenger: input                 0x1234                                output2
+</code></pre>
+<pre class="fragment appear-once"><code>      step: 1                    500 000              750 000         1 000 000
+Proposer:   input                 0x1234               0x7328           output1
+Challenger: input                 0x1234               0x1862           output2
+</code></pre>
+<pre class="fragment appear-once"><code>      step: 1                    500 000    625 000   750 000         1 000 000
+Proposer:   input                 0x1234               0x7328           output1
+Challenger: input                 0x1234               0x1862           output2
+</code></pre>
+<pre class="fragment appear"><code>      step: 1                    500 000    625 000   750 000         1 000 000
+Proposer:   input                 0x1234     0x8256    0x7328           output1
+Challenger: input                 0x1234     0x8256    0x1862           output2
+</code></pre>
+<p class="fragment appear">...</p>
+<pre class="fragment appear"><code>      step: 1             ...                638 295 638 296   ...    1 000 000
+Proposer:   input                             0x5423  0x7436            output1
+Challenger: input                             0x5423  0x3845            output2
+</code></pre>
+<p class="fragment appear">After 20 rounds: agreement → disagreement in one step<br/>
+Both submit Merkle-proofs, smart contract verifies with no effort and finds cheater</p>
+</script></section>
+
+<section data-markdown><script type="text/template">
+### The Good News
+
+- 20 rounds can be further reduced
+- cheater is found with certainty: large disincentive to cheat
+- game will never be played but has to be there as fallback
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Problem: Verifier's Dilemma
+
+- only need single verifier, but has to be altruistic
+- over time, verifiers will stop looking because system works
+- system breaks down
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Solution: Forced Errors
+
+- pseudorandomly inject forced errors
+- verifiers get reward for finding forced errors
+- solver is not punished if forced error is found
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+### Wrap-Up
+
+- Difference between "search" and "processing" computations
+- Blockchains can be used to verify computations, but are extremely limited
+- TrueBit scales this limitation with unanimous consensus
+
+</script></section>
+
+
+			</div>
+
+		</div>
+
+		<script src="../reveal.js/lib/js/head.min.js"></script>
+		<script src="../reveal.js/js/reveal.js"></script>
+
+		<script>
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: false,
+
+				transition: 'none', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: '../reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: '../reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: '../reveal.js/plugin/zoom-js/zoom.js', async: true },
+					{ src: '../reveal.js/plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
