@@ -10,6 +10,7 @@
 \usepackage[bf]{caption}
 \usepackage{graphicx}
 \usepackage{enumitem}
+\usepackage{listings}
 \usepackage{url}
 \usepackage{hyperref}
 \hypersetup{
@@ -148,19 +149,149 @@ and how they can be distributed among a plasma system.
 
 \section{Assumptions}
 
-We assume that a user is watching a finite set of leaf chains
-and all chains on the path to the root from these leaf chains.
+We start by defining a simplified view of the plasma system.
+
+We abstract away the fraud proof mechanism and blockchains in general.
+
+There is a number of \emph{chains}, each of which is modeled as a
+computing node. Some chains are malicious, meaning they can have
+invalid state transitions, ignore transactions or withhold information.
+The chains are arranged in a tree and have a communication channel
+to thair parent and their children, if they have some.
+We assume that the root chain is not malicious.
+
+There is a certain number of users. Some users are malicous.
+We assume that each user can \emph{watch} a limited number of chains.
+Non-malicious users watch some chains and
+all chains on the path to the root from these chains.
+
+We also assume that if a user watches a chain,
+it cannot have any invalid state transitions for that period of time,
+unless the user is also malicious or the parent chain can have
+invalid state transitions.
 
 
-If the following two properties are invariants of a single blockchain, then they
-translate to the full blockchain if a user always only checks the path to the root.
+\section{Token Contract}
 
-\begin{enumerate}
-\item if the balance of an account decreases, there has to be a valid signature by the owner
-\item the total sum of all balances cannot change
-\end{enumerate}
+TODO: I wanted to give a formal abstract treatment first,
+but it is probably better to argue alongside the contract.
 
-Simple solution: Consider child chains as actual accounts.
+% We want to have a token contract that is deployed to all of the chains.
+% Every account has a separate balance on each of the chains and tokens can be
+% moved between the chains along the edges in the tree.
+% Individually, all chains fulfill the following invariants:
+
+% \begin{enumerate}
+% \item If the balance of an account decreases, there has to be a valid signature by the owner.
+% \item The sum of all balances in a chain only changes by the amounts sent to and
+% received from parents and children.
+% \end{enumerate}
+
+% Of course, these invariants can be violated by malicious chains, but we should still have
+% the following property:
+
+% \begin{property}
+% If a user watches all chains where he or she owns tokens and only accepts to receive
+% tokens on chains of which he or she has validated the full history, then the user
+% can always move the tokens to the root chain.
+% \end{property}
+% \begin{proof}
+
+% \end{proof}
+
+The following smart contract is replicated on all chains in
+the system. The smart contract language used follows
+the syntax and semantic of Solidity, but it has
+one additional feature: Functions can be marked ``edge''.
+Such functions
+are executed as part of a transaction sent to an ``edge''
+of the tree instead of a sigle chain. Parts of the code of these functions
+are executed on the relative parent and other parts on
+the relative child in sequence. The actual compiled smart contract
+will use logs and Merkle proofs for synchronisation.
+Inside an ``edge'' functions, the identifier
+``child'' is an integer (0 or 1 for two children) identifying the
+child relative to the parent.
+
+\begin{lstlisting}
+contract Token {
+  mapping(address => uint) balance;
+  uint[2] childBalance;
+
+  // Regular transfer between two accounts in the same chain.
+  function transfer(address recipient, uint amount) {
+    require(balance[msg.sender] >= amount);
+    balance[msg.sender] -= amount;
+    balance[recipient] += amount;
+  }
+
+  // Moves tokens from a certain account in the parent to the
+  // same account in the child chain.
+  edge function transferToChild(amount) {
+      parent {
+        require(balance[msg.sender] >= amount);
+        balance[msg.sender] -= amount;
+        childBalance[child] += amount;
+      }
+      // After successful completion of the parent part,
+      // the child part can be executed in the child.
+      child {
+        balance[msg.sender] += amount;
+      }
+  }
+
+  edge function transferToParent(amount) {
+    child {
+      require(balance[msg.sender] >= amount);
+      balance[msg.sender] -= amount;
+    }
+    parent {
+      require(childBalance[child] >= amount);
+      childBalance[child] -= amount;
+      balance[msg.sender] += amount;
+    }
+  }
+}
+\end{lstlisting}
+
+\begin{property}
+If a non-malicious user watches all chains where he or she owns tokens and only accepts to receive
+tokens on chains where he or she has either validated the full history of the chain
+(including the path to the root) or
+checked that sum of all balances (including child balances) matches the respective amount in the parent chain
+(including the path to the root), then the user
+can always move these tokens to the root chain.
+\end{property}
+\begin{proof}
+First, let us observe that if such a user owns accepted tokens in a chain, the user
+watches this chain and its parents and thus the code will executed exactly as stated.
+
+Furthermore, note that in each situation where a balance of a user (as opposed
+to a child chain) is decreased, the address ``msg.sender'' is used and thus
+this only happens if the user intends to do so.
+
+If all contracts on the way to the root executed as written,
+the only reason the tokens cannot be moved to the root
+is that some call to ``transferToParent'' fails. Since the same values
+``amount'' is subtracted in the child chain and added in the parent chain,
+the reason for such a failure has to be a failed ``require'' call.
+
+A) The call fails in the child. The call can only fail in the child if the
+user wanted to send more tokens that his or her balance is, but the user
+would send exactly ``balance[user]'', so this cannot happen.
+
+B) The call fails in the parent. In this situation, we have to have
+``childBalance[child] < amount''. Remember that the user either verified
+the full history of the chain or checked that the balances in the
+child sum up to ``childBalance[child]'' in the parent. At least at synchronisation
+points, this property is an invariant also for all other functions.
+Since ``child.balance[msg.sender] == amount'' at the beginning of the
+function call, we have that ``childBalance[child] >= child.balance[msg.sender]''
+and thus a contradiction.
+
+Since both situations are impossible, the user can move the tokens
+to the root chain.
+\end{proof}
 
 \bibliographystyle{alpha}
 \bibliography{bibliography}
