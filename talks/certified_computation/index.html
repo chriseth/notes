@@ -138,7 +138,7 @@ Blockchain for Science Meetup Berlin - 2017-08-22
 <section data-markdown><script type="text/template">
 ### What is Computation?
 
-- Processing LHC's sensor output (multiple gigabytes per second)
+- Processing LHC's sensor output
 - Folding proteins
 - Detecting certain structures (or the absence thereof) in x-ray images
 
@@ -150,10 +150,16 @@ Difference between "searching" and "processing", problem of negation.
 <section data-markdown><script type="text/template">
 ### How to Certify Computations?
 
+- "I claim that procedure X applied to input A yields output B"
 - In the worst case: re-compute to check
-- Search problems are much easier to certify
-- Hash functions help
+- Search problems can be easier to certify / verify ("witness") than to compute
 </script></section>
+
+<section data-background="waldo.jpg" data-state="noBlur">
+</section>
+
+<section data-background="waldo2.jpg" data-state="noBlur">
+</section>
 
 <section data-markdown><script type="text/template">
 ### Smart-Contract Blockchains as Neutral "Certifier"
@@ -168,7 +174,7 @@ Difference between "searching" and "processing", problem of negation.
 <li>A process scales if it performs equally well as it grows</li>
 <li>Blockchains: Every full node has to process every block</li>
 <li>Adding nodes does not help, as fast as single computer</li>
-<li>-> There is a strict limit of what can be done in a transaction</li>
+<li>Strict limit of what can be done in a transaction</li>
 </ul>
 </section>
 
@@ -178,23 +184,14 @@ Difference between "searching" and "processing", problem of negation.
 <li><b>Casper</b>: scale state space and transactions via <b>sharding</b></li>
 <li><b>zkSNARKs</b>: scale computations by encoding them as polynomials on elliptic curves</li>
 </ul>
-<p>Not practical yet, requires fork (but scheduled soon).</p>
+<p>Not practical yet, requires fork (soon for zkSNARKs).</p>
 
-Workaround: Only use blockchain as central hub or <b>supreme court</b>.
+<p>Workaround: Blockchain only central hub or <b>supreme court</b>.</p>
 <ul>
 <li><b>Raiden</b>: scale transactions via <b>state channels</b></li>
 <li><b>TrueBit</b>: scale computations via <b>interactive verification</b></li>
 </ul>
 </section>
-
-<section data-markdown><script type="text/template">
-### TrueBit has Unanimous Consensus
-
-- single honest verifier can outrule anyone ("99.9% attack")
-- presence of honest verifier ensured by economic incentives
-
-</script></section>
-
 
 <section data-markdown><script type="text/template">
 ### How to Scale Computation?
@@ -245,14 +242,14 @@ Proposer:   input                             0x5423  0x7436            output1
 Challenger: input                             0x5423  0x3845            output2
 </code></pre>
 <p class="fragment appear">After 20 rounds: agreement → disagreement in one step<br/>
-Both submit Merkle-proofs, smart contract verifies with no effort and finds cheater</p>
+Both submit Merkle-proofs, smart contract verifies single step with no effort and finds cheater</p>
 </script></section>
 
 <section data-markdown><script type="text/template">
-### The Good News
+### TrueBit has Unanimous Consensus
 
-- 20 rounds can be further reduced
-- cheater is found with certainty: large disincentive to cheat
+- single honest verifier can outrule anyone ("99.9% attack")
+- presence of honest verifier ensured by economic incentives
 - game will never be played but has to be there as fallback
 
 </script></section>
@@ -269,9 +266,19 @@ Both submit Merkle-proofs, smart contract verifies with no effort and finds chea
 <section data-markdown><script type="text/template">
 ### Solution: Forced Errors
 
-- pseudorandomly inject forced errors
+- solver has to pseudorandomly inject forced errors
 - verifiers get reward for finding forced errors
 - solver is not punished if forced error is found
+- solver publishes correct answer right after
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+### TrueBit Project State
+
+- writing formalized system for computation ("Virtual Machine")
+- WebAssembly plus merkelization of state
+- We are looking for developers! jt@truebit.io
 
 </script></section>
 
