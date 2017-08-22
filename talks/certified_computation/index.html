@@ -144,7 +144,6 @@ Blockchain for Science Meetup Berlin - 2017-08-22
 
 Fixed, formalized procedure applied to certain inputs that yields certain outputs
 
-Difference between "searching" and "processing", problem of negation.
 </script></section>
 
 <section data-markdown><script type="text/template">
@@ -152,7 +151,8 @@ Difference between "searching" and "processing", problem of negation.
 
 - "I claim that procedure X applied to input A yields output B"
 - In the worst case: re-compute to check
-- Search problems can be easier to certify / verify ("witness") than to compute
+- Search problems can be easier to certify / verify ("witness") than to compute,
+  but beware of negation!
 </script></section>
 
 <section data-background="waldo.jpg" data-state="noBlur">
@@ -165,7 +165,8 @@ Difference between "searching" and "processing", problem of negation.
 ### Smart-Contract Blockchains as Neutral "Certifier"
 
 - Smart-contract blockchains can run arbitrary code in a "trusted" way
-- Problem: Scalability
+- Only re-run verification if you want to be extra sure.
+- Problem: Scalability - limited computational bandwidth
 </script></section>
 
 <section data-background="bitcoin_tx.png" data-state="blurLight">
@@ -197,6 +198,7 @@ Difference between "searching" and "processing", problem of negation.
 ### How to Scale Computation?
 
 - only few people perform computation off-chain
+- only post input and output to blockchain
 - if anyone disagrees, they go to court (blockchain)
 - on-chain settling must be magnitudes faster
 
@@ -269,7 +271,7 @@ Both submit Merkle-proofs, smart contract verifies single step with no effort an
 - solver has to pseudorandomly inject forced errors
 - verifiers get reward for finding forced errors
 - solver is not punished if forced error is found
-- solver publishes correct answer right after
+- solver publishes correct answer immediately after
 
 </script></section>
 
