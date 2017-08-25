@@ -3,6 +3,10 @@
 \bibitem[JP17]{plasma}
 Vitalik~Buterin Joseph~Poon.
 \newblock Plasma: Scalable autonomous smart contracts.
-\newblock \url{http://plasma.io/plasma.pdf}, 2017.
+\newblock \url{https://plasma.io/plasma.pdf}, 2017.
+
+\bibitem[sol17]{solidity}
+Solidity.
+\newblock \url{https://solidity.readthedocs.io/}, 2017.
 
 \end{thebibliography}
