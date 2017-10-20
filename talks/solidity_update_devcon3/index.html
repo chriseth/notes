@@ -168,6 +168,7 @@ contract C {
     persons.push(person);
   }
   function registerPersons(uint[] ids, string[] names, bool[] isOwners) {
+    require(ids.length == names.length && names.length == isOwners.length);
     for (uint i = 0; i < ids.length; i++) {
       persons.push(Person(ids[i], names[i], isOwners[i]));
     }
@@ -186,9 +187,9 @@ contract C {
   function registerPerson(Person person) {
     persons.push(person);
   }
-  function registerPersons(Persons[] persons) {
-    for (uint i = 0; i < persons.length; i++) {
-      persons.push(persons[i]);
+  function registerPersons(Persons[] _persons) {
+    for (uint i = 0; i < _persons.length; i++) {
+      persons.push(_persons[i]);
     }
   }
 }
@@ -417,6 +418,49 @@ contract SimpleExample {
 </script></section>
 
 <section data-markdown><script type="text/template">
+<center><img style="margin:auto;border:none;width:100%;" src="np_complete.png"/></center>
+</script></section>
+
+<section data-markdown><script type="text/template">
+### LibSMT2 / Z3
+```TypeScript
+pragma experimental SMTChecker;
+contract SimpleExample {
+  function order(uint fruit, uint fries, uint salad, uint wings, uint mozzarella, uint sampler) pure public {
+    require(fruit < 3 && fries < 3 && salad < 3 && wings < 3 && mozzarella < 3 && sampler < 3);
+    uint sum = fruit * 215 + fries * 275 + salad * 335 +  wings * 355 + mozzarella * 420 + sampler *  580;
+    require(sum == 1505);
+    assert(false);
+  }
+}
+```
+```
+:7:5: Warning: Assertion violation happens here for:
+fruit = 1
+fries = 0
+salad = 0
+wings = 2
+mozzarella = 0
+sampler = 1
+sum = 1505
+
+  assert(false);
+```
+
+```
+pragma experimental SMTChecker;
+contract SimpleExample {
+  function f(uint x, uint y) {
+    uint z = (x ^ y) / 2 + (x & y);
+assert(z == x + y / 2);
+  }
+}
+```
+
+SOLVE XKCD 287
+</script></section>
+
+<section data-markdown><script type="text/template">
 ### LibSMT2 / Z3
 
 <img style="width: 8em;" src="riddle.png"/>
@@ -428,7 +472,7 @@ contract SimpleExample {
     require(circle + circle == 10);
     require(circle * square + square == 12);
     require(circle * square - triangle * circle == circle);
-    assert(triangle == 0);
+    assert(false);
   }
 }
 ```
@@ -438,9 +482,21 @@ circle = 5
 square = 2
 triangle = 1
 
-  assert(triangle == 0);
+  assert(false);
   ^-------------------^
 ```
+
+```
+pragma experimental SMTChecker;
+contract SimpleExample {
+  function f(uint x, uint y) {
+    uint z = (x ^ y) / 2 + (x & y);
+assert(z == x + y / 2);
+  }
+}
+```
+
+SOLVE XKCD 287
 </script></section>
 
         </div>
