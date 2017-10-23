@@ -45,6 +45,9 @@ body, .reveal {
 .reveal pre {
   width: inherit;
 }
+.reveal table th, .reveal table td {
+    border-bottom: none;
+}
 .reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
 	text-align: center;
 	text-transform: none;
@@ -102,7 +105,10 @@ html.blurLight .backgrounds {
 <section data-markdown><script type="text/template">
 ## Flexibility in Solidity
 
-Devcon3 - Cancun - 2017-11-03
+<br/>
+<br/>
+
+Devcon3 - Cancún - 2017-11-03
 
 <small>
 Dr. Christian Reitwiessner <br/>
@@ -115,22 +121,29 @@ Ethereum Foundation <br/>
 <section data-markdown><script type="text/template">
 ### Struggle of Language Design
 
-  - constant battle between functionality and restrictions
-  - on a blockchain: .... and costs
+<br/>
+<br/>
+
+<table>
+<tr class="fragment"><td>Functionality</td><td style="text-align:center;">--</td><td>Safety / Complexity</td></tr>
+<tr class="fragment"><td style="text-align:right;">\<br/>&nbsp;</td><td>&nbsp;<br/>Cost</td><td>/<br/>&nbsp;</td></tr>
+</table>
 </script></section>
 
 <section data-markdown><script type="text/template">
 ### Path for Solidity
 
-  - relatively safe high-level features
-  - easy to use formal verification
-  - direct access to low-level features in a safe way
+<br/>
+<br/>
 
-  => disallow intermediate-level ``.call()`` because of "magic" involved
+  - relatively safe and cheap high-level-looking features <!-- .element: class="fragment" -->
+  - no magic, no surprises <!-- .element: class="fragment" -->
+  - easy to use formal verification <!-- .element: class="fragment" -->
+  - direct access to low-level features in a safe way <!-- .element: class="fragment" -->
 </script></section>
 
 <section data-markdown><script type="text/template">
-### Structs, Nested Arrays and Dynamic Return Data
+### Structs and Dynamic Return Data
 
 ```TypeScript
 contract C {
@@ -144,7 +157,7 @@ contract C {
 </script></section>
 
 <section data-markdown><script type="text/template">
-### Structs, Nested Arrays and Dynamic Return Data
+### Structs and Dynamic Return Data
 
 ```TypeScript
 contract C {
@@ -158,7 +171,27 @@ contract C {
 </script></section>
 
 <section data-markdown><script type="text/template">
-### Structs, Nested Arrays and Dynamic Return Data
+### Structs and Dynamic Return Data
+
+```TypeScript
+contract C {
+  struct Person { uint id; string name; bool isOwner; }
+  Person[] persons;
+  function registerPerson(Person person) {
+    persons.push(person);
+  }
+  function registerPersons(                     ?                     ) {
+
+    for (uint i = 0; i <  ? .length; i++) {
+      persons.push(Person(              ?             ));
+    }
+  }
+}
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Structs and Dynamic Return Data
 
 ```TypeScript
 contract C {
@@ -176,9 +209,8 @@ contract C {
 }
 ```
 </script></section>
-
 <section data-markdown><script type="text/template">
-### Structs, Nested Arrays and Dynamic Return Data
+### Structs and Dynamic Return Data
 
 ```TypeScript
 contract C {
@@ -195,9 +227,9 @@ contract C {
 }
 ```
 </script></section>
-  
+
 <section data-markdown><script type="text/template">
-### Structs, Nested Arrays and Dynamic Return Data
+### Structs and Dynamic Return Data
 
 ```TypeScript
 contract C {
@@ -206,9 +238,9 @@ contract C {
   function registerPerson(Person person) {
     persons.push(person);
   }
-  function registerPersons(Persons[] persons) {
-    for (uint i = 0; i < persons.length; i++) {
-      persons.push(persons[i]);
+  function registerPersons(Persons[] _persons) {
+    for (uint i = 0; i < _persons.length; i++) {
+      persons.push(_persons[i]);
     }
   }
   function getPersons() returns (Person[]) {
@@ -258,41 +290,23 @@ function <functionName>(value, pos) <return> {
   <assignEnd>
 }
 ```
-- much harder to get wrong
-- easy to debug
-- easier to optimize
-</script></section>
-
-<section data-markdown><script type="text/template">
-### Iulia for IR and Inline Assembly
-
-- makes Solidity much more flexible
-- early access to new EVM features
-- still accessible by formal verification
-- separate talk by Alex Beregszaszi (@axic)
-- compilable to different backends
-
-=> disallow intermediate-level ``.call()`` because of "magic" involved
 </script></section>
 
 <section data-markdown><script type="text/template">
 ### Tooling
 
-- remix got gigantic upgrades (see Yann's talk)
-- AST import / export => mutation testing by Julius
-- standard-json-io: fine-grained settings, reproducibility, metadata
+<br/>
+
+- remix got gigantic upgrades (see Yann Levreau's talk) <!-- .element: class="fragment" -->
+- AST import / export => mutation testing by Julius Faber <!-- .element: class="fragment" -->
+- standard-json-io: fine-grained settings, reproducibility, metadata <!-- .element: class="fragment" -->
+- Documentation: Translation into Spanish! <!-- .element: class="fragment" -->
+<br/> https://github.com/AdrianClv/solidity-docs-es <!-- .element: class="fragment" -->
 </script></section>
   
 <section data-markdown><script type="text/template">
 ### Formal Verification
-
-- Last year: Why3 is Great!
-- Now: hm....
-</script></section>
-
-<section data-markdown><script type="text/template">
-### Why3
-
+  
 - Last year: Why3 is Great!
 
 ```TypeScript
@@ -301,7 +315,7 @@ function <functionName>(value, pos) <return> {
 /// @why3 contract-account invariant { sum #balance = total }
 contract Token {
   mapping (address => uint256) balance;
-    function transfer(address _from, address _to, uint256 _val) {
+  function transfer(address _from, address _to, uint256 _val) {
     if (balance[_from] < _val) throw;
     balance[_from] = balance[_from] - _val;
     /// @why3 here assert { sum #balance = total - to_int !(__val) };
@@ -311,21 +325,14 @@ contract Token {
   }
 }
 ```
+
+... perhaps not so much <!-- .element: class="fragment" -->
 </script></section>
 
 <section data-markdown><script type="text/template">
-### Why3
+### SMTLib2 / Z3
 
-- You have to learn yet another language
-- You have to use an external prover tool
-- All aspects of Solidity have to be fully mapped to why3
-- Problems with aliasing in arrays
-- People will not use complicated tools.
-- If people use complicated tools, others will not understand it.
-</script></section>
-  
-<section data-markdown><script type="text/template">
-### LibSMT2 / Z3
+<br/>
 
 ```TypeScript
 contract Token {
@@ -345,23 +352,24 @@ contract Token {
 </script></section>
 
 <section data-markdown><script type="text/template">
-### LibSMT2 / Z3
+### SMTLib2 / Z3
 
-- no new language
-- no complete semantic mapping required (assumes arbitraryness)
-- uses existing require / assert mechanism for pre-/post-conditions
-- no user-interactive required in proof generation
-- ``require(x)`` adds ``x`` as pre-condition
-- currently tries to prove that
-  - no overflow / underflow
+<br/>
+
+
+Assumes "require" expressions and tries to prove:
+
+  - assertions
+  - no overflows / underflows
   - no division by zero
-  - no failing ``assert``
-  - constant conditions / unreachable code
-- provides examples for failures
+  - no constant conditions / unreachable code
+  - ...
 </script></section>
-
+  
 <section data-markdown><script type="text/template">
-### LibSMT2 / Z3
+### SMTLib2 / Z3
+
+<br/>
 
 ```TypeScript
 pragma experimental SMTChecker;
@@ -371,20 +379,24 @@ contract SimpleExample {
   }
 }
 ```
+  <!-- .element: class="fragment" -->
 
 ```
-:4:12: Warning: Overflow (resulting value larger than 2**256-1) happens here for:
-  value = 2**256
+:4:12: Warning: Overflow (result larger than 2**256-1) happens here for:
   a = 2**256 - 1
   b = 1
-
+  result = 2**256
+  
     return a + b;
            ^---^
 ```
+  <!-- .element: class="fragment" -->
 </script></section>
 
 <section data-markdown><script type="text/template">
-### LibSMT2 / Z3
+### SMTLib2 / Z3
+
+<br/>
 
 ```TypeScript
 pragma experimental SMTChecker;
@@ -398,7 +410,9 @@ contract SimpleExample {
 </script></section>
   
 <section data-markdown><script type="text/template">
-### LibSMT2 / Z3
+### SMTLib2 / Z3
+
+<br/>
 
 ```TypeScript
 pragma experimental SMTChecker;
@@ -410,93 +424,43 @@ contract SimpleExample {
   }
 }
 ```
+  <!-- .element: class="fragment" -->
+
 ```
 :4:23: Warning: For loop condition is always true.
   for (uint i = 10; i >= 0; i--) {
                     ^----^
 ```
+  <!-- .element: class="fragment" -->
 </script></section>
 
 <section data-markdown><script type="text/template">
-<center><img style="margin:auto;border:none;width:100%;" src="np_complete.png"/></center>
-</script></section>
+### SMTLib2 / Z3
 
-<section data-markdown><script type="text/template">
-### LibSMT2 / Z3
-```TypeScript
-pragma experimental SMTChecker;
+<div style="display: flex; align-items: flex-start;">
+<img style="width: 8em; border: none; " src="riddle.png"/>
+<pre class="fragment"><code class="lang-TypeScript">pragma experimental SMTChecker;
 contract SimpleExample {
-  function order(uint fruit, uint fries, uint salad, uint wings, uint mozzarella, uint sampler) pure public {
-    require(fruit < 3 && fries < 3 && salad < 3 && wings < 3 && mozzarella < 3 && sampler < 3);
-    uint sum = fruit * 215 + fries * 275 + salad * 335 +  wings * 355 + mozzarella * 420 + sampler *  580;
-    require(sum == 1505);
-    assert(false);
-  }
-}
-```
-```
-:7:5: Warning: Assertion violation happens here for:
-fruit = 1
-fries = 0
-salad = 0
-wings = 2
-mozzarella = 0
-sampler = 1
-sum = 1505
-
-  assert(false);
-```
-
-```
-pragma experimental SMTChecker;
-contract SimpleExample {
-  function f(uint x, uint y) {
-    uint z = (x ^ y) / 2 + (x & y);
-assert(z == x + y / 2);
-  }
-}
-```
-
-SOLVE XKCD 287
-</script></section>
-
-<section data-markdown><script type="text/template">
-### LibSMT2 / Z3
-
-<img style="width: 8em;" src="riddle.png"/>
-
-```TypeScript
-pragma experimental SMTChecker;
-contract SimpleExample {
-  function f(int16 circle, int16 square, int16 triangle) pure public {
+  function f(int16 circle, int16 square,
+             int16 triangle) pure public {
     require(circle + circle == 10);
-    require(circle * square + square == 12);
-    require(circle * square - triangle * circle == circle);
+    require(circle &#x2a; square + square == 12);
+    require(circle &#x2a; square -
+            triangle &#x2a; circle == circle);
     assert(false);
   }
 }
-```
-```
-:7:5: Warning: Assertion violation happens here for:
+</code></pre>
+</div>
+
+<pre class="fragment"><code>:7:5: Warning: Assertion violation happens here for:
 circle = 5
 square = 2
 triangle = 1
 
   assert(false);
-  ^-------------------^
-```
+  ^-----------^</code></pre>
 
-```
-pragma experimental SMTChecker;
-contract SimpleExample {
-  function f(uint x, uint y) {
-    uint z = (x ^ y) / 2 + (x & y);
-assert(z == x + y / 2);
-  }
-}
-```
-
-SOLVE XKCD 287
 </script></section>
 
         </div>
