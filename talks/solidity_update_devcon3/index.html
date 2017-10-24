@@ -163,22 +163,8 @@ contract C {
 contract C {
   struct Person { uint id; string name; bool isOwner; }
   Person[] persons;
-  function registerPerson(Person person) {
-    persons.push(person);
-  }
-}
-```
-</script></section>
-
-<section data-markdown><script type="text/template">
-### Structs and Dynamic Return Data
-
-```TypeScript
-contract C {
-  struct Person { uint id; string name; bool isOwner; }
-  Person[] persons;
-  function registerPerson(Person person) {
-    persons.push(person);
+  function registerPerson(uint id, string name, bool isOwner) {
+    persons.push(Person(id, name, isOwner));
   }
   function registerPersons(                     ?                     ) {
 
@@ -197,8 +183,8 @@ contract C {
 contract C {
   struct Person { uint id; string name; bool isOwner; }
   Person[] persons;
-  function registerPerson(Person person) {
-    persons.push(person);
+  function registerPerson(uint id, string name, bool isOwner) {
+    persons.push(Person(id, name, isOwner));
   }
   function registerPersons(uint[] ids, string[] names, bool[] isOwners) {
     require(ids.length == names.length && names.length == isOwners.length);
@@ -299,7 +285,7 @@ function <functionName>(value, pos) <return> {
 
 - remix got gigantic upgrades (see Yann Levreau's talk) <!-- .element: class="fragment" -->
 - AST import / export => mutation testing by Julius Faber <!-- .element: class="fragment" -->
-- standard-json-io: fine-grained settings, reproducibility, metadata <!-- .element: class="fragment" -->
+- standard-json-io: fine-grained settings, reproducibility <!-- .element: class="fragment" -->
 - Documentation: Translation into Spanish! <!-- .element: class="fragment" -->
 <br/> https://github.com/AdrianClv/solidity-docs-es <!-- .element: class="fragment" -->
 </script></section>
@@ -383,6 +369,16 @@ contract SimpleExample {
 
 ```
 :4:12: Warning: Overflow (result larger than 2**256-1) happens here for:
+
+
+
+
+    return a + b;
+           ^---^
+```
+<!-- .element: class="fragment appear-once" -->
+```
+:4:12: Warning: Overflow (result larger than 2**256-1) happens here for:
   a = 2**256 - 1
   b = 1
   result = 2**256
@@ -390,7 +386,8 @@ contract SimpleExample {
     return a + b;
            ^---^
 ```
-  <!-- .element: class="fragment" -->
+<!-- .element: class="fragment" -->
+
 </script></section>
 
 <section data-markdown><script type="text/template">
@@ -406,6 +403,9 @@ contract SimpleExample {
     return a + b;
   }
 }
+```
+```
+Compilation successful.
 ```
 </script></section>
   
