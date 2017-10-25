@@ -511,32 +511,96 @@ Have to map from real to digital world:
 </script></section>
 
 <section data-markdown><script type="text/template">
-How do snarks work?
+### From Mini-Sudoku to zkSNARKs
 
-1) Map computation to polynomial equations
-2) Verifier chooses secret evaluation point
-3) Prover evaluates polynomial
-4) do the same thing with homomorphic encryption
-5) do the same thing non-interactively (or 1.5 interactions)
+Still some problems:
+
+ - does not work for generic computations <!-- .element: class="fragment" -->
+ - many rounds of interactions <!-- .element: class="fragment" -->
+
+Reason: single error can be hidden in any cell <!-- .element: class="fragment" -->
+</script></section>
+
+<section data-markdown><script type="text/template">
+### From Mini-Sudoku to zkSNARKs
+
+Use polynomials to make error visible almost everywhere.
+
+.1 x<sup>5</sup> + 2 x<sup>4</sup> - 80 x<sup>3</sup> - 70 x
+
+<img src="./graphs_single.png" class="fragment" style="border: none; width: 100%; box-shadow: none;" />
+</script></section>
+<section data-markdown><script type="text/template">
+### From Mini-Sudoku to zkSNARKs
+
+Use polynomials to make error visible almost everywhere.
+
+.1 x<sup>5</sup> + 2 x<sup>4</sup> - 80 x<sup>3</sup> - 70 x  &nbsp; -- &nbsp;
+.1 x<sup>5</sup> + <b>1</b> x<sup>4</sup> - 80 x<sup>3</sup> - 70 x
+
+<img src="./graphs_combined.png" style="border: none; width: 100%; box-shadow: none;" />
+</script></section>
+
+<section data-markdown><script type="text/template">
+### From Mini-Sudoku to zkSNARKs
+
+Theorem: Two different polynomials of degree at most n can coincide in at most n points.
+
+=> n is tiny compared to the number of possible evaluation points
+<!-- .element: class="fragment" -->
+</script></section>
+
+<section data-markdown><script type="text/template">
+### How do SNARKs work?
+
+ 1. Map computation to polynomial equations: <!-- .element: class="fragment" -->  <br/>
+    There is a (secret) ``w`` such that for all ``x``: <br/>``a(x) * w(x) = b(x) * c(x)``
+ 2. Verifier chooses secret evaluation point <!-- .element: class="fragment" -->
+ 3. Prover evaluates polynomial ... <!-- .element: class="fragment" -->
+ 4. ... using homomorphic encryption <!-- .element: class="fragment" -->
+ 5. Do the same thing non-interactively (in "1.5" rounds) <!-- .element: class="fragment" -->
 
 </script></section>
 
 <section data-markdown><script type="text/template">
-  explain soundness, completeness, zero-knowledeg
+### Homomorphic Encryption
 
-  statistical, computational
+Homomorphic encryption is computation on encrypted data.
 
-  explain trusted setup, toxic waste
+Arbitrary computation not yet practical, but "pairings" can do arbitrary sums and a single multiplication at the end.
+
+(``a(x) * w(x) = b(x) * c(x)`` - works if done separately for each power of ``x``)
+
+-> allows the prover to evaluate polynomial at unknown / encrypted point ``x``.
 </script></section>
 
 <section data-markdown><script type="text/template">
-  explain pairing
+### Trusted Setup
+
+Reduced to 2-round protocol, but would like no interaction.
+
+Randomly generate ``x``, encrypt it to ``[x]``, send ``[x]`` to prover, evaluate polynomial, check equality.
+
+Equality can also be checked on the encrypted form.
+
+Not required to know ``x``, only ``[x]``.
+
+Generate ``[x]`` in a distributed process a la (simplified) ``[x] = [a] + [b] + [c] + [d]``.
+
+``x = a + b + c + d`` can only be known if all of ``a``, ``b``, ``c`` and ``d`` are obtained ("toxic waste").
 </script></section>
   
 <section data-markdown><script type="text/template">
-  give some specific numbers on performance
+### Summary of zkSNARKs
+
+ 1. Trusted Setup generates reusable ``[x]``
+ 2. Prover computes ``a([x]) * w([x])`` and ``b([x]) * c([x])``
+ 3. Verifier checks equality (in encrypted form)
+ 4. ZK is achieved by adding same random number to both sides
+
+Tiny proof: 8 group elements (above is simplified) <br/>
+Verification: 5 pairing checks plus some EC arithmetics
 </script></section>
-  
 
         </div>
 
