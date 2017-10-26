@@ -541,11 +541,13 @@ Theorem: Two different polynomials of degree at most n can coincide in at most n
 ### How do SNARKs work?
 
  1. Map computation to polynomial equations: <!-- .element: class="fragment" -->  <br/>
-    There is a (secret) ``w`` such that for all ``x``: <br/>``a(x) * w(x) = b(x) * c(x)``
+	Prover knows a (secret) ``w`` such that for all ``x``: <br/>``a(x) * w(x) = b(x) * c(x)`` <br/>
+	<span class="fragment">Reality: Multiple polynomials to choose from according to certain rules</span>
  2. Verifier chooses secret evaluation point <!-- .element: class="fragment" -->
- 3. Prover evaluates polynomial ... <!-- .element: class="fragment" -->
+ 3. Prover evaluates polynomials ... <!-- .element: class="fragment" -->
  4. ... using homomorphic encryption <!-- .element: class="fragment" -->
-
+ 5. Verfier checks equality. <!-- .element: class="fragment" -->
+ 
 </script></section>
 
 <section data-markdown><script type="text/template">
