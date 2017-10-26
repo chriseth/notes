@@ -102,7 +102,9 @@ html.blurLight .backgrounds {
 <section data-markdown><script type="text/template">
 ## Babbage - a Mechanical Smart Contract Language
 
-Devcon3 - Cancún - 2017-11-03
+<br/>
+
+Devcon3 - Cancún - 2017-11-02
 
 <small>
 Dr. Christian Reitwiessner <br/>
@@ -112,7 +114,150 @@ Ethereum Foundation <br/>
 
 </script></section>
 
+<section>
+<pre><code class="TypeScript" style="max-height: none;">contract CrowdFund {
+  mapping(address => uint) balances;
+  bool locked;
+  function lock() { locked = true; }
+  function fund() payable {
+    require(!locked);
+    balances[msg.sender] += msg.value;
+  }
+  function withdraw() {
+    require(!locked);
+    msg.sender.transfer(balances[msg.sender]);
+    delete balances[msg.sender];
+  }
+  // More code ...
 
+
+
+
+
+}
+</code></pre>
+</section>
+
+<section>
+<pre><code class="TypeScript" style="max-height: none;">contract CrowdFund {
+  mapping(address => uint) balances;
+  bool locked;
+  function lock() { locked = true; }
+  function fund() payable {
+    require(!locked);
+    balances[msg.sender] += msg.value;
+  }
+  function withdraw() {
+    require(!locked);
+    msg.sender.transfer(balances[msg.sender]);
+    delete balances[msg.sender];
+  }
+  // More code ...
+  function doSomethingComplicated() {
+    // ...
+    locked = false;
+    // ...
+  }
+}
+</code></pre>
+</section>
+  
+<section data-markdown><script type="text/template">
+## Text-Based Languages
+
+<br/>
+<br/>
+
+
+ - Variables can be referenced from anywhere.
+ - No visible connection between definition and reference. <!-- .element: class="fragment" -->
+ - Tools help, but why are they required? <!-- .element: class="fragment" -->
+</script></section>
+
+<section><pre><code class="TypeScript" style="max-height: none;">/// @title A 'bhòtadh le riochdachadh.
+contract Baileat {
+  // Tha seo a 'dearbhadh seòrsa iom-fhillte ùr a nì
+  // bi air a chleachdadh airson atharrachaidhean nas fhaide air adhart.
+  // Bidh e a 'riochdachadh aon neach-bhòtaidh.
+  struct neachBhòtaidh {
+    uint cuideam; // tha cuideam air a chruinneachadh le cuideam
+    bool bhòtadh; // ma tha e fìor, bhòt an neach sin mu thràth
+    address riochdaire; // neach air a thiomnadh gu
+    uint bhòt;    // clàr-amais  den mholadh bhòtaichte
+  }
+
+  // Is e seo seòrsa airson aon mholadh.
+  struct Moladh {
+    bytes32 ainm;   // goirid ainm (suas ri 32 bytes)
+    uint bhòtACunntadh; // àireamh de bhòtaichean cruinnichte
+  }
+
+  address public neachCathrach;
+
+  // Tha seo a 'dearbhadh caochlaideach stàite a tha sin
+  // a 'stòradh structar `neachBhòtaidh` airson gach seòladh
+  // a dh'fhaodadh a bhith ann.
+  mapping(address => neachBhòtaidh) public luchdBhòtaidh;
+
+  // A h-uile ìre de structaran `Moladh`.
+  Moladh[] public molaidhean;
+</code></pre></section>
+
+<section><pre><code class="TypeScript" style="max-height: none;">  /// Cruthaich baileat ùr gus taghadh de `ainmeanMolaidh` a thaghadh.
+  function Baileat(bytes32[] ainmeanMolaidh) {
+    neachCathrach = msg.sender;
+    luchdBhòtaidh[neachCathrach].cuideam = 1;
+
+    // Airson gach aon de na h-ainmean molaidh a tha air an solarachadh,
+    // cruthaich cuspair tagraidh ùr agus cuir ris
+    // gu deireadh an t-sreath.
+    for (uint i = 0; i < ainmeanMolaidh.length; i++) {
+      // `Moladh({...})` a 'cruthachadh sealach
+      // Proposal object agus `molaidhean.push (...)`
+      // a 'cur crìoch air `molaidhean`.
+      molaidhean.push(Moladh({
+        ainm: ainmeanMolaidh[i],
+        bhòtACunntadh: 0
+      }));
+    }
+  }
+  // ...
+}
+</code></pre></section>
+
+<section data-markdown><script type="text/template">
+## The Machine Analogy
+
+<br/>
+<br/>
+
+ - Smart Contracts are like transparent public machines
+ - unprecedented, even open source not the same <!-- .element: class="fragment" -->
+ - let us use this analogy... <!-- .element: class="fragment" -->
+</script></section>
+
+<section>
+<img style="border: none; box-shadow: none; height: 15.5em;" src="./splitter.svg"/>
+</section>
+
+<section>
+<img style="border: none; box-shadow: none; height: 15.5em;" src="./adjustable_splitter.svg"/>
+</section>
+
+<section><center>
+<img style="border: none; box-shadow: none; height: 18em;" src="./escrow.svg"/>
+</center></section>
+
+<section data-markdown><script type="text/template">
+### Babbage - a Mechanical Smart Contract Language
+
+<br/>
+<br/>
+
+Join the discussion:
+
+https://groups.google.com/forum/#!forum/babbage-lang
+</script></section>
         </div>
 
 		</div>
