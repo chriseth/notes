@@ -363,11 +363,11 @@ Assumes "require" expressions and tries to prove:
 pragma experimental SMTChecker;
 contract SimpleExample {
   function add(uint a, uint b) pure public returns (uint) {
+
     return a + b;
   }
 }
 ```
-  <!-- .element: class="fragment" -->
 
 ```asciidoc
 :4:12: Warning: Overflow (result larger than 2**256-1) happens here for:
@@ -380,7 +380,7 @@ contract SimpleExample {
 ```
 <!-- .element: class="fragment appear-once" -->
 ```asciidoc
-:4:12: Warning: Overflow (result larger than 2**256-1) happens here for:
+:5:12: Warning: Overflow (result larger than 2**256-1) happens here for:
   a = 2**256 - 1
   b = 1
   result = 2**256
