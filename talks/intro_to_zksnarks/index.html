@@ -491,23 +491,10 @@ Again, no private information is revealed by the Prover.
 Still, Prover is not able to cheat (up to certain probability),
 because of commitment to solution (paper and tape).
 <!-- .element: class="fragment" -->
-</script></section>        
-            
-<section data-markdown><script type="text/template">
-### Example: Mini-Sudoku
 
 Success probability of cheating Prover decreases exponentially
 due to repetition.
-</script></section>
-
-<section data-markdown><script type="text/template">
-### From Mini-Sudoku to zkSNARKs
-
-Have to map from real to digital world:
-
- - dice  <span class="fragment">-> cryptographic pseudo-randomness</span>
- - table <span class="fragment">-> communication channel / blockchain</span>
- - paper + tape <span class="fragment">-> encryption, one key per tape</span>
+<!-- .element: class="fragment" -->
 </script></section>
 
 <section data-markdown><script type="text/template">
@@ -558,7 +545,6 @@ Theorem: Two different polynomials of degree at most n can coincide in at most n
  2. Verifier chooses secret evaluation point <!-- .element: class="fragment" -->
  3. Prover evaluates polynomial ... <!-- .element: class="fragment" -->
  4. ... using homomorphic encryption <!-- .element: class="fragment" -->
- 5. Do the same thing non-interactively (in "1.5" rounds) <!-- .element: class="fragment" -->
 
 </script></section>
 
@@ -587,9 +573,9 @@ Randomly <!-- .element: class="fragment" --> generate ``x``, encrypt it to ``[x]
 Equality can also be checked on the encrypted form.
 <!-- .element: class="fragment" -->
 
-Not <!-- .element: class="fragment" --> required to know ``x``, only ``[x]``.
+Not <!-- .element: class="fragment" --> required to know ``x``, only ``[x]``, and can be re-used!
 
-Generate <!-- .element: class="fragment" --> ``[x]`` in a distributed process a la (simplified) ``[x] = [a] + [b] + [c] + [d]``.
+Generate <!-- .element: class="fragment" --> ``[x]`` in a distributed process a la (simplified) ``[x] = [a] + [b] + [c] + [d]  (= [a + b + c + d])``.
 
 <!-- .element: class="fragment" --> ``x = a + b + c + d`` can only be known if all of ``a``, ``b``, ``c`` and ``d`` are obtained ("toxic waste").
 </script></section>
