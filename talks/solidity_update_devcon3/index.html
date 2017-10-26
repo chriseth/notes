@@ -258,7 +258,7 @@ ArrayUtils(_context).convertLengthToSize(_type);
   
 This is gradually changing to
   
-```
+```ocaml
 function <functionName>(value, pos) <return> {
   let length := <lengthFun>(value)
   <storeLength> // might update pos
@@ -369,7 +369,7 @@ contract SimpleExample {
 ```
   <!-- .element: class="fragment" -->
 
-```
+```asciidoc
 :4:12: Warning: Overflow (result larger than 2**256-1) happens here for:
 
 
@@ -379,7 +379,7 @@ contract SimpleExample {
            ^---^
 ```
 <!-- .element: class="fragment appear-once" -->
-```
+```asciidoc
 :4:12: Warning: Overflow (result larger than 2**256-1) happens here for:
   a = 2**256 - 1
   b = 1
@@ -406,7 +406,7 @@ contract SimpleExample {
   }
 }
 ```
-```
+```asciidoc
 Compilation successful.
 ```
 </script></section>
@@ -428,7 +428,7 @@ contract SimpleExample {
 ```
   <!-- .element: class="fragment" -->
 
-```
+```asciidoc
 :4:23: Warning: For loop condition is always true.
   for (uint i = 10; i >= 0; i--) {
                     ^----^
