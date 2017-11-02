@@ -104,10 +104,10 @@ html.blurLight .backgrounds {
 
 <br/>
 
-Devcon3 - Cancún - 2017-11-02
+devcon three - Cancún - 2017-11-02
 
 <small>
-Dr. Christian Reitwiessner <br/>
+Christian Reitwiessner <br/>
 Ethereum Foundation <br/>
 @ethchris   github.com/chriseth   chris@ethereum.org
 </small>
@@ -125,8 +125,9 @@ Ethereum Foundation <br/>
   }
   function withdraw() {
     require(!locked);
-    msg.sender.transfer(balances[msg.sender]);
+    uint amount = balances[msg.sender];
     delete balances[msg.sender];
+    msg.sender.transfer(amount);
   }
   // More code ...
 
@@ -149,8 +150,9 @@ Ethereum Foundation <br/>
   }
   function withdraw() {
     require(!locked);
-    msg.sender.transfer(balances[msg.sender]);
+    uint amount = balances[msg.sender];
     delete balances[msg.sender];
+    msg.sender.transfer(amount);
   }
   // More code ...
   function doSomethingComplicated() {
@@ -169,9 +171,13 @@ Ethereum Foundation <br/>
 <br/>
 
 
- - Variables can be referenced from anywhere.
+ - Variables can be referenced by name from anywhere.
  - No visible connection between definition and reference. <!-- .element: class="fragment" -->
- - Tools help, but why are they required? <!-- .element: class="fragment" -->
+ - Tools and style help, but why are they required? <!-- .element: class="fragment" -->
+
+&nbsp;
+
+ - Named elements have to use certain natural language <!-- .element: class="fragment" -->
 </script></section>
 
 <section><pre><code class="TypeScript" style="max-height: none;">/// @title A 'bhòtadh le riochdachadh.
