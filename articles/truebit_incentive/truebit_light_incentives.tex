@@ -1,0 +1,211 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{latexsym,amsbsy,amssymb,amsmath,amsfonts}
+\usepackage{amsthm}
+\usepackage{epsfig}
+\usepackage{euscript}
+\usepackage{fullpage}
+\usepackage{multirow,multicol,booktabs}
+\usepackage[bf]{caption}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{mathtools}
+\usepackage{hyperref}
+\hypersetup{
+    pdfauthor={Christian Reitwießner},
+    pdftitle={Truebit Light's Incentive System}
+    unicode,
+    breaklinks,
+    colorlinks=false,
+    pdfborder={0 0 0}
+}
+
+\date{}
+
+\renewcommand{\captionfont}{\small}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\hfuzz=0mm
+\tolerance=10000
+\hbadness=1000
+
+
+\setlength{\parindent}{0mm}
+\setlength{\parskip}{2ex plus0.5ex minus0.5ex}
+
+
+\newcommand{\Sum}{\sum\limits}
+\newcommand{\Prod}{\prod\limits}
+
+
+\newtheorem{dummytheorem}{Dummy-Theorem}[section]
+\newtheorem{definition}[dummytheorem]{Definition}
+\newtheorem{lemma}[dummytheorem]{Lemma}
+\newtheorem{theorem}[dummytheorem]{Theorem}
+\newtheorem{proposition}[dummytheorem]{Proposition}
+\newtheorem{property}[dummytheorem]{Property}
+\newtheorem{corollary}[dummytheorem]{Corollary}
+\newtheorem{example}[dummytheorem]{Example}
+\newtheorem{remark}[dummytheorem]{Remark}
+\newtheorem{fact}[dummytheorem]{Fact}
+\newtheorem{claim}[dummytheorem]{Claim}
+\newtheorem{subclaim}{Subclaim}[dummytheorem]
+\newtheorem{conjecture}[dummytheorem]{Conjecture}
+
+\newcommand{\uint}{\mathbb{N}}
+\newcommand{\rational}{\mathbb{Q}}
+
+\newcommand{\oli}[1]{\overline{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\newcommand{\eps}{\varepsilon}
+\newcommand{\card}[1]{\##1}
+\newcommand{\length}[1]{\mathrm{length}({#1})}
+
+\newcommand{\pn}[1]{\textnormal{#1}}
+
+\newcommand{\norm}[1]{||{#1}||}
+\newcommand{\Norm}[1]{\left|\left|{#1}\right|\right|}
+
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+\selectlanguage{english}
+
+
+\title{Truebit Light's Incentive System}
+
+\author{Christian Reitwießner \\ 
+{\tt chris@ethereum.org}}
+
+
+\maketitle
+
+
+%\begin{abstract}
+%abc
+%\end{abstract}
+
+Blockchains can reasonably ensure that programs are executed correctly in a decentralized setting.
+They do not guarantee that a transaction is accepted, nor do they guarantee that an accepted transaction remains
+accepted, but the probability of a rollback decreases as time advances.
+
+The main problem of blockchains is their scalability: The amount of computation that can happen per time is more or less fixed.
+It especially does not increase the more participants join the network, it is rather limited by the slowest node in the
+network.
+
+TrueBit solves this problem through interactive verification. It allows more or less arbitrarily complex computations to
+be performed under the assumption that there is at least one honest participant. It does not require that participant
+to be altruistic, though. TrueBit also includes some drawbacks, especially the drawback that transactions usually take
+more time to be accepted and they can also be delayed arbitrarily by an attacker, as long as this attacker has enough
+financial resources. The system favours correctness over liveness, i.e. as long as there is at least one honest
+participant, it is impossible to include an incorrect computation, but an attacker can cause arbitrary delays to include
+correct computations.
+
+This article wants to specifically address the Dogecoin-Ethereum bridge, which requires blocks from the Dogecoin
+blockchain to be verified inside an Ethereum smart contract. This verification is too expensive to be done directly,
+and because of that, we utilize TrueBit to take the computation off-chain.
+
+We call TrueBit-light the protocol that does not make an effort to bring honest participants to the network.
+We assume that an honest participant is present who is altruistic to a certain degree. This includes keeping up
+with the Ethereum network, paying the gas fee and having a certain amount of money to pay for an initial deposit.
+
+We also simplify the system to a degree to only allow one parallel task. This might be extended to a constant amount
+of tasks but would also make the presentation here more complex.
+
+All timeouts are lower bounds and have to be extended in case of Ethereum network congestion. This means that if you want
+to claim a timeout to take effect, you have to provide a proof that severeal previous blocks had enough capacity to
+include a potential response by the other party. Since TrueBit never makes a claim that state transitions take effect
+in a finite amount of time, this is still consistent with the theory presented below.
+
+The TrueBit contract has the following properties:
+
+TrueBit consists of the fact claiming component and the verification game. In both cases, we fix a mathematical function
+$f \colon \Sigma^n \mapsto \Sigma^n$ which can be implemented on a given machine in $s$ elementary computation steps.
+This is not a big limitation, since $f$ can be an interpreter for another machine, thus allowing to run arbitrary programs,
+which have a certain finite running time. Limiting the running time is a crucial component, although this limit can be
+magnitudes higher than what is possible to compute in a single block of the underlying blockchain.
+
+We will start with describing a language that helps us treat the smart contract systems.
+
+\begin{definition}
+Let $\mathcal{A}$ be the set of all accounts and $\mathcal{T}$ the set of timestamps (e.g. the natural numbers).
+We model a smart contract $C$ as a state machine that can receive inputs from $\mathcal{T} \times \mathcal{A} \times I$
+(timestamp, sender and input)
+and acts on this input by changing to a state from $S$ and producing an output from $O$. Here, $I$, $O$ and $S$
+are specific to each smart contract type. We identify the smart contract with its state transition function
+$C \colon S \times \mathcal{T} \times \mathcal{A} \times I \to S \times O$. The function is a partial function, i.e.
+the machine is able to reject certain inputs. We also identify $C$ with the
+iterated state transition function $C \colon (\mathcal{T} \times \mathcal{A} \times I)^* \to S \times O$,
+where we assume an implied initial state $s_0$ such that $(s_0, o_0) = C(\varepsilon)$. The iterated state
+transition function is then defined inductively as
+$C(I_n, (t, a, i)) = C(s', t, a, i)$, where $(s', o') = C(I_n)$.
+
+As a shorthand, we write $C\colon s \xRightarrow[t, a]{i} s', o$ if $C(s, t, a, i) = (s', o)$.
+\end{definition}
+
+We now model the interactive game $G[a,b,x,y]$ that is played between two participants $a$ and $b$ and which either decides a
+claim that $f(x) = y$ with
+certainty in at most $\log_2 s$ rounds or results in a timeout. Let $t_G$ be the intra-round timeout for the game.
+In case where there is no network congestion, $G$ takes at most $t_G \cdot \log_2 s$ time.
+
+Initially, $a$ claims that $f(x) = y$ and the point of disagreement between $a$ and $b$ is between steps $0$ and $s$
+and the game started at time $t_0$:
+
+$G[a,b,x,y,t_0](\varepsilon) = (a, t_0, (0, x), (s, y))$
+
+All following messages have to have a timestamp larger than the one in the state, i.e. we have an implicit requirement that $t > t_p$.
+Furthermore, we will omit the parameters of $G$ in the following.
+
+The claimant, $a$, has to start with providing a representation of the internal state (it can be a hash thereof)
+of $f$ at step $\floor{\frac{s}{2}}$:
+
+$G[\dots]\colon a, t_p, (l, s_1), (h, s_2) \xRightarrow[t, a]{s_3} b, t, (l, s_1), (h, s_2), (\floor{\frac{l+h}{2}}, s_3)$, \quad if $h - l > 1$.
+
+Next, the challenger responds by choosing to either search in the left area (if he or she things that the internal state
+at step $\floor{\frac{l+h}{2}}$ is not represented by $s_m$) or the right area (otherwise):
+
+$G[\dots]\colon b, t_p, (l, s_1), (h, s_2), (m, s_3) \xRightarrow[t, b]{\uparrow} b, t, (m, s_3), (h, s_2)$
+
+$G[\dots]\colon b, t_p, (l, s_1), (h, s_2), (m, s_3) \xRightarrow[t, b]{\downarrow} b, t, (l, s_1), (m, s_3)$
+
+Note that $h-l$ is roughly halved each round. As soon as it reaches $1$, the smart contract can actually perform the computation:
+
+\[
+G[\dots]\colon a, t_p, (l, s_1), (l+1, s_2) \xRightarrow[t, a]{p}
+\begin{cases} a &\parbox[t]{.6\textwidth}{if in the algorithm that computes $f$, the transition from step $l$ to $l+1$ turns
+    the internal state from $s_1$ to $s_2$, potentially utilizing the auxiliary proof data $p$, and}\\
+b &\text{otherwise}
+\end{cases}
+\]
+
+Furthermore, a timeout can be claimed any time by anyone.
+
+$G[\dots]\colon a, t_p, \dots \xRightarrow[t, \cdot]{} b$, \quad if $t > t_p + t_G$ and \\
+$G[\dots]\colon b, t_p, \dots \xRightarrow[t, \cdot]{} a$, \quad if $t > t_p + t_G$.
+
+
+The strategy for the honest actor:
+
+
+
+
+\end{document}
+    
