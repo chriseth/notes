@@ -152,14 +152,45 @@ We model a smart contract $C$ as a state machine that can receive inputs from $\
 and acts on this input by changing to a state from $S$ and producing an output from $O$. Here, $I$, $O$ and $S$
 are specific to each smart contract type. We identify the smart contract with its state transition function
 $C \colon S \times \mathcal{T} \times \mathcal{A} \times I \to S \times O$. The function is a partial function, i.e.
-the machine is able to reject certain inputs. We also identify $C$ with the
+the machine is able to reject certain inputs. Smart contracts reject any input whose timestamp is
+not larger than the previously non-rejected input. We also identify $C$ with the
 iterated state transition function $C \colon (\mathcal{T} \times \mathcal{A} \times I)^* \to S \times O$,
 where we assume an implied initial state $s_0$ such that $(s_0, o_0) = C(\varepsilon)$. The iterated state
 transition function is then defined inductively as
 $C(I_n, (t, a, i)) = C(s', t, a, i)$, where $(s', o') = C(I_n)$.
 
 As a shorthand, we write $C\colon s \xRightarrow[t, a]{i} s', o$ if $C(s, t, a, i) = (s', o)$.
+
+A \emph{strategy} for a player $a \in \mathcal{A}$ is a function
+from $S \to (\mathcal{T} \times \mathcal{I}) \cup \{ \bot \}$ (where $\bot$ means that the player
+does not make a move).
+For a strategy assignment $\mathcal{S} \colon \mathcal{A} \to (S \to (\mathcal{T} \times \mathcal{I}) \cup \{ \bot \})$,
+a \emph{game} $g$ in a smart contract $C$ according to $\mathcal{S}$ is a sequence of moves, i.e.\ $g \in (\mathcal{T} \times \mathcal{A} \times \mathcal{I})^*$ such that
+$C(g)$ is defined and either $g = \varepsilon$ (the empty game) or $g = g' \cdot (t, a, i)$ such that
+$g'$ is a game in $C$ where $C(g') = (s, o)$, $\mathcal{S}(a)(s) = (t, i)$ and there is no $a' \in \mathcal{A}$ such that
+$S(a') = (t',i')$, $t' < t$ and $C(g' \cdot (t', a', i'))$ is defined.
+
+For $\mathcal{S} \colon \mathcal{A} \to (S \to (\mathcal{T} \times \mathcal{I}) \cup \{ \bot \})$, we write
+$C \rightsquigarrow_{\mathcal{S}} o$ if for any game $g$ in $C$ according to $\mathcal{S}$ there is
+some $s$ such that $C(g) = (s,o)$. For a single strategy function
+$s \colon S \to \mathcal{T} \times \mathcal{I} \cup \{ \bot \}$ for a player $a \in \mathcal{A}$
+we write $C \rightsquigarrow_s o$
+if $C \rightsquigarrow_{\mathcal{S}} o$ or any $\mathcal{S}$ that satisfies $\mathcal{S}(a) = s$.
 \end{definition}
+
+\begin{theorem}
+For any function $f$ taking $s$ steps to compute,
+there is an interactive game with two participants $a$ and $b$
+implemented by a smart contract $G[a,b,\cdot,\cdot,\cdot]$ with the following properties:
+\begin{enumerate}
+\item it takes at most $\log_2 s$ rounds and at most $t_G \log_2 s$ time
+(assuming no network congestion) for some intra-round timeout $t_G$
+\item for any $x$ and $y$, there is always a strategy $s$ for player $a$ such that
+$G[a,b,x,f(x),y] \rightsquigarrow_s = f(x) $
+\item for any $x$ and $y$, there is always a strategy $s$ for player $b$ such that
+$G[a,b,x,y,f(x)] \rightsquigarrow_s = f(x) $
+\end{enumerate}
+\end{theorem}
 
 We now model the interactive game $G[a,b,x,y]$ that is played between two participants $a$ and $b$ and which either decides a
 claim that $f(x) = y$ with
