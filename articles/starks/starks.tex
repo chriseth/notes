@@ -1,0 +1,141 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{latexsym,amsbsy,amssymb,amsmath,amsfonts}
+\usepackage{amsthm}
+\usepackage{epsfig}
+\usepackage{euscript}
+\usepackage{fullpage}
+\usepackage{multirow,multicol,booktabs}
+\usepackage[bf]{caption}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{mathtools}
+\usepackage{hyperref}
+\hypersetup{
+    pdfauthor={Christian Reitwießner},
+    pdftitle={STARKs}
+    unicode,
+    breaklinks,
+    colorlinks=false,
+    pdfborder={0 0 0}
+}
+
+\date{}
+
+\renewcommand{\captionfont}{\small}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\hfuzz=0mm
+\tolerance=10000
+\hbadness=1000
+
+
+\setlength{\parindent}{0mm}
+\setlength{\parskip}{2ex plus0.5ex minus0.5ex}
+
+
+\newcommand{\Sum}{\sum\limits}
+\newcommand{\Prod}{\prod\limits}
+
+
+\newtheorem{dummytheorem}{Dummy-Theorem}[section]
+\newtheorem{definition}[dummytheorem]{Definition}
+\newtheorem{lemma}[dummytheorem]{Lemma}
+\newtheorem{theorem}[dummytheorem]{Theorem}
+\newtheorem{proposition}[dummytheorem]{Proposition}
+\newtheorem{property}[dummytheorem]{Property}
+\newtheorem{corollary}[dummytheorem]{Corollary}
+\newtheorem{example}[dummytheorem]{Example}
+\newtheorem{remark}[dummytheorem]{Remark}
+\newtheorem{fact}[dummytheorem]{Fact}
+\newtheorem{claim}[dummytheorem]{Claim}
+\newtheorem{subclaim}{Subclaim}[dummytheorem]
+\newtheorem{conjecture}[dummytheorem]{Conjecture}
+
+\newcommand{\uint}{\mathbb{N}}
+\newcommand{\rational}{\mathbb{Q}}
+
+\newcommand{\oli}[1]{\overline{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\newcommand{\eps}{\varepsilon}
+\newcommand{\card}[1]{\##1}
+\newcommand{\length}[1]{\mathrm{length}({#1})}
+
+\newcommand{\pn}[1]{\textnormal{#1}}
+
+\newcommand{\norm}[1]{||{#1}||}
+\newcommand{\Norm}[1]{\left|\left|{#1}\right|\right|}
+
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+\selectlanguage{english}
+
+
+\title{STARKS}
+
+\author{Christian Reitwießner \\ 
+{\tt chris@ethereum.org}}
+
+
+\maketitle
+
+
+%\begin{abstract}
+%abc
+%\end{abstract}
+
+Ingredients for STARKs:
+
+Encode the computational task into a polynomial problem.
+
+IOP: Prover and verifier exchange messages. In many cases, prover sends gigantic message, but verifier only reads a tiny bit.
+In such a setting, prover can merkelize, only send root hash and verifier can request parts of the message plus Merkle proof.
+
+(Probabilistically Checkable) Proof of Proximity: Ensures that the polynomial used by the prover is ``close'' to a low-degree polynomial.
+
+From ``Computational integrity with a public random string from
+quasi-linear PCPs.'':
+
+Encode the computation trace as a sequence of $N$ elements from $\mathcal{F}_{2^64}$ and encode this in a polynomial of
+degree $N-1$ over $\mathcal{F}_{2^64}$.
+
+ACSP (algebraic constraint satisfaction problem) - NTIME(n)-complete.
+  Instances: 
+
+
+
+Reed-solomon-Codes: Univariate polynomial of high degree.
+
+PCPPs only have oracle access to the statement and proof and check that the proof is ``close'' to a true statement.
+In contrast, PCPs have full access to the statement and oracle access to the proof and check that the statement is true.
+
+Low-degree test: Procudure to check if a function we have oracle access to (i.e. can ask to be evaluated) is a multivariate polynomial of ``low'' degree.
+
+Zero-tester: efficient procedure to verify if a function given by an oracle is close to a multivariate polynomial that is
+zero on every point in a prespecified subset of its domain
+
+New approach in BS08:
+ - reduce SAT to zero-testing. Reduce zero-testing to low-degree testing.
+
+
+\end{document}
+    
