@@ -105,23 +105,28 @@
 
 Blockchains can reasonably ensure that programs are executed correctly in a decentralized setting.
 They do not guarantee that a transaction is accepted, nor do they guarantee that an accepted transaction remains
-accepted, but the probability of a rollback decreases as time advances.
+accepted, but the probability of a rollback decreases as time progresses.
 
 The main problem of blockchains is their scalability: The amount of computation that can happen per time is more or less fixed.
 It especially does not increase the more participants join the network, it is rather limited by the slowest node in the
 network.
 
-TrueBit solves this problem through interactive verification. It allows more or less arbitrarily complex computations to
+TrueBit tries to solve this problem through interactive verification. It allows more or less arbitrarily complex computations to
 be performed under the assumption that there is at least one honest participant. It does not require that participant
 to be altruistic, though. TrueBit also includes some drawbacks, especially the drawback that transactions usually take
 more time to be accepted and they can also be delayed arbitrarily by an attacker, as long as this attacker has enough
-financial resources. The system favours correctness over liveness, i.e. as long as there is at least one honest
-participant, it is impossible to include an incorrect computation, but an attacker can cause arbitrary delays to include
-correct computations.
+financial resources. The system favours correctness over liveness, i.e.\ as long as there is at least one honest
+participant, it is impossible to include an incorrect computation/transaction, but an attacker can cause arbitrary delays for
+correct computations/transactions to be included.
 
 This article wants to specifically address the Dogecoin-Ethereum bridge, which requires blocks from the Dogecoin
 blockchain to be verified inside an Ethereum smart contract. This verification is too expensive to be done directly,
 and because of that, we utilize TrueBit to take the computation off-chain.
+
+Having said that, all analyses are equally applicable to bridges between blockchains where the availability of blocks
+can be reasonably assumed. This means that it can be used to e.g.\ offload processing volume from the main Ethereum
+chain to another blockchain (which might even be a proof-of-authority chain) as long as all participants in that chain
+rightfully assume that block data is available to all potential challengers.
 
 We call TrueBit-light the protocol that does not make an effort to bring honest participants to the network.
 We assume that an honest participant is present who is altruistic to a certain degree. This includes keeping up
@@ -131,7 +136,7 @@ We also simplify the system to a degree to only allow one parallel task. This mi
 of tasks but would also make the presentation here more complex.
 
 All timeouts are lower bounds and have to be extended in case of Ethereum network congestion. This means that if you want
-to claim a timeout to take effect, you have to provide a proof that severeal previous blocks had enough capacity to
+to claim a timeout to take effect, you have to provide a proof that several previous blocks had enough capacity to
 include a potential response by the other party. Since TrueBit never makes a claim that state transitions take effect
 in a finite amount of time, this is still consistent with the theory presented below.
 
