@@ -121,7 +121,7 @@ correct computations/transactions to be included.
 
 This article wants to specifically address the Dogecoin-Ethereum bridge, which requires blocks from the Dogecoin
 blockchain to be verified inside an Ethereum smart contract. This verification is expensive when done directly,
-and because of that, we are incentivized to utilize TrueBit to take the computation off-chain.
+and because of that, it is beneficial to utilize TrueBit to take the computation off-chain.
 
 Having said that, all analyses are equally applicable to bridges between blockchains where the availability of blocks
 can be reasonably assumed. This means that it can be used to e.g.\ offload processing volume from the main Ethereum
@@ -135,8 +135,8 @@ with the Ethereum network, paying the gas fee and having a certain amount of mon
 We also simplify the system to a degree to only allow one parallel task. This might be extended to a constant amount
 of tasks but would also make the presentation here more complex.
 
-All timeouts have lower bounds and have to be extended in the case of network congestion. This means that if you want
-to a timeout extension to take effect, you have to provide a proof that several previous blocks had enough capacity to
+All timeouts are extended automatically in the case of network congestion unless it is proven that network congestion did not exist. This means that if you want
+to a timeout to take effect, you have to provide a proof that several previous blocks had enough capacity to
 include a potential response by the other party. Since TrueBit never makes a claim that state transitions take effect
 in a finite amount of time, this is still consistent with the theory presented below.
 
