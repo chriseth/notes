@@ -112,6 +112,8 @@ In such a setting, prover can merkelize, only send root hash and verifier can re
 
 (Probabilistically Checkable) Proof of Proximity: Ensures that the polynomial used by the prover is ``close'' to a low-degree polynomial.
 
+General proof of proximity: Accept if input is in the set, reject with high probability if it has a certain distance or more to the set.
+
 From ``Computational integrity with a public random string from
 quasi-linear PCPs.'':
 
@@ -121,7 +123,8 @@ degree $N-1$ over $\mathcal{F}_{2^64}$.
 ACSP (algebraic constraint satisfaction problem) - NTIME(n)-complete.
   Instances: $(\mathcal{F}, \{AFF_1, \dots, AFF_k\}, H, C)$, where $\mathcal{F}$ finite field, $AFF_i$ is affine map on $\mathcal{F}$,
               i.e. $ax + b$, $a,b \in \mathcal{F}$, $H \subseteq \mathcal{F}$, $C\colon \mathcal{F}^k \to \mathcal{F}$ is a poly of
-              degree at most $  $
+              degree at most $ |H|$ in its first variable.
+  A univariate poly $A$ is said to satisfy the instance iff $\mathrm{deg}(A) \le |H| -1$ and for all $x \in H$: $C(x, A(AFF_1(x)), \dots, A(AFF_{k'}(x))) = 0$.
 
 Compute $b = \Phi(a)$, where $\Phi$ is an ACSP instance and append PCPPs $\pi_a$, $\pi_b$ for both $a$ and $b$.
 
@@ -176,5 +179,245 @@ on transcripts of interactions between verifier and prover and runs in time poly
 
 Complexity in the following is arithmetic complexity.
 
+STARKS do not reduce via arithmetic circuits because those would result in quadratic polynomials. The STARK polynomials
+have a degree of up to 8.
+
+STIK is based on the IOP model, which does not require any cryptographic assumptions. Actual realizations, though, is unlikely
+to be possible without cryptographic assumptions.
+
+If you restrict the computational power of the prover, you end up with an argument system, instead of a proof system -> STARK.
+
+Using collision resistant hash functions, you can convert a STIK into an interactive STARK, it turns perfect zero knowledge into computational zero knowledge.
+(Kilian, note on efficient zero-knowledge proofs and arguments. - notarized envelopes, PCP and hash functions)
+
+Micali and Valiant: Turn it into a non-interactive argument system.
+Micali: Computationally sound proofs., Valiant: Incrementally verifiable computation or proofs of knowledge imply time/space efficiency.
+
+The first STARK was in "`Computational integrity with a public random string from quasi-linear PCPs."' (eurocrypt)
+
+\subsection{from AIR to ZK-Stark}
+
+AIR: Algebraic Intermediate representation
+
+Computational integrity: Input is state transition relation plus boundary conditions (input and output). Witness is execution trace (sequence of states)
+
+Question: Why machine instead of circuit? Circuit could be more efficient. - turns out reduction uses higher degree polynomials, circuits would result in quadratic only.
+
+turn this into an AIR: elements of the execution trace are turned into sequences of elements of a finite field, and transition relation is
+specified by a set of polynomials
+
+AIR is turned into an affine graph representation (nodes are states, edges are transitions). -> APR - algebraic placement routing
+
+use a 1-round IOP to produce a pair of instances of the RS proximity testing (RPT) problem.
+Verifier uses randomness to link the numerous constraints into a single one. -> algebraic linking iop (ALI)
+
+FRI as final step
+
+\begin{definition}
+AIR - looks like PUZZLE
+Instances: field, width $w$, height $T$, `"border'" (set of coordinates plus value), constraints: set of polys in $2\cdot w$ variables
+(they have to be zero)
+
+The constraints match one row to the next. Witness is filling of the table.
+\end{definition}
+
+We seem to get zero knowledge since the prover can pick a random low-degree polynomial and add it to an existing low-degree polynomial.
+
+Definition of zero knowledge: For every verifier there exists a simulator that can generated the messages betwene prover and
+verifier without having access to the witness. More specifcially: It is not possible to distinguish between the simulator and
+the actual protocol. This works since most of the messages from prover to verifier are just
+random numbers.
+
+Computational zero knowledge: Only efficient deciders cannot distinguish. (if one-way functions exist, CZK-IP)
+
+statistical zero knowlede (indistinguisable to anyone)
+
+perfect zero knowledge: identical distributions
+
+PCP: Interactive proof where the prover is non-adaptive (the proof string is fixed)
+
+From Quasi-Linear size Zero-Knowledge from Linear Algebraic PCPs
+
+duplex PCP: Prover sends oracle, verifier (without querying the oracle) sends message, prover sends second oracle, verifier queries the oracles and accepts / rejects
+
+Ideal zk-construction: There is a $t$-wise independent set of witnesses. Prover samples from it and permutes such that any $k$ bits
+in the permutation jointly only depend on $t$ bits of the original witness. Since the verifier can only query $k$ bits in the proof,
+and the witness set is $t$-wise independent, the verifier only learns $t$ random bits from a uniform distribution.
+
+A code is $t$-wise independent, if for any index set of cardinality $t$, reading at those $t$ bits from a random codeword is the uniform distribution on $\Sigma^t$.
+
+A linear code is $t$-wise independent if and only if its dual code has distance at least $t$.
+
+
+Informally: For any $f$, if for a random low-degree poly $u$ and a random number $\alpha$, $\alpha f+u$ is a low-degree poly, then also $f$ is with high probability.
+
+Prover samples $w'$ from the $t$-wise independent witness set,
+picks random $u$, sends $(w', u)$, then verifier sends random $\alpha$, prover sends $v := \alpha w' + u$ plus a proof of proximity of low-degreeness for that polynomial.
+Verfier checks proof and does random spot-checks that $v  = \alpha w' + u$.
+
+This means the PCPP is run on the random permutation and allows (and requires) many queries. The verifier only checks with a tiny number
+of queries that $v$ actually is this random permutation of $w'$, and only queries $w'$ in this part of the protocol.
+$v$ is in essence just a random element in the set of low-degree polynomials.
+
+Since the prover first commits to $u$, and the verifier is still able to multiply $w'$ by $\alpha$, the verifier will not succeed in reducing
+the degree of $w'$.
+
+Question: How does this $t$-independent witness set look like and how exactly does the probability behind this work?
+Question: How can the verifier be confident that the spot checks are enough?
+
+Zero-knowledge in general: Given a certain input, it is hard to find a solution, but once you have a solution, you
+can modify the input and the solution and still have a valid input-solution-pair. Rough idea how to get ZK:
+Prover only sends a random permutation to the verifier, but also proves that it is a random permutation of a solution
+corresponding to the concrete input. The permuted solution is checked in detail. The verifier basically only learns
+a single element of the set of all possible input-solution-pairs.
+
+Why is checking low-degreeness the central point?
+
+With AIR we have to show that a list of points can be extended to a common zero of certain polynomials.
+
+How does FRI work?
+
+starks are probably post-quantum secure, they only require randomness and collision-resistant hash functions.
+
+public randomness!
+
+snark proof size: 288 bytes, stark proof size: few hundred kilobytes
+
+
+General reduction: Have computation over $t$ steps, constraints over all these steps. Whan to prove for all $t$
+such that $C(P(x)) = 0$. Transform this restricted statement to universal statement: $C(P(X)) = Z(x)*D(x)$,
+where $Z$ is the poly that is zero on exactly $1,2,\dots,n$.
+
+Verifier can randomly sample to check equality of polynomials. Prover has to show that these are actually polynomials
+(otherwise, it is easy). Verifier knows $C$ completely.
+
+We need low-degree-extension (i.e. prover has to evaluate polys on more than just $1,2,\dots,t$), otherwise everything is a low-degree poly. This also affects soundness error!
+
+
+Take table of computation steps. State consists of $k$ registers. $H = \{1,\dots,t\}$. For all steps, the
+transition has to be correct.
+The prover provides the states
+at each step in the form of $k$ polynomials $A_i$ of degree $|H|$. $C$ is the checking polynomial, checks that
+transition is correct given
+the pre and the post-state: $C(x, A_1(x), \dots, A_k(x)) = 0$ for all $x \in H$.
+
+We stretch $H$ to $H'=\{1,\dots,kt\}$ and combine the $A_i$ into a single poly using $a_i(x) = kx+i$:
+$C(x, A(a_1(x)), \dots, A(a_k(x)) = 0$ for all $x \in H'$ ($H' = \{1,\dots, kt\}$).
+
+Note that $x \in H'$ is really important here - we have $|H'|$ many discrete checks.
+Turn this into a statement about polynomials:
+
+There is a poly $D$ such that
+$C(x, A(a_1(x)), \dots, A(a_k(x)) = Z_{H'}(x) \cdot D(x)$ for all $x$, where
+$Z_{H'}(x) = \pi_{h \in H'}(x-h)$ is zero on all elements of $H'$
+
+Note that in all polynomials here we have a certain upper bound on the degree that is much
+smaller than the size of the field.
+
+The prover comptues $D$ using polynomial division and then evaluates $A$ and $D$
+on all elements of the field, or
+at least on a much larger set than $H'$, creates merkle trees out of them and sends
+them to the verifier.
+
+The verifier requests random positions $x'$ from the prover, the prover provides the values
+$A(a_1(x')), \dots, A(a_k(x'))$ and $D(x')$. Verifier computes
+$C(x', A(a_1(x')), \dots, A(a_k(x'))$ and $Z_{H'}(x') \cdot D(x')$ and checks for equality.
+
+Since all functions are polynomials, it is really hard to first commit to the function
+and then fake the equality, because polynomials (of relatively low degree) are almost
+never equal. So the only missing point is to convince the verifier that the
+Merkle tree the prover committed to is actually the evaluation of a polynomial of the
+right degree.
+
+IOPP: Interactive oracle proof of proximity.
+
+Task: Given evaluation of function $f(x)$, prove that $f$ is represented by a
+poly of degree $\le d$.
+
+Main idea: We do not check that $f$ is poly, we only check that it agrees with a
+poly at an overwhelming number of points (proximity - it is close to a poly).
+
+Turn poly $f$ into polys $g,h$ such that $f(x) = g(x)\cdot h(x)$ and $g$ and $h$
+have degree at most $\sqrt{d}$ - basically split the powers: $f(x) = g(x^2) + x \cdot h(x^2)$.
+
+Note that this also recudes the domain size in half because we only have $x^2$.
+
+Again, verifier checks equality at some random points and then applies the degree-check recursively.
+
+If the degree is one, verifier can check itself.
+
+How to get zero knowledge:
+
+zero knowledge in degree testing: 
+
+Informally: For any $f$, if for a random low-degree poly $u$ and a random number $\alpha$,
+$\alpha f+u$ is a low-degree poly, then also $f$ is with high probability.
+
+Prover samples $w'$ from the $t$-wise independent witness set,
+picks random $u$, sends $(w', u)$, then verifier sends random $\alpha$,
+prover sends $v := \alpha w' + u$ plus a proof of proximity of low-degreeness for that polynomial.
+Verfier checks proof and does random spot-checks that $v  = \alpha w' + u$.
+
+This means the PCPP is run on the random permutation and allows (and requires) many queries.
+The verifier only checks with a tiny number
+of queries that $v$ actually is this random permutation of $w'$, and only queries
+$w'$ in this part of the protocol.
+$v$ is in essence just a random element in the set of low-degree polynomials.
+
+Since the prover first commits to $u$, and the verifier is still able to multiply
+$w'$ by $\alpha$, the verifier will not succeed in reducing
+the degree of $w'$.
+
+
+Talk outline:
+
+not my results - authors
+
+Eli Ben-Sasson, Iddo Bentov, Alessandro Chiesa, Michael A. Forbes, Ariel Gabizon, Ynon Horesh, Michael Riabzev,
+Nicholas Spooner, Madars Virza
+
+
+
+verifying computations faster than re-executing them
+
+useful for blockchains: proof that block 1 is valid, proof that block 2 is valid (including validity of proof for 1)
+-> all proofs have same size, checking validity of full blockchain is the same as checking single block.
+(this does not yet work in practice)
+
+Several approaches: SNARKs, extremely short proofs, well-suited for checking the same thing mulitple times, trusted setup,
+cryptographic assumptions
+
+STARKs: much larger proofs, also efficient for one-shot-verification, no trusted setup, no assumptions apart from hash
+functions (quantum secure)
+
+In both models: prover / verifier. Usually interactive, but can be made non-interactive. (Fiat-Shamir Heuristic)
+
+Formulate correctness of computation in terms of equality of certain polynomials.
+Checking the proof is checking equality on a random set of points. If two polys are not equal, they
+are not equal on many points (fundamental theorem of algebra).
+
+SNARKs use partially homomorphic encryption - prover evaluates the polynomials on an unknown/encrypted point.
+This point is generated during the trusted setup.
+
+In STARKs, prover commits to the full evaluation of the poly using a Merkle tree (sending only the root hash),
+Verifier requests random points. This requires an additional proof that this Merkle tree is the
+Merkle tree of a polynomial of a certain max degree (it does not matter which). -> IOPP.
+
+More in depth:
+
+Computation trace
+
+encoding into polynomial
+
+checking
+
+low-degree testing
+
+how to make zero knowledge
+
+how to make non-interactive:
+All queries by the verifier where just random numbers. Either use some randomness beacon
+or just use the hash of the previous segment of the proof as source of randomness. This can be checked
+offline.
+
 \end{document}
-    
