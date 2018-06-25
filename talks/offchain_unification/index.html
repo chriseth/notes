@@ -128,27 +128,32 @@ Ethereum Foundation <br/>
 <section data-markdown><script type="text/template">
 ### What is Computation?
 
-- Verifying cryptographic signature
-- DEX: Finding optimal price assignment for orders
-- Computing new state given current state and sequence of transactions
-- Verifying transition in state channel
-
 Fixed, formalized procedure applied to certain inputs that yields certain outputs
+
+- Verifying cryptographic signature <!-- .element: class="fragment" -->
+- DEX: Finding optimal price assignment for orders <!-- .element: class="fragment" -->
+- Computing new state given current state and sequence of transactions <!-- .element: class="fragment" -->
+- Verifying transition in state channel <!-- .element: class="fragment" -->
+
 
 </script></section>
 
 <section data-markdown><script type="text/template">
 ### Types of Computations / Problems
 
-- Most general: Input maps to output, both arbitrary size.
-- Verification problem: Output is binary (true / false)
-- Search problem: 
-- Optimization problem: 
-- Witness / Advice:
+- Most general: Input maps to output, both arbitrary size<br/>
+  (computing state transition)
+- Verification problem: Output is binary (true / false)<br/>
+  (verifying given state transition) <!-- .element: class="fragment" -->
+- Search problem: Find value that satisfies property<br/>
+  (proof of work) <!-- .element: class="fragment" -->
+- Optimization problem: Find value that satisfies property and scores high on value function<br/>
+  (price assignment in DEX) <!-- .element: class="fragment" -->
+- Witness / Advice: Additional input that should not be trusted <!-- .element: class="fragment" -->
 </script></section>
 
 <section>
-<h3>Advice</h3>
+<h3>Speeding up Search Problems with Advice</h3>
 <p>Computation task: Find Waldo in the next slide.</p>
 <center>
 <img src="./waldo.png" style="margin: auto; border: none; height: 200px;"/>
@@ -165,9 +170,9 @@ Fixed, formalized procedure applied to certain inputs that yields certain output
 <section data-markdown><script type="text/template">
 ### The Power of Advice / Witnesses
 
- - cannot be trusted, has to be checked
- - can speed up computations (only verification/optimization type) tremendously
- - connection to zero knowledge
+ - cannot be trusted, has to be checked <!-- .element: class="fragment" -->
+ - correct advice can speed up some computations tremendously <!-- .element: class="fragment" -->
+ - connection to zero knowledge: verify correctness of advice / witness without revealing it <!-- .element: class="fragment" -->
 </script></section>
     
 <section data-markdown><script type="text/template">
@@ -285,82 +290,17 @@ contract Multisig {
 </script></section>
 
 <section data-markdown><script type="text/template">
-- on-chain components only verify, should do not compute
-- language features to help computing advice
-  1. avoids double implementations
-  2. on-chain fall-back might still be a good idea (race conditions!)
-- advice cannot be trusted, full verification necessary
+### Advice for Blockchain
+
+- on-chain execution is expensive  <!-- .element: class="fragment" -->
+- turn computation into verification and take advantage of advice to speed up (state channels)  <!-- .element: class="fragment" -->
+- leads to same computation implemented on-chain and off-chain  <!-- .element: class="fragment" -->
+- language features to help computing advice  <!-- .element: class="fragment" -->
+  1. avoids double implementations  <!-- .element: class="fragment" -->
+  2. on-chain fall-back might still be a good idea (race conditions!)  <!-- .element: class="fragment" -->
+- problem: additional state databases  <!-- .element: class="fragment" -->
 </script></section>
 
-
-<section>
-<h3>Scalability in Ethereum</h3>
-<ul>
-<li><b>Casper</b>: scale state space and transactions via <b>sharding</b></li>
-<li><b>zkSNARKs</b>: scale computations by encoding them as polynomials on elliptic curves</li>
-</ul>
-<p>Not practical yet, requires fork (soon for zkSNARKs).</p>
-
-<p>Workaround: Blockchain only central hub or <b>supreme court</b>.</p>
-<ul>
-<li><b>Raiden</b>: scale transactions via <b>state channels</b></li>
-<li><b>TrueBit</b>: scale computations via <b>interactive verification</b></li>
-</ul>
-</section>
-
-<section data-markdown><script type="text/template">
-### How to Scale Computation?
-
-- only few people perform computation off-chain
-- only post input and output to blockchain
-- if anyone disagrees, they go to court (blockchain)
-- on-chain settling must be magnitudes faster
-
-</script></section>
-
-<section data-markdown><script type="text/template">
-### Wrap-Up
-
-- Difference between "search" and "processing" computations
-- Blockchains can be used to verify computations, but are extremely limited
-- TrueBit scales this limitation with unanimous consensus
-
-</script></section>
-
-
-
-<section data-markdown><script type="text/template">
-realize that it is only "almost" -> P/NP? / interactive games
-
-diagram of blockchain in the middle as central verifier with multiple provers outside
-
-can take this to the extreme and only put single state hash on chain,
-if authenticated via signatures (simple two-person state channel), you do not even have to verify correctness,
-only need to verify signature
-
-Problem: data structures have to be re-generated by the client off chain
-(very problematic if you have to generated merkle proofs. Example: zcash)
-
-Because of these two problems (data structure regeneration and
-redundant off-chain and on-chain code),
-off-chain scaling solutions have big overhead.
-
-</script></section>
-
-<section data-markdown><script type="text/template">
-  Problem statement
-
-  Scaling by moving stuff off the chain - still needs to be correct
-
-  NP? snarks?
-
-  Searching versus finding? (from the zero knowledge talk)
-
-  Computing off chain, verifying on chain. State channels, even worse with snarks and stuff.
-
-  snarks / starks?
-
-</script></section>
 </div>
 
 		</div>
