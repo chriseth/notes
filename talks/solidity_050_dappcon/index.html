@@ -324,6 +324,25 @@ contract MyContract {
 </script></section>
       
 <section data-markdown><script type="text/template">
+### Storage pointers have to be initialized
+  
+```TypeScript
+// 0.5.??
+contract MyContract {
+
+  struct Data { string name; uint amount; }
+  Data[] participants;
+
+  function participate(string memory name) public {
+    Data storage p = participants.pushNew();
+    p.name = name;
+    p.amount = msg.value;
+  }
+}
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
 ### Before 0.5.0: Function-scoped variables (JavaScript)
   
 ```TypeScript
@@ -364,6 +383,7 @@ contract MyContract {
 
  - ``.pop()`` for storage arrays
  - ``abi.encode(...)``, ``abi.encodePacked(...)``, etc.
+ - ``abi.decode(data, (type1, ..., typen))``
  - enums and structs in interfaces
 
 
@@ -375,7 +395,7 @@ contract MyContract {
 <br/>
 <br/>
 
- - ``call``, ``sha3``, etc. take only single ``bytes`` parameter
+ - ``call``, ``keccak256``, etc. take only single ``bytes`` parameter
  - wildcard tuple assignments are disallowed
  - interface functions have to be external
  - disallow conversion between bytesX and uintX of different sizes
