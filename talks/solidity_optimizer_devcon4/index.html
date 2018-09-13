@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Less Gas, More Fun: Optimising Smart Contracts through Yul</title>
+
+		<meta name="author" content="Christian Reitwiessner">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="../reveal.js/css/reveal.css">
+		<link rel="stylesheet" href="../reveal.js/css/theme/simple.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="../reveal.js/lib/css/zenburn.css">
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? '../reveal.js/css/print/pdf.css' : '../reveal.js/css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+<style type="text/css">
+@font-face {
+	font-family: PTSans;
+	src: url('./pt-sans-regular.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+}
+body, .reveal {
+	font-family: PTSans, Arial, sans-serif;
+}
+.reveal .slides {
+	text-align: left;
+}
+.reveal pre {
+  width: inherit;
+}
+.reveal table th, .reveal table td {
+    border-bottom: none;
+}
+.reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+	text-align: center;
+	text-transform: none;
+	font-family: PTSans, Arial, sans-serif;
+}
+p { text-align: left; }
+.reveal .slides section .fragment.appear {
+  opacity: 0;
+  display: none;
+}
+.reveal .slides section .fragment.appear.visible {
+  opacity: 1;
+  display: block;
+}
+.reveal .slides section .fragment.appear-once {
+  opacity: 0;
+  display: none;
+}
+.reveal .slides section .fragment.appear-once.current-fragment {
+  opacity: 1;
+  display: block;
+}
+.backgrounds {
+  -webkit-filter: opacity(0%);
+  -moz-filter: opacity(0%);
+  -o-filter: opacity(0%);
+  -ms-filter: opacity(0%);
+  filter: opacity(0%);
+}
+html.blurStrong .backgrounds {
+  -webkit-filter: opacity(20%);
+  -moz-filter: opacity(20%);
+  -o-filter: opacity(20%);
+  -ms-filter: opacity(20%);
+  filter: opacity(20%);
+}
+html.blurLight .backgrounds {
+  -webkit-filter: opacity(60%);
+  -moz-filter: opacity(60%);
+  -o-filter: opacity(60%);
+  -ms-filter: opacity(60%);
+  filter: opacity(60%);
+}
+</style>
+
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+ 
+<section data-markdown><script type="text/template">
+## Less Gas, More Fun: Optimising Smart Contracts through Yul
+
+<center>
+<br/>
+Christian Reitwiessner
+<br/>
+<br/>
+devcon4 - Prague - 2018-10-??
+</center>
+
+<br/>
+
+<small>
+Christian Reitwiessner <br/>
+Ethereum Foundation <br/>
+@ethchris   github.com/chriseth   chris@ethereum.org<br/>
+<br/>
+https://chriseth.github.io/notes/talks/solidity_optimizer_devcon4/
+</small>
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+	- start with quick explanation of yul and how it's structure is very flexible and suitable
+	as IR for optimizer
+	- show some code that might be taken from real solidity code, perhaps even with loops, so
+	  we can show unrolling and sstore fusion
+	- perform steps (unique, ssa, function inline, CSE, sstore-sorting)
+	- at the end, perform variable inlining and unused variable removal
+	- still not optimal: loop unrolling
+	- challenge for this particular optimizer: code size -> outlining
+	- compare with previous optimizer?
+
+</script></section>
+</div>
+
+		</div>
+
+		<script src="../reveal.js/lib/js/head.min.js"></script>
+		<script src="../reveal.js/js/reveal.js"></script>
+
+		<script>
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: false,
+
+				transition: 'none', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: '../reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: '../reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: '../reveal.js/plugin/zoom-js/zoom.js', async: true },
+					{ src: '../reveal.js/plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
