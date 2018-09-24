@@ -406,5 +406,92 @@ the operations mentioned above should be applied.
 Since some operations are more or less opposite to each other,
 the order has a big influence on the resulting code.
 
+\section{Details}
+
+\subsection{Conflicting Opcodes}
+
+\begin{definition}
+The two opcodes \verb|f|, \verb|g| are called \emph{conflicting} if and only if
+there is a program that
+contains the following two statements
+fulfilling the conditions below
+such that the semantics of the program changes when the order
+of the statements is reversed.
+Conditions for the statements: The variable declarations are present
+if and only if the opcodes return a value
+and neither \verb|x| nor \verb|y| appear as arguments
+to the opcodes, although the arguments themselves do not
+have to be distinct.
+\begin{verbatim}
+[let x := ]f(a1, ..., an)
+[let y := ]g(b1, ..., bm)
+\end{verbatim}
+An opcode is called \emph{self-conflicting} if it is conflicting
+with itself. An opcode is called \emph{pure} if it is conflicting
+with no other opcode and not even with itself.
+\end{definition}
+
+The following opcodes are pure:
+\verb|add|, \verb|sub|, \verb|mul|, \verb|div|, \verb|sdiv|,
+\verb|mod|, \verb|smod|, \verb|exp|, \verb|not|, \verb|lt|,
+\verb|gt|, \verb|slt|, \verb|sgt|, \verb|eq|, \verb|iszero|,
+\verb|and|, \verb|or|, \verb|xor|, \verb|byte|, \verb|shl|,
+\verb|shr|, \verb|sar|, \verb|addmod|, \verb|mulmod|,
+\verb|signextend|, \verb|pop|.
+
+We are left with:
+
+stop,
+keccak256,
+pc,
+mload(p)
+mstore(p, v)
+mstore8(p, v)
+sload(p)
+sstore(p, v)
+msize
+gas
+address
+balance(a)
+caller
+callvalue
+calldataload(p)
+calldatasize
+calldatacopy(t, f, s)
+codesize
+codecopy(t, f, s)
+extcodesize(a)
+extcodecopy(a, t, f, s)
+returndatasize
+returndatacopy(t, f, s)
+create(v, p, s)
+create2(v, n, p, s)
+call(g, a, v, in, insize, out, outsize)
+callcode(g, a, v, in, insize, out, outsize)
+delegatecall(g, a, in, insize, out, outsize)
+staticcall(g, a, in, insize, out, outsize)
+return(p, s)
+revert(p, s)
+selfdestruct(a)
+invalid
+log0(p, s)
+log1(p, s, t1)
+log2(p, s, t1, t2)
+log3(p, s, t1, t2, t3) 	  	F 	block gas limit of the current block
+log4(p, s, t1, t2, t3, t4)
+origin
+gasprice
+blockhash(b)
+coinbase
+timestamp
+number
+difficulty
+gaslimit
+
+TODO: We need a different condition for removing
+statements. This might be especially tricky when
+msize is present.
+
 \end{document}
+
     
