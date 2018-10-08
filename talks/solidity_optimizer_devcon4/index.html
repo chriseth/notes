@@ -126,16 +126,134 @@ https://chriseth.github.io/notes/talks/solidity_optimizer_devcon4/
 </script></section>
 
 <section data-markdown><script type="text/template">
+Definition: Optimizer
+---------------------
 
-	- start with quick explanation of yul and how it's structure is very flexible and suitable
-	as IR for optimizer
-	- show some code that might be taken from real solidity code, perhaps even with loops, so
-	  we can show unrolling and sstore fusion
-	- perform steps (unique, ssa, function inline, CSE, sstore-sorting)
-	- at the end, perform variable inlining and unused variable removal
-	- still not optimal: loop unrolling
-	- challenge for this particular optimizer: code size -> outlining
-	- compare with previous optimizer?
+Software that transforms a program into a program that
+ 1. is semantically equivalent
+ 2. requires fewer resources (or at least not more).
+
+<div class="fragment appear">
+Example:
+<pre><code>contract C {
+	function f(uint x) public pure returns (uint) {
+		return x**2;
+	}
+}
+</code></pre></pre>
+
+<pre class="fragment appear"><code>contract C {
+	function f(uint x) public pure returns (uint) {
+		return x*x; // cheaper in EVM
+	}
+}</code></pre>
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+Problem 1
+---------
+
+Which resources to optimize?
+
+Tradeoff: code size (deploy costs) <-> runtime
+
+Metric different for popular functions or code inside loops.
+</script></section>
+
+<section data-markdown><script type="text/template">
+Problem 2
+---------
+
+Even with clearly defined metric, perfect optimizer is theoretically impossible.
+
+Reason: Semantic equivalence
+
+"Proof:"
+Halting problem: There is no program that decides whether another program halts (reverts) on all inputs.
+<!-- .element: class="fragment" -->
+
+If perfect optimizer exists, it can be used to create such a program:
+<!-- .element: class="fragment" -->
+
+A program reverts on all inputs if and only if the optimizer's output for it is
+(similar to) "contract C {}". <!-- .element: class="fragment" -->
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+Why an Optimizer?
+-----------------
+
+- Cheaper Smart Contracts
+- More modular and understandable code <!-- .element: class="fragment" -->
+
+<pre class="fragment appear"><code>contract Voting {
+	// ...
+	function weightOf(address _voter) internal view returns (uint) {
+		return _voter == m_owner ? 10 : 1;
+	}
+	function vote(Outcome memory _o) public {
+		require(!hasVoted(msg.sender));
+		m_votes[_o] = weightOf(msg.sender);
+	}
+}</code></pre>
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+Next: current optimizer, then future
+
+Current: chop into blocks, feed items into component. Component runs simplified and arrives at symbolic execution via local value numbering . Quite impressive what simple rules can do. The determine original stack layout, target layout, storage and memory changes and rebuild. Other stages that handle jump labels also exist
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+Problem: only very local opt, no notion of functions (no inlining) or loops (no loop invariant code motion, no unrolling)
+
+Next opt: yul based
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+Yul: last devcon. Main points: compile to various backends. Requirement: preserve loops and functions, no jumps. Also beneficial for opt.
+Other main point: optimization should be nachvollziehbar. Composed out of small and trivial steps. No gathering of knowledge in opaque data structures. Code should always be readable!
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+Yul has extremely simple syntax - very easy to fully grasp all effects of a single step.
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+New optimizer composed of many tiny components. Tricky part is how and when to call each component, but will only impact efficiency, correctness much easier to verify.
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+Example of steps
+
+sstore and mstore fusion
+also the new memory object idea
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+Can do inlining, loop unrolling, invariant code motion etc. 
+
+- challenge for this particular optimizer: code size -> outlining
+- compare with previous optimizer?
 
 </script></section>
 </div>
