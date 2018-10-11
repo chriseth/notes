@@ -241,7 +241,7 @@ Solidity's CSE Optimizer
 Solidity's CSE Optimizer
 ------------------------
 
-```
+```js
 push 0          // -> $1: "0"
 calldataload    // -> $2: calldataload($1)
 sload           // -> $3: sload($2)
@@ -276,7 +276,7 @@ Yul
 New intermediate language for Solidity. Structured language, can compile to EVM and
 wasm. Extremely simple syntax. See talk at devcon3.
 
-```
+```js
 {
     function owner() -> o {
         o := sload(0)
@@ -319,7 +319,7 @@ As long as each step is correct in isolation, whole sequence will be correct.
 </script></section>
 
 <section data-markdown><script type="text/template">
-```
+```js
 function array_sum(x) -> sum {
     let length := mload(x)
     for { let i := 0 } lt(i, length) { i := add(i, 1) } {
@@ -337,7 +337,7 @@ function array_load(x, i) -> v {
 
 
 <section data-markdown><script type="text/template">
-```
+```js
 function array_sum(x) -> sum {
     let length := mload(x)
     for { let i := 0 } lt(i, length) { i := add(i, 1) } {
@@ -355,7 +355,7 @@ function array_load(x, i) -> v {
 </script></section>
                 
 <section data-markdown><script type="text/template">
-```
+```js
 function array_sum(x) -> sum {
     let length := mload(x)
     for { let i := 0 } lt(i, length) { i := add(i, 1) } {
@@ -374,7 +374,7 @@ function array_sum(x) -> sum {
 </script></section>
 
 <section data-markdown><script type="text/template">
-```
+```js
 function array_sum(x) -> sum {
     let length := mload(x)
     for { let i := 0 } lt(i, length) { i := add(i, 1) } {
@@ -393,7 +393,7 @@ function array_sum(x) -> sum {
 </script></section>
     
 <section data-markdown><script type="text/template">
-```
+```js
 function array_sum(x) -> sum {
     let length := mload(x)
     for { let i := 0 } lt(i, length) { i := add(i, 1) } {
@@ -407,7 +407,7 @@ function array_sum(x) -> sum {
 ```
 </script></section>
 <section data-markdown><script type="text/template">
-```
+```js
 function array_sum(x) -> sum {
     let length := mload(x)
     let len := mload(x)
@@ -423,7 +423,7 @@ function array_sum(x) -> sum {
 </script></section>
 
 <section data-markdown><script type="text/template">
-```
+```js
 function array_sum(x) -> sum {
     let length := mload(x)
 
@@ -439,7 +439,7 @@ function array_sum(x) -> sum {
 </script></section>
 
 <section data-markdown><script type="text/template">
-```
+```js
 function array_sum(x) -> sum {
     let length := mload(x)
 
@@ -455,7 +455,7 @@ function array_sum(x) -> sum {
 </script></section>
         
 <section data-markdown><script type="text/template">
-```
+```js
 function array_sum(x) -> sum {
     let length := mload(x)
 
@@ -471,7 +471,7 @@ function array_sum(x) -> sum {
 </script></section>
 
 <section data-markdown><script type="text/template">
-```
+```js
 function array_sum(x) -> sum {
     let length := mload(x)
 
@@ -487,7 +487,7 @@ function array_sum(x) -> sum {
 </script></section>
 
 <section data-markdown><script type="text/template">
-```
+```js
 function array_sum(x) -> sum {
     let length := mload(x)
 
@@ -503,7 +503,7 @@ function array_sum(x) -> sum {
 </script></section>
 
 <section data-markdown><script type="text/template">
-```
+```js
 function array_sum(x) -> sum {
     let length := mload(x)
     let data := add(x, 0x20)
@@ -519,7 +519,7 @@ function array_sum(x) -> sum {
 </script></section>
 
 <section data-markdown><script type="text/template">
-```
+```js
 function array_sum(x) -> sum {
     let length := mload(x)
     let data := add(x, 0x20)
@@ -535,7 +535,7 @@ function array_sum(x) -> sum {
 </script></section>
 
 <section data-markdown><script type="text/template">
-```
+```js
 function array_sum(x) -> sum {
     let length := mload(x)
     let data := add(x, 0x20)
@@ -551,7 +551,7 @@ function array_sum(x) -> sum {
 </script></section>
 
 <section data-markdown><script type="text/template">
-```
+```js
 function array_sum(x) -> sum {
     let length := mload(x)
 
@@ -567,7 +567,7 @@ function array_sum(x) -> sum {
 </script></section>
 
 <section data-markdown><script type="text/template">
-```
+```js
 function array_sum(x) -> sum {
     let length := mload(x)
 
@@ -583,7 +583,7 @@ function array_sum(x) -> sum {
 </script></section>
         
 <section data-markdown><script type="text/template">
-```
+```js
 function array_sum(x) -> sum {
     let length := mload(x)
 
