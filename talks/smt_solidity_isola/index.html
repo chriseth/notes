@@ -126,21 +126,179 @@ https://chriseth.github.io/notes/talks/smt_solidity_isola/
 </script></section>
 
 <section data-markdown><script type="text/template">
+### Existing Formal Verification Projects
 
-  https://easychair.org/smart-slide/slide/S6Lr#
+- EVM Formal Semantics: Eth-Isabelle, K-EVM, Ethereum-Lem, ...
 
-- give some existing formal verification projects
+- EVM Bytecode Symbolic Execution: Oyente, Mythril, Mayan, ...
 
-- goal of this project: easy to use, "automatic", behind the scenes
-- automatic verification targets: underflow / overflow / div by 0, trivial conditions / unreachable code, assertions
-- counterexamples!
+- Translation of Solidity to Verifiable Languages: Why3, F*, ZEUS, K-Solidity
 
-- how it is done (traverse ast, branch conditions, ...)
+- Our Approach: SMT-based Bounded Model Checker
+</script></section>
 
-- give simple example
+<section data-markdown><script type="text/template">
+### Goals
 
-- future ideas: everything from leo's talk plus:
-- practical constraints: number of transactions, gas, amount of ether.
+- automatic verification as part of the compiler stack
+- minimal effort by the programmer
+- no verification conditions
+- no additional tools to install
+- automatic counterexamples
+- practicality over completeness
+
+(first and automatic helper, more thorough and sophisticated analysis based on EVM bytecode)
+</script></section>
+	
+<section data-markdown><script type="text/template">
+### Verification Targets
+
+ - arithmetic overflow / underflow
+ - division by zero
+ - trivial conditions / unreachable code
+ - assertions
+</script></section>
+
+<section data-markdown><script type="text/template">
+```js
+pragma experimental SMTChecker;
+contract Coin {
+	mapping(address => uint) balances;
+	// ...
+	function transfer(address to, uint amount) public {
+
+
+		// Error: Underflow for balances[msg.sender] = 0 and amount = 1
+		balances[msg.sender] -= amount;
+		balances[to] += amount;
+
+
+	}
+}
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+```js
+pragma experimental SMTChecker;
+contract Coin {
+	mapping(address => uint) balances;
+	// ...
+	function transfer(address to, uint amount) public {
+		require(balances[msg.sender] >= amount);
+
+
+		balances[msg.sender] -= amount;
+		balances[to] += amount;
+		// Error: overflow for balances[to] = 2**256-1 and amount = 1
+
+	}
+}
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+```js
+pragma experimental SMTChecker;
+contract Coin {
+	mapping(address => uint) balances;
+	// ...
+	function transfer(address to, uint amount) public {
+		require(balances[msg.sender] >= amount);
+		require(balances[to] < 2**200 && balances[msg.sender] < 2**200);
+
+		balances[msg.sender] -= amount;
+		balances[to] += amount;
+
+
+	}
+}
+```
+</script></section>
+<section data-markdown><script type="text/template">
+```js
+pragma experimental SMTChecker;
+contract Coin {
+	mapping(address => uint) balances;
+	// ...
+	function transfer(address to, uint amount) public {
+		require(balances[msg.sender] >= amount);
+		require(balances[to] < 2**200 && balances[msg.sender] < 2**200);
+		uint sumPre = balances[msg.sender] + balances[to];
+		balances[msg.sender] -= amount;
+		balances[to] += amount;
+		uint sumPost = balances[msg.sender] + balances[to];
+		assert(sumPre == sumPost);
+	}
+}
+```
+</script></section>
+	
+<section data-markdown><script type="text/template">
+## How is it done?
+
+ - traverse AST in execution order
+ - introduce variable for each expression and new assignment
+ - collect constraints
+ - query the SMT solver for verification targets
+</script></section>
+	
+<section data-markdown><script type="text/template">
+## Branch Conditions
+
+ - auxiliary stack that keeps track of conditions
+	 for current point in control-flow
+ - no constraint added to SMT solver
+</script></section>
+	
+<section data-markdown><script type="text/template">
+## Control-Flow
+
+ - add `b -> r` where `b` is conjection of branch
+	 conditions and `r` is condition in `require(r)`
+	 or `assert(r)`
+</script></section>
+	
+<section data-markdown><script type="text/template">
+## Type Constraints
+
+ - local variables take default value of type (`0` / `false`),
+	 while function parameters take full range of type
+	 (`uint`: `0 <= x < 2**256`)
+</script></section>
+	
+<section data-markdown><script type="text/template">
+## Variable Assignments
+
+ - encoding follows SSA form
+ - when variable is assigned in different control-flow branches,
+   the different values are combined using the if-then-else function
+</script></section>
+	
+<section data-markdown><script type="text/template">
+Example code and encoding
+</script></section>
+	
+<section data-markdown><script type="text/template">
+## Future Plans
+
+(examples for everything?)
+
+ - automatic detection of loop bounds
+ - multi-transaction invariants
+ - auto-inferred post-constructor invariants
+ - modifiers as pre- and post-conditions
+ - range restrictions for "real-life" values
+	 - number of transactions
+	 - amount of ether
+	 - gas
+	 - block.timestamp
+ - effective callback freeness
+ - invariant annotations (assert at end of constructer and require/assert pair for all functions, plus external calls?)
+
+</script></section>
+<section data-markdown><script type="text/template">
+Advanced version migth prove that there is no overflow in the following:
 
 ```
 contract Coin {
@@ -152,11 +310,10 @@ contract Coin {
   function transfer(address to, uint amount) public {
     require(balances[msg.sender] >= amount);
     balances[msg.sender] -= amount;
-    balances[to] += amonut;
+    balances[to] += amount;
   }
 }
 ```
-
 </script></section>
 </div>
 
