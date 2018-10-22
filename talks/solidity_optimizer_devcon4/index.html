@@ -110,7 +110,7 @@ html.blurLight .backgrounds {
 Christian Reitwiessner
 <br/>
 <br/>
-devcon4 - Prague - 2018-10-??
+devcon4 - Prague - 2018-10-30
 </center>
 
 <br/>
@@ -130,8 +130,8 @@ Definition: Optimizer
 ---------------------
 
 Software that transforms a program into a program that
- 1. is semantically equivalent
- 2. requires fewer resources (or at least not more).
+1. requires fewer resources (or at least not more) <!-- .element: class="fragment" -->
+2. is semantically equivalent. <!-- .element: class="fragment" -->
 
 <div class="fragment appear">
 Example:
@@ -228,13 +228,13 @@ Everything based on "sugared" EVM opcode stream:
 Solidity's CSE Optimizer
 ------------------------
 
- - chop code into blocks
- - feed to component opcode-by-opcode	
- - component builds symbolic expression trees
- - expression trees are simplified according to rules like<br/>
+ - chop code into blocks <!-- .element: class="fragment" -->
+ - feed to component opcode-by-opcode <!-- .element: class="fragment" -->
+ - component builds symbolic expression trees <!-- .element: class="fragment" -->
+ - <!-- .element: class="fragment" --> expression trees are simplified according to rules like <br/>
    `7 + (x + 2) -> x + 9` and <br/>
-   `(x == x) -> 1`
- - changes to memory and storage are recorded (abstractly)
+   `(x == x) -> 1` . 
+ - changes to memory and storage are recorded (abstractly) <!-- .element: class="fragment" -->
 </script></section>
 
 <section data-markdown><script type="text/template">
@@ -262,9 +262,9 @@ eq              // $3 = $3? true!
 Solidity's CSE Optimizer
 ------------------------
 
- - code-re-generation unit re-builds code from bottom to top, hopefully more efficient
- - main benefits: eliminate redundant stores, do not re-compute same expressions, remove dead code
- - main drawbacks: very opaque, only very local, no notion of functions (no inlining) or loops
+ - code-re-generation unit re-builds code from bottom to top, hopefully more efficient  <!-- .element: class="fragment" -->
+ - main benefits: eliminate redundant stores, do not re-compute same expressions, remove dead code  <!-- .element: class="fragment" -->
+ - main drawbacks: very opaque, only very local, no notion of functions (no inlining) or loops  <!-- .element: class="fragment" -->
 </script></section>
 
 
