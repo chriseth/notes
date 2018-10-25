@@ -170,7 +170,7 @@ Even with clearly defined metric, perfect optimizer is theoretically impossible.
 Reason: Semantic equivalence
 
 "Proof:"
-Halting problem: There is no program that decides whether another program halts (reverts) on all inputs.
+Halting problem: There is no program that decides whether a given program halts (reverts) on all inputs.
 <!-- .element: class="fragment" -->
 
 If perfect optimizer exists, it can be used to create such a program:
@@ -299,11 +299,10 @@ wasm. Extremely simple syntax. See talk at devcon3.
 Yul-based Optimizer
 -------------------
 
-Optimizer should be traceable: Sequence of small and local modifications,
-each intermediate result should still be readable. No gathering of data
-in opaque data structures, everything should be (exportable to) text!
-
-Keep structure (functions, loop, no "goto"), direct translation to wasm.
+- Sequence of small and local modifications
+- Readable text export and re-import possible at every step
+- No gathering of data in opaque data structures
+- Keep structure (functions, loop, no "goto"), direct translation to wasm.
 </script></section>
 
 <section data-markdown><script type="text/template">
@@ -410,8 +409,8 @@ function array_sum(x) -> sum {
 ```js
 function array_sum(x) -> sum {
     let length := mload(x)
-    let len := mload(x)
     let data := add(x, 0x20)
+    let len := mload(x)
     for { let i := 0 } lt(i, length) { i := add(i, 1) } {
 
         if iszero(lt(i, len)) { revert() }
@@ -426,8 +425,8 @@ function array_sum(x) -> sum {
 ```js
 function array_sum(x) -> sum {
     let length := mload(x)
-
     let data := add(x, 0x20)
+
     for { let i := 0 } lt(i, length) { i := add(i, 1) } {
 
         if iszero(lt(i, length)) { revert() }
@@ -442,8 +441,8 @@ function array_sum(x) -> sum {
 ```js
 function array_sum(x) -> sum {
     let length := mload(x)
-
     let data := add(x, 0x20)
+
     for { let i := 0 } lt(i, length) { i := add(i, 1) } {
 
         if iszero(1) { revert() }
@@ -458,8 +457,8 @@ function array_sum(x) -> sum {
 ```js
 function array_sum(x) -> sum {
     let length := mload(x)
-
     let data := add(x, 0x20)
+
     for { let i := 0 } lt(i, length) { i := add(i, 1) } {
 
         if 0 { revert() }
@@ -474,8 +473,8 @@ function array_sum(x) -> sum {
 ```js
 function array_sum(x) -> sum {
     let length := mload(x)
-
     let data := add(x, 0x20)
+
     for { let i := 0 } lt(i, length) { i := add(i, 1) } {
 
 
@@ -490,8 +489,8 @@ function array_sum(x) -> sum {
 ```js
 function array_sum(x) -> sum {
     let length := mload(x)
-
     let data := add(x, 0x20)
+
     for { let i := 0 } lt(i, length) { i := add(i, 1) } {
         let _2 := mul(i, 0x20)
         let _3 := add(data, _2)
