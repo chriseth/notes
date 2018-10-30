@@ -67,17 +67,13 @@ p { text-align: left; }
 			<div class="slides">
  
 <section data-markdown><script type="text/template">
-## Less Gas, More Fun: Optimising Smart Contracts through Yul
+### Less Gas, More Fun: Optimising Smart Contracts through Yul
 
 <center>
-<br/>
 Christian Reitwiessner
-<br/>
 <br/>
 devcon4 - Prague - 2018-10-31
 </center>
-
-<br/>
 
 <small>
 Christian Reitwiessner <br/>
@@ -96,9 +92,10 @@ Definition: Optimizer
 Software that transforms a program into a program that
 1. requires fewer resources (or at least not more) <!-- .element: class="fragment" -->
 2. is semantically equivalent. <!-- .element: class="fragment" -->
+</script></section>
 
-<div class="fragment appear">
-Example:
+<section data-markdown><script type="text/template">
+<div>
 <pre><code>contract C {
 	function f(uint x) public pure returns (uint) {
 		return x**2;
