@@ -13,11 +13,11 @@
 
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
 
-		<link rel="stylesheet" href="../reveal.js/css/reveal.css">
-		<link rel="stylesheet" href="../reveal.js/css/theme/simple.css" id="theme">
+		<link rel="stylesheet" href="../revealjs-3.7.0/css/reveal.css">
+		<link rel="stylesheet" href="../revealjs-3.7.0/css/theme/simple.css" id="theme">
 
 		<!-- Code syntax highlighting -->
-		<link rel="stylesheet" href="../reveal.js/lib/css/zenburn.css">
+		<link rel="stylesheet" href="../revealjs-3.7.0/lib/css/zenburn.css">
 
 		<!--[if lt IE 9]>
 		<script src="lib/js/html5shiv.js"></script>
@@ -26,7 +26,7 @@
 			var link = document.createElement( 'link' );
 			link.rel = 'stylesheet';
 			link.type = 'text/css';
-			link.href = window.location.search.match( /print-pdf/gi ) ? '../reveal.js/css/print/pdf.css' : '../reveal.js/css/print/paper.css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? '../revealjs-3.7.0/css/print/pdf.css' : '../revealjs-3.7.0/css/print/paper.css';
 			document.getElementsByTagName( 'head' )[0].appendChild( link );
 		</script>
 <style type="text/css">
@@ -128,26 +128,24 @@ https://chriseth.github.io/notes/talks/smt_solidity_isola/
 <section data-markdown><script type="text/template">
 ### Existing Formal Verification Projects
 
-- EVM Formal Semantics: Eth-Isabelle, K-EVM, Ethereum-Lem, ...
-
-- EVM Bytecode Symbolic Execution: Oyente, Mythril, Mayan, ...
-
-- Translation of Solidity to Verifiable Languages: Why3, F*, ZEUS, K-Solidity
-
-- Our Approach: SMT-based Bounded Model Checker
+- EVM Formal Semantics: Eth-Isabelle, K-EVM, Ethereum-Lem, ...  <!-- .element: class="fragment" -->
+- EVM Bytecode Symbolic Execution: Oyente, Mythril, Mayan, ...  <!-- .element: class="fragment" -->
+- Translation of Solidity to Verifiable Languages: Why3, F*, ZEUS, K-Solidity  <!-- .element: class="fragment" -->
+- Our Approach: SMT-based Bounded Model Checker  <!-- .element: class="fragment" -->
 </script></section>
 
 <section data-markdown><script type="text/template">
 ### Goals
 
 - automatic verification as part of the compiler stack
-- minimal effort by the programmer
-- no verification conditions
-- no additional tools to install
-- automatic counterexamples
-- practicality over completeness
+- minimal effort by the programmer <!-- .element: class="fragment" -->
+- no verification conditions <!-- .element: class="fragment" -->
+- no additional tools to install <!-- .element: class="fragment" -->
+- automatic counterexamples <!-- .element: class="fragment" -->
+- practicality over completeness <!-- .element: class="fragment" -->
 
 (first and automatic helper, more thorough and sophisticated analysis based on EVM bytecode)
+<!-- .element: class="fragment" -->
 </script></section>
 	
 <section data-markdown><script type="text/template">
@@ -237,10 +235,10 @@ contract Coin {
 <section data-markdown><script type="text/template">
 ## How is it done?
 
- - traverse AST in execution order
- - introduce variable for each expression and new assignment
- - collect constraints
- - query the SMT solver for verification targets
+ - traverse AST in execution order <!-- .element: class="fragment" -->
+ - introduce variable for each expression and new assignment <!-- .element: class="fragment" -->
+ - collect constraints <!-- .element: class="fragment" -->
+ - query the SMT solver for verification targets <!-- .element: class="fragment" -->
 </script></section>
 	
 <section data-markdown><script type="text/template">
@@ -254,7 +252,7 @@ contract Coin {
 <section data-markdown><script type="text/template">
 ## Control-Flow
 
- - add `b -> r` where `b` is conjection of branch
+ - add `b -> r` where `b` is conjunction of branch
 	 conditions and `r` is condition in `require(r)`
 	 or `assert(r)`
 </script></section>
@@ -266,45 +264,103 @@ contract Coin {
 	 while function parameters take full range of type
 	 (`uint`: `0 <= x < 2**256`)
 </script></section>
-	
+
 <section data-markdown><script type="text/template">
 ## Variable Assignments
 
  - encoding follows SSA form
- - when variable is assigned in different control-flow branches,
-   the different values are combined using the if-then-else function
+ - control-flow joins use if-then-else function
+   and branch conditions to
+   combine SSA values from different branches
 </script></section>
 	
 <section data-markdown><script type="text/template">
-Example code and encoding
+## Function Calls
+
+ - internal calls fully inlined (might need heuristic at some point)
+ - external calls reset storage variables to "unknown"
+</script></section>
+
+<section data-markdown><script type="text/template">
+```js
+contract C {
+	function f(uint256 a, uint256 b) public {
+		if (a == 0)
+			require(b <= 1);
+		else if (a == 1)
+			b = 2;
+		else
+			b = 3;
+		assert(b <= 5);
+	}
+}
+```
+
+<span clas="fragment">
+a<sub>0</sub> &ge; 0, a<sub>0</sub> < 2<sup>256</sup>, &nbsp; &nbsp;
+b<sub>0</sub> &ge; 0, b<sub>0</sub> < 2<sup>256</sup>,<br/>
+</span>
+<span class="fragment">
+a<sub>0</sub> = 0 -> b<sub>0</sub> &le; 1,</span>&nbsp;&nbsp;
+<span class="fragment">
+b<sub>1</sub> = 2,</span><span class="fragment">&nbsp; &nbsp; b<sub>2</sub> = 3,</span><br/>
+<span class="fragment">
+b<sub>3</sub> = ite(a = 1, b<sub>1</sub>, b<sub>2</sub>),</span> &nbsp; &nbsp;
+<span class="fragment">
+b<sub>4</sub> = ite(a = 0, b<sub>0</sub>, b<sub>3</sub>),</span><br/>
+<span class="fragment">
+&not; b<sub>4</sub> &le; 5
+</span>
 </script></section>
 	
 <section data-markdown><script type="text/template">
 ## Future Plans
 
-(examples for everything?)
-
  - automatic detection of loop bounds
  - multi-transaction invariants
  - auto-inferred post-constructor invariants
- - modifiers as pre- and post-conditions
- - range restrictions for "real-life" values
-	 - number of transactions
-	 - amount of ether
-	 - gas
-	 - block.timestamp
- - effective callback freeness
- - invariant annotations (assert at end of constructer and require/assert pair for all functions, plus external calls?)
-
 </script></section>
+
+<section data-markdown><script type="text/template">
+### auto-inferred post-constructor invariants
+```js
+contract C {
+	uint256 a;
+	constructor(uint256 x) public {
+		require(x <= 100);
+		a = x;
+	}
+	function f(uint256 y) public view returns (uint) {
+		require(y <= 100);
+		return a + y;
+	}
+}
+```
+State variable a is initialized with value at most 100
+and never re-assigned.
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Future Plans (2)
+ - modifiers as pre- and post-conditions plus function abstraction
+ - explicit contract-level invariant annotations
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Future Plans (3)
+ - effective callback freeness (Grossman et al.)
+ - range restrictions for "real-life" values like
+   - number of transactions, amount of ether, gas, block.timestamp, ...
+</script></section>
+
 <section data-markdown><script type="text/template">
 Advanced version migth prove that there is no overflow in the following:
 
-```
+```js
 contract Coin {
   mapping(address => uint) balances;
   function mint(address r, uint amount) public {
-    require(amount < 2**200);
+    require(amount < 2**100);
     balances[r] += amount;
   }
   function transfer(address to, uint amount) public {
@@ -315,12 +371,25 @@ contract Coin {
 }
 ```
 </script></section>
+
+<section data-markdown><script type="text/template">
+## Join the discussion!
+
+<br/>
+
+https://gitter.im/ethereum/solidity-dev
+
+chris@ethereum.org, leo@ethereum.org
+
+We are hiring and giving out research grants!
+</script></section>
+	
 </div>
 
 		</div>
 
-		<script src="../reveal.js/lib/js/head.min.js"></script>
-		<script src="../reveal.js/js/reveal.js"></script>
+		<script src="../revealjs-3.7.0/lib/js/head.min.js"></script>
+		<script src="../revealjs-3.7.0/js/reveal.js"></script>
 
 		<script>
 			// Full list of configuration options available at:
@@ -335,12 +404,12 @@ contract Coin {
 
 				// Optional reveal.js plugins
 				dependencies: [
-					{ src: '../reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
-					{ src: '../reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-					{ src: '../reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-					{ src: '../reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
-					{ src: '../reveal.js/plugin/zoom-js/zoom.js', async: true },
-					{ src: '../reveal.js/plugin/notes/notes.js', async: true }
+					{ src: '../revealjs-3.7.0/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: '../revealjs-3.7.0/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../revealjs-3.7.0/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../revealjs-3.7.0/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: '../revealjs-3.7.0/plugin/zoom-js/zoom.js', async: true },
+					{ src: '../revealjs-3.7.0/plugin/notes/notes.js', async: true }
 				]
 			});
 
