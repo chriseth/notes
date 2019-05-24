@@ -378,13 +378,13 @@ Actually, the above protocol does not really allow the verifier to check that th
 What this example does show is that the verifier does not need to evaluate the full polynomial to confirm this, it suffices to evaluate the pairing function. In the next step, we will add the zero-knowledge part so that the verifier cannot reconstruct anything about $f(s)$, not even $E(f(s))$ -- the encrypted value.
 
 
-For that, the prover picks a random $\delta$  and instead of $A := E(f(s))$ and $B := E(\alpha  f(s)))$, she sends over $A' := E(\delta  + f(s))$ and $B := E(\alpha  (\delta  + f(s))))$. If we assume that the encryption cannot be broken, the zero-knowledge property is quite obvious. We now have to check two things: 1. the prover can actually compute these values and 2. the check by the verifier is still true.
+For that, the prover picks a random $\delta$  and instead of $A := E(f(s))$ and $B := E(\alpha  f(s)))$, she sends over $A' := E(\delta  + f(s))$ and $B' := E(\alpha  (\delta  + f(s))))$. If we assume that the encryption cannot be broken, the zero-knowledge property is quite obvious. We now have to check two things: 1. the prover can actually compute these values and 2. the check by the verifier is still true.
 
 
 For 1., note that $A' = E(\delta  + f(s)) = g^{\delta  + f(s)} = g^{\delta }g^{f(s)} = E(\delta ) E(f(s)) = E(\delta ) A$ and similarly, $B' = E(\alpha  (\delta  + f(s)))) = E(\alpha  \delta  + \alpha  f(s))) = g^{\alpha  \delta  + \alpha  f(s)} = g^{\alpha  \delta } g^{\alpha  f(s)} = E(\alpha )^{\delta }E(\alpha  f(s)) = E(\alpha )^{\delta } B$.
 
 
-For 2., note that the only thing the verifier checks is that the values $A$ and $B$ she receives satisfy the equation $A = E(a)$ und $B = E(\alpha  a)$ for some value $a$, which is obviously the case for $a = \delta  + f(s)$ as it is the case for $a = f(s)$.
+For 2., note that the only thing the verifier checks is that the values $A$ and $B$ she receives satisfy the equation $A = E(a)$ and $B = E(\alpha  a)$ for some value $a$, which is obviously the case for $a = \delta  + f(s)$ as it is the case for $a = f(s)$.
 
 
 Ok, so we now know a bit about how the prover can compute the encrypted value of a polynomial at an encrypted secret point without the verifier learning anything about that value. Let us now apply that to the QSP problem.
