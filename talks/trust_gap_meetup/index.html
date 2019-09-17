@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Closing the Trust Gap: Proper Source Verification</title>
+
+		<meta name="author" content="Christian Reitwiessner">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="../revealjs-3.7.0/css/reveal.css">
+		<link rel="stylesheet" href="../revealjs-3.7.0/css/theme/simple.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="../revealjs-3.7.0/lib/css/zenburn.css">
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? '../revealjs-3.7.0/css/print/pdf.css' : '../revealjs-3.7.0/css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+<style type="text/css">
+@font-face {
+	font-family: PTSans;
+	src: url('./pt-sans-regular.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+}
+body, .reveal {
+    font-family: PTSans, Arial, sans-serif;
+    font-size: 34px;
+}
+.reveal .slides {
+	text-align: left;
+}
+.reveal pre {
+  width: inherit;
+}
+.reveal table th, .reveal table td {
+    border-bottom: none;
+}
+.reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+	text-align: center;
+	text-transform: none;
+	font-family: PTSans, Arial, sans-serif;
+}
+p { text-align: left; }
+</style>
+
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+ 
+<section data-markdown><script type="text/template">
+### Closing the Trust Gap: Proper Source Verification
+
+<center>
+Christian Reitwiessner
+<br/>
+Ethereum Meetup - Berlin - 2019-09-19
+</center>
+
+<small>
+Christian Reitwiessner <br/>
+Ethereum Foundation <br/>
+@ethchris   github.com/chriseth   chris@ethereum.org<br/>
+<br/>
+https://chriseth.github.io/notes/talks/trust_gap_meetup/
+</small>
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+Ethereum Name System
+--------------------
+
+ - register domain names (for .eth TLD or others)<!-- .element: class="fragment" -->
+ - makes questionable CA system obsolete<!-- .element: class="fragment" -->
+ - ownership and thus validity of certificates can be verified<!-- .element: class="fragment" -->
+ - nice example of non-financial use of Ethereum<!-- .element: class="fragment" -->
+
+Used as arbitrary placeholder, the following is true for ALL dapps!<!-- .element: class="fragment" -->
+</script></section>
+
+<section data-background="register_1.png" data-background-size="contain">
+</section>
+<section data-background="register_2.png" data-background-size="contain">
+</section>
+<section data-background="register_3.png" data-background-size="contain">
+</section>
+<section data-background="register_4.png" data-background-size="contain">
+</section>
+<section data-background="register_5.png" data-background-size="contain">
+</section>
+<section data-background="register_6.png" data-background-size="contain">
+</section>
+<section data-background="register_7.png" data-background-size="contain">
+</section>
+<section data-background="register_8.png" data-background-size="contain">
+</section>
+<section data-background="register_9.png" data-background-size="contain">
+</section>
+<section data-background="register_10.png" data-background-size="contain">
+</section>
+
+<section data-markdown><script type="text/template">
+Trust Issues
+------------
+
+ - Which contract do I interact with? Is it the right address?<!-- .element: class="fragment" -->
+ - Do I call the correct function?<!-- .element: class="fragment" -->
+ - Are the function arguments correct?<!-- .element: class="fragment" -->
+ - What actually is the source code and is it the one that was audited?<!-- .element: class="fragment" -->
+
+NB: Names and comments can be faked any time, but still...<!-- .element: class="fragment" -->
+</script></section>
+    
+<section data-background="etherscan.png" data-background-size="contain">
+</section>
+
+<section data-markdown><script type="text/template">
+Enter Bytecode Metadata
+-----------------------
+
+ - Feature of Solidity since 0.4.7 (2016-12-15)
+ - Unfortunately, mostly unused<!-- .element: class="fragment" -->
+</script></section>
+
+<section data-background="etherscan_code.png" data-background-size="contain">
+</section>
+
+<section data-markdown><script type="text/template">
+Enter Bytecode Metadata
+-----------------------
+
+ - ``a265627a7a72305820f5a560f17ed887bff123366a6f0b6bc3``
+   ``d354e61d87f9be6be44915e72a4dd37c64736f6c634300050a``
+ - CBOR-decodes into:
+
+```js
+{
+  bzzr0: '0xF5A560F17E...E72A4DD37C',
+  solc: '0x00050A' // Compiler version 0.5.10
+}
+```
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+Follow the Swarm Link
+---------------------
+```json
+{
+  "version": 1,
+  "compiler": { "version": "0.5.10+commit.5a6ea5b1" },
+  "language": "Solidity",
+  "output": {
+    "abi": [ ... ],
+    "devdoc": { ... },
+    "userdoc": {
+      "methods": {
+        "renounceOwnership()": {
+          "notice": "Renouncing to ownership will leave the contract without an..."
+        }
+      }
+    }
+  },
+...
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+Follow the Swarm Link (2)
+-------------------------
+```json
+  "settings": {
+    "compilationTarget": { "<stdin>": "ETHRegistrarController" },
+    "evmVersion": "petersburg",
+    "libraries": {},
+    "optimizer": { "enabled": false, "runs": 200 },
+    "remappings": []
+  },
+  "sources": {
+    "<stdin>": {
+      "keccak256": "0x7e6642a1b3d0e53c6e86272025...d1a1d71be8fcff81ad78c9cb7d",
+      "urls": [
+        "bzzr://8f60adf13709606ea0505e6e48e4e8b0984be538acb195eb2af54b78168d89f0",
+        "dweb:/ipfs/QmdCHWXFndjuC33Czwh3yVfMX8QRM9FTpcYyP5vsWqdajy"
+      ]
+    }
+  }
+}
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+What a Gold Mine!
+-----------------
+
+ - exact compiler version
+ - optimizer settings<!-- .element: class="fragment" -->
+ - ABI<!-- .element: class="fragment" -->
+ - NatSpec function documentation<!-- .element: class="fragment" -->
+ - Swarm and IPFS links to source files<!-- .element: class="fragment" -->
+
+And the best thing: Retrieval and re-compilation to verify can be fully automated:<!-- .element: class="fragment" -->
+</script></section>
+
+<section>
+  <img src="verify.png" style="width: 100%;" />
+  https://github.com/ethereum/source-verify/blob/master/verify.js
+</section>
+
+<section data-markdown><script type="text/template">
+Single One Big Problem
+----------------------
+
+ - The data is just not available
+ - (1) Need people to upload
+ - (2) Need to keep data available
+
+Tackle (1) by making it the default in all deployment tools.<!-- .element: class="fragment" -->
+
+Tackle (2) by the following idea.<!-- .element: class="fragment" -->  
+</script></section>
+
+<section data-background="diagram.png" data-background-size="contain">
+</section>
+
+<section data-markdown><script type="text/template">
+Let's Make the Transparent World Computer a Reality
+---------------------------------------------------
+
+Any help is appreciated!
+  - Deployment Tools
+  - Wallets
+  - Services
+  - Ideas
+  - ...
+
+Talk to me afterwards!
+</script></section>
+  
+    
+</div>
+
+		</div>
+
+		<script src="../revealjs-3.7.0/lib/js/head.min.js"></script>
+		<script src="../revealjs-3.7.0/js/reveal.js"></script>
+
+		<script>
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: false,
+
+				transition: 'none', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: '../revealjs-3.7.0/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: '../revealjs-3.7.0/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../revealjs-3.7.0/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../revealjs-3.7.0/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: '../revealjs-3.7.0/plugin/zoom-js/zoom.js', async: true },
+					{ src: '../revealjs-3.7.0/plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
