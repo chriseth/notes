@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Yul, eWasm, Solidity: Progress and Future Plans</title>
+
+		<meta name="author" content="Christian Reitwiessner">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="../revealjs-3.7.0/css/reveal.css">
+		<link rel="stylesheet" href="../revealjs-3.7.0/css/theme/simple.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="../revealjs-3.7.0/lib/css/zenburn.css">
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? '../revealjs-3.7.0/css/print/pdf.css' : '../revealjs-3.7.0/css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+<style type="text/css">
+@font-face {
+	font-family: PTSans;
+	src: url('./pt-sans-regular.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+}
+body, .reveal {
+    font-family: PTSans, Arial, sans-serif;
+    font-size: 34px;
+}
+.reveal .slides {
+	text-align: left;
+}
+.reveal pre {
+  width: inherit;
+}
+.reveal table th, .reveal table td {
+    border-bottom: none;
+}
+.reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+	text-align: center;
+	text-transform: none;
+	font-family: PTSans, Arial, sans-serif;
+}
+p { text-align: left; }
+</style>
+
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+ 
+<section data-markdown><script type="text/template">
+### Yul, eWasm, Solidity: Progress and Future Plans
+
+<center>
+Christian Reitwiessner
+<br/>
+Devcon 5 - Osaka - 2019-10-10
+</center>
+
+<small>
+Christian Reitwiessner <br/>
+Ethereum Foundation <br/>
+@ethchris   github.com/chriseth   chris@ethereum.org<br/>
+<br/>
+https://chriseth.github.io/notes/talks/yul_devcon5/
+</small>
+
+</script></section>
+<section data-markdown><script type="text/template">
+## Recap Devcon4
+
+ - Talk: "Less Gas, More Fun: Optimising Smart Contracts through Yul"
+ - IR Yul to allow
+   - better readable code generator,
+   - improved optimizer
+   - more flexbility for the backend (evm, ewasm, evm1.5, ...)
+
+TODO: example yul code?
+
+Solidity -> Yul -- optimizer --> Yul -> evm / ewasm / evm1.5
+
+EVM-Yul -- dialect change --> eWasm-Yul
+eWasm-Yul -- optimizer --> eWasm-Yul
+
+</script></section>
+<section data-markdown><script type="text/template">
+## What happened in 2019?
+ - Half way through rewrite of code generator
+ - Experimental eWasm output
+ - Optimizer
+</script></section>
+<section data-markdown><script type="text/template">
+## Solidity Code Generator Rewrite
+
+ - many contract can already compile via Yul
+ - ERC20 including mappings, events, ``require``, etc.
+ - automatic reverts on overflow for all operations!
+
+### How to Compile
+ - ``solc --ir``
+ - Feed output again into compiler: ``solc --strict-assembly --optimize``
+
+### Bytecode Size Comparison
+ - ERC20, directly+ABIv2: 1747 bytes (1805 including overflow checks)
+ - ERC20 via Yul (ABIv2): 2162 bytes
+
+So still work to do, but on the right track!
+
+TODO show code change needed for receive function?
+
+
+
+TODO show some code:
+
+
+ object "ERC20_396" {
+    code {
+        {
+            mstore(64, 128)
+            if callvalue() { revert(0, 0) }
+            if iszero(caller())
+            {
+                mstore(128, 0x08c379a000000000000000000000000000000000000000000000000000000000)
+                mstore(132, 32)
+                mstore(164, 31)
+                mstore(196, 0x45524332303a206d696e7420746f20746865207a65726f206164647265737300)
+                revert(128, 100)
+            }
+            sstore(0x2, checked_add_t_uint256(sload(0x2), 0x14))
+            sstore(mapping_index_access_t_mapping$_t_address_$_t_mapping$_t_address_$_t_uint256_$_$_of_t_address(0x0, caller()), checked_add_t_uint256(sload(mapping_index_access_t_mapping$_t_address_$_t_mapping$_t_address_$_t_uint256_$_$_of_t_address(0x0, caller())), 0x14))
+            let _1 := mload(64)
+            log3(_1, sub(abi_encode_tuple_t_uint256__to_t_uint256__fromStack(_1, 0x14), _1), 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef, 0x0, caller())
+            let _2 := datasize("ERC20_396_deployed")
+            codecopy(0x0, dataoffset("ERC20_396_deployed"), _2)
+            return(0x0, _2)
+        }
+        function abi_encode_tuple_t_uint256__to_t_uint256__fromStack(headStart, value0) -> tail
+        {
+            tail := add(headStart, 32)
+            mstore(headStart, value0)
+        }
+        function checked_add_t_uint256(x, y) -> sum
+        {
+            if gt(x, not(y)) { revert(sum, sum) }
+            sum := add(x, y)
+        }
+        function mapping_index_access_t_mapping$_t_address_$_t_mapping$_t_address_$_t_uint256_$_$_of_t_address(slot, key) -> dataSlot
+        {
+            mstore(dataSlot, and(key, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF))
+            mstore(0x20, slot)
+            dataSlot := keccak256(dataSlot, 0x40)
+        }
+    }
+    object "ERC20_396_deployed" {
+        code {
+            {
+                mstore(64, 128)
+                let _1 := 4
+                if iszero(lt(calldatasize(), _1))
+                {
+                    let _2 := 0
+                    switch shr(224, calldataload(_2))
+                    case 0x095ea7b3 {
+                        if callvalue() { revert(_2, _2) }
+                        let param, param_1 := abi_decode_tuple_t_addresst_uint256(_1, calldatasize())
+                        let ret := fun_approve_113(param, param_1)
+                        let memPos := allocateMemory(_2)
+                        return(memPos, sub(abi_encode_tuple_t_bool__to_t_bool__fromStack(memPos, ret), memPos))
+                    }
+                    case 0x18160ddd {
+                        if callvalue() { revert(_2, _2) }
+                        abi_decode_tuple_(_1, calldatasize())
+                        let ret_1 := sload(0x2)
+                        let memPos_1 := allocateMemory(_2)
+                        return(memPos_1, sub(abi_encode_tuple_t_uint256__to_t_uint256__fromStack(memPos_1, ret_1), memPos_1))
+                    }
+                    case 0x23b872dd {
+                        if callvalue() { revert(_2, _2) }
+                        let param_2, param_3, param_4 := abi_decode_tuple_t_addresst_addresst_uint256(_1, calldatasize())
+                        let ret_2 := fun_transferFrom_147(param_2, param_3, param_4)
+                        let memPos_2 := allocateMemory(_2)
+                        return(memPos_2, sub(abi_encode_tuple_t_bool__to_t_bool__fromStack(memPos_2, ret_2), memPos_2))
+                    }
+                    case 0x39509351 {
+                        if callvalue() { revert(_2, _2) }
+                        let param_5, param_6 := abi_decode_tuple_t_addresst_uint256(_1, calldatasize())
+                        let ret_3 := fun_increaseAllowance_173(param_5, param_6)
+                        let memPos_3 := allocateMemory(_2)
+                        return(memPos_3, sub(abi_encode_tuple_t_bool__to_t_bool__fromStack(memPos_3, ret_3), memPos_3))
+                    }
+                    case 0x70a08231 {
+                        if callvalue() { revert(_2, _2) }
+                        let ret_4 := fun_balanceOf_59(abi_decode_tuple_t_address(_1, calldatasize()))
+                        let memPos_4 := allocateMemory(_2)
+                        return(memPos_4, sub(abi_encode_tuple_t_uint256__to_t_uint256__fromStack(memPos_4, ret_4), memPos_4))
+                    }
+                    case 0xa457c2d7 {
+                        if callvalue() { revert(_2, _2) }
+                        let param_7, param_8 := abi_decode_tuple_t_addresst_uint256(_1, calldatasize())
+                        let ret_5 := fun_decreaseAllowance_199(param_7, param_8)
+                        let memPos_5 := allocateMemory(_2)
+                        return(memPos_5, sub(abi_encode_tuple_t_bool__to_t_bool__fromStack(memPos_5, ret_5), memPos_5))
+                    }
+                    case 0xa9059cbb {
+                        if callvalue() { revert(_2, _2) }
+                        let param_9, param_10 := abi_decode_tuple_t_addresst_uint256(_1, calldatasize())
+                        let ret_6 := fun_transfer_94(param_9, param_10)
+                        let memPos_6 := allocateMemory(_2)
+                        return(memPos_6, sub(abi_encode_tuple_t_bool__to_t_bool__fromStack(memPos_6, ret_6), memPos_6))
+                    }
+                    case 0xdd62ed3e {
+                        if callvalue() { revert(_2, _2) }
+                        let param_11, param_12 := abi_decode_tuple_t_addresst_address(_1, calldatasize())
+                        let value := sload(mapping_index_access_t_mapping$_t_address_$_t_mapping$_t_address_$_t_uint256_$_$_of_t_address(mapping_index_access_t_mapping$_t_address_$_t_mapping$_t_address_$_t_uint256_$_$_of_t_address(1, param_11), param_12))
+                        let memPos_7 := allocateMemory(_2)
+                        return(memPos_7, sub(abi_encode_tuple_t_uint256__to_t_uint256__fromStack(memPos_7, value), memPos_7))
+                    }
+                }
+                revert(0, 0)
+            }
+            function abi_decode_t_address(offset, end) -> value
+            {
+                value := calldataload(offset)
+                if iszero(eq(value, and(value, sub(shl(160, 1), 1)))) { revert(0, 0) }
+            }
+            function abi_decode_tuple_(headStart, dataEnd)
+            {
+                if slt(sub(dataEnd, headStart), 0) { revert(0, 0) }
+            }
+            function abi_decode_tuple_t_address(headStart, dataEnd) -> value0
+            {
+                if slt(sub(dataEnd, headStart), 32) { revert(value0, value0) }
+                value0 := abi_decode_t_address(headStart, dataEnd)
+            }
+            function abi_decode_tuple_t_addresst_address(headStart, dataEnd) -> value0, value1
+            {
+                if slt(sub(dataEnd, headStart), 64) { revert(value1, value1) }
+                value0 := abi_decode_t_address(headStart, dataEnd)
+                value1 := abi_decode_t_address(add(headStart, 32), dataEnd)
+            }
+            function abi_decode_tuple_t_addresst_addresst_uint256(headStart, dataEnd) -> value0, value1, value2
+            {
+                if slt(sub(dataEnd, headStart), 96) { revert(value2, value2) }
+                let value := calldataload(headStart)
+                validator_revert_t_address(value)
+                value0 := value
+                let value_1 := calldataload(add(headStart, 32))
+                validator_revert_t_address(value_1)
+                value1 := value_1
+                value2 := calldataload(add(headStart, 64))
+            }
+            function abi_decode_tuple_t_addresst_uint256(headStart, dataEnd) -> value0, value1
+            {
+                if slt(sub(dataEnd, headStart), 64) { revert(value0, value0) }
+                value0 := abi_decode_t_address(headStart, dataEnd)
+                value1 := calldataload(add(headStart, 32))
+            }
+            function abi_encode_t_stringliteral_24883cc5fe64ace9d0df1893501ecb93c77180f0ff69cca79affb3c316dc8029_to_t_string_memory_ptr_fromStack(pos) -> end
+            {
+                mstore(pos, 34)
+                mstore(add(pos, 0x20), 0x45524332303a20617070726f766520746f20746865207a65726f206164647265)
+                mstore(add(pos, 64), shl(240, 29555))
+                end := add(pos, 96)
+            }
+            function abi_encode_tuple_t_bool__to_t_bool__fromStack(headStart, value0) -> tail
+            {
+                tail := add(headStart, 32)
+                mstore(headStart, iszero(iszero(value0)))
+            }
+            function abi_encode_tuple_t_uint256__to_t_uint256__fromStack(headStart, value0) -> tail
+            {
+                tail := add(headStart, 32)
+                mstore(headStart, value0)
+            }
+            function allocateMemory(size) -> memPtr
+            {
+                memPtr := mload(64)
+                let newFreePtr := add(memPtr, size)
+                if or(gt(newFreePtr, 0xffffffffffffffff), lt(newFreePtr, memPtr)) { revert(0, 0) }
+                mstore(64, newFreePtr)
+            }
+            function checked_add_t_uint256(x, y) -> sum
+            {
+                if gt(x, not(y)) { revert(sum, sum) }
+                sum := add(x, y)
+            }
+            function checked_sub_t_uint256(x, y) -> diff
+            {
+                if lt(x, y) { revert(diff, diff) }
+                diff := sub(x, y)
+            }
+            function fun__approve_368(vloc_owner, vloc_spender, vloc_value)
+            {
+                if iszero(vloc_owner)
+                {
+                    let fmp := mload(64)
+                    mstore(fmp, shl(229, 4594637))
+                    mstore(add(fmp, 4), 32)
+                    mstore(add(fmp, 36), 36)
+                    mstore(add(fmp, 68), 0x45524332303a20617070726f76652066726f6d20746865207a65726f20616464)
+                    mstore(add(fmp, 100), shl(224, 0x72657373))
+                    revert(fmp, 132)
+                }
+                if iszero(vloc_spender)
+                {
+                    let fmp_1 := mload(64)
+                    mstore(fmp_1, shl(229, 4594637))
+                    mstore(add(fmp_1, 4), 32)
+                    revert(fmp_1, sub(abi_encode_t_stringliteral_24883cc5fe64ace9d0df1893501ecb93c77180f0ff69cca79affb3c316dc8029_to_t_string_memory_ptr_fromStack(add(fmp_1, 36)), fmp_1))
+                }
+                sstore(mapping_index_access_t_mapping$_t_address_$_t_mapping$_t_address_$_t_uint256_$_$_of_t_address(mapping_index_access_t_mapping$_t_address_$_t_mapping$_t_address_$_t_uint256_$_$_of_t_address(1, vloc_owner), vloc_spender), vloc_value)
+                let _1 := mload(64)
+                log3(_1, sub(abi_encode_tuple_t_uint256__to_t_uint256__fromStack(_1, vloc_value), _1), 0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925, vloc_owner, vloc_spender)
+            }
+            function fun__transfer_244(vloc_from, vloc_to, vloc_value)
+            {
+                if iszero(vloc_to)
+                {
+                    let fmp := mload(64)
+                    mstore(fmp, shl(229, 4594637))
+                    mstore(add(fmp, 4), 32)
+                    mstore(add(fmp, 36), 35)
+                    mstore(add(fmp, 68), 0x45524332303a207472616e7366657220746f20746865207a65726f2061646472)
+                    mstore(add(fmp, 100), shl(232, 6648691))
+                    revert(fmp, 132)
+                }
+                let _1 := 0x0
+                mstore(_1, and(vloc_from, sub(shl(160, 1), 1)))
+                mstore(0x20, _1)
+                sstore(mapping_index_access_t_mapping$_t_address_$_t_mapping$_t_address_$_t_uint256_$_$_of_t_address(_1, vloc_from), checked_sub_t_uint256(sload(keccak256(_1, 0x40)), vloc_value))
+                sstore(mapping_index_access_t_mapping$_t_address_$_t_mapping$_t_address_$_t_uint256_$_$_of_t_address(_1, vloc_to), checked_add_t_uint256(sload(mapping_index_access_t_mapping$_t_address_$_t_mapping$_t_address_$_t_uint256_$_$_of_t_address(_1, vloc_to)), vloc_value))
+                let _2 := mload(0x40)
+                log3(_2, sub(abi_encode_tuple_t_uint256__to_t_uint256__fromStack(_2, vloc_value), _2), 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef, vloc_from, vloc_to)
+            }
+            function fun_approve_113(vloc_spender, vloc_value) -> vloc
+            {
+                fun__approve_368(caller(), vloc_spender, vloc_value)
+                vloc := 1
+            }
+            function fun_balanceOf_59(vloc_owner) -> vloc
+            {
+                vloc := sload(mapping_index_access_t_mapping$_t_address_$_t_mapping$_t_address_$_t_uint256_$_$_of_t_address(vloc, vloc_owner))
+            }
+            function fun_decreaseAllowance_199(vloc_spender, vloc_subtractedValue) -> vloc
+            {
+                mstore(vloc, caller())
+                mstore(0x20, 1)
+                let _1 := sload(mapping_index_access_t_mapping$_t_address_$_t_mapping$_t_address_$_t_uint256_$_$_of_t_address(keccak256(vloc, 0x40), vloc_spender))
+                if lt(_1, vloc_subtractedValue) { revert(vloc, vloc) }
+                fun__approve_368(caller(), vloc_spender, sub(_1, vloc_subtractedValue))
+                vloc := 1
+            }
+            function fun_increaseAllowance_173(vloc_spender, vloc_addedValue) -> vloc
+            {
+                mstore(vloc, caller())
+                mstore(0x20, 1)
+                fun__approve_368(caller(), vloc_spender, checked_add_t_uint256(sload(mapping_index_access_t_mapping$_t_address_$_t_mapping$_t_address_$_t_uint256_$_$_of_t_address(keccak256(vloc, 0x40), vloc_spender)), vloc_addedValue))
+                vloc := 1
+            }
+            function fun_transferFrom_147(vloc_from, vloc_to, vloc_value) -> vloc
+            {
+                fun__transfer_244(vloc_from, vloc_to, vloc_value)
+                mstore(vloc, and(vloc_from, sub(shl(160, 1), 1)))
+                mstore(0x20, 1)
+                let _1 := sload(mapping_index_access_t_mapping$_t_address_$_t_mapping$_t_address_$_t_uint256_$_$_of_t_address(keccak256(vloc, 0x40), caller()))
+                if lt(_1, vloc_value) { revert(vloc, vloc) }
+                fun__approve_368(vloc_from, caller(), sub(_1, vloc_value))
+                vloc := 1
+            }
+            function fun_transfer_94(vloc_to, vloc_value) -> vloc
+            {
+                fun__transfer_244(caller(), vloc_to, vloc_value)
+                vloc := 1
+            }
+            function mapping_index_access_t_mapping$_t_address_$_t_mapping$_t_address_$_t_uint256_$_$_of_t_address(slot, key) -> dataSlot
+            {
+                mstore(dataSlot, and(key, sub(shl(160, 1), 1)))
+                mstore(0x20, slot)
+                dataSlot := keccak256(dataSlot, 0x40)
+            }
+            function validator_revert_t_address(value)
+            {
+                if iszero(eq(value, and(value, sub(shl(160, 1), 1)))) { revert(0, 0) }
+            }
+        }
+    }
+}
+
+
+Binary representation:
+608060405234156100105760006000fd5b33151561006f577f08c379a0000000000000000000000000000000000000000000000000000000006080526020608452601f60a4527f45524332303a206d696e7420746f20746865207a65726f20616464726573730060c45260646080fd5b61007c60146002546100fd565b600255610095601461008f336000610117565b546100fd565b6100a0336000610117565b556040513360007fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef836100d46014866100ec565b0384a35061072e80610144600039806000f350610142565b600060208201905082825292915050565b6000821982111561010c578081fd5b828201905092915050565b600073ffffffffffffffffffffffffffffffffffffffff831681528160205260408120905092915050565bfe608060405260048036101515610268576000803560e01c63095ea7b38114610073576318160ddd81146100b2576323b872dd81146100e75763395093518114610128576370a0823181146101675763a457c2d781146101a15763a9059cbb81146101e05763dd62ed3e811461021f57610265565b341561007d578182fd5b6100873684610348565b61009181836105f0565b61009a856103db565b9250826100a782856103b7565b0383f3505050610265565b34156100bc578182fd5b6100c63684610297565b6002546100d2836103db565b806100dd83836103ca565b0381f35050610265565b34156100f1578182fd5b6100fb3684610304565b61010681838561068c565b61010f866103db565b93508361011c82866103b7565b0384f350505050610265565b3415610132578182fd5b61013c3684610348565b6101468183610657565b61014f856103db565b92508261015c82856103b7565b0383f3505050610265565b3415610171578182fd5b61018361017e36856102ac565b610607565b61018c836103db565b8061019783836103ca565b0381f35050610265565b34156101ab578182fd5b6101b53684610348565b6101bf818361061b565b6101c8856103db565b9250826101d582856103b7565b0383f3505050610265565b34156101ea578182fd5b6101f43684610348565b6101fe81836106dd565b610207856103db565b92508261021482856103b7565b0383f3505050610265565b3415610229578182fd5b61023336846102cf565b610247816102428460016106f4565b6106f4565b54610251856103db565b92508261025e82856103ca565b0383f35050505b50505b5060006000fd61072d565b6000813590506001600160a01b038116811415156102915760006000fd5b92915050565b600081830312156102a85760006000fd5b5050565b6000602082840312156102bd578081fd5b6102c78383610273565b905092915050565b60006000604083850312156102e2578081fd5b6102ec8484610273565b91506102fb8460208501610273565b90509250929050565b60006000600060608486031215610319578081fd5b833561032481610712565b80935050602084013561033681610712565b80925050604084013590509250925092565b600060006040838503121561035b578182fd5b6103658484610273565b9150602083013590509250929050565b6000602282527f45524332303a20617070726f766520746f20746865207a65726f206164647265602083015261737360f01b6040830152606082019050919050565b6000602082019050821515825292915050565b600060208201905082825292915050565b6000604051905081810181811067ffffffffffffffff821117156103ff5760006000fd5b8060405250919050565b60008219821115610418578081fd5b828201905092915050565b600082821015610431578081fd5b828203905092915050565b8015156104965760405162461bcd60e51b815260206004820152602460248201527f45524332303a20617070726f76652066726f6d20746865207a65726f206164646044820152637265737360e01b6064820152608481fd505b8115156104c25760405162461bcd60e51b815260206004820152806104bd60248301610375565b0381fd505b826104d7836104d28460016106f4565b6106f4565b5560405182827f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b9258361050988866103ca565b0384a350505050565b81151561056b5760405162461bcd60e51b815260206004820152602360248201527f45524332303a207472616e7366657220746f20746865207a65726f206164647260448201526265737360e81b6064820152608481fd505b60006001600160a01b03821681528060205261058b846040832054610423565b61059583836106f4565b556105aa846105a485846106f4565b54610409565b6105b484836106f4565b555060405182827fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef836105e788866103ca565b0384a350505050565b60006105fd83833361043c565b6001905092915050565b600061061382826106f4565b549050919050565b6000338152600160205261063282604083206106f4565b548381101561063f578182fd5b61064c848203843361043c565b506001905092915050565b6000338152600160205261068261067b8461067585604086206106f4565b54610409565b833361043c565b6001905092915050565b6000610699848484610512565b6001600160a01b038216815260016020526106b733604083206106f4565b54848110156106c4578182fd5b6106d1858203338561043c565b50600190509392505050565b60006106ea838333610512565b6001905092915050565b60006001600160a01b03831681528160205260408120905092915050565b6001600160a01b0381168114151561072a5760006000fd5b50565b
+
+</script></section>
+<section data-markdown><script type="text/template">
+## eWasm Backend
+
+ - ``solc --ewasm``
+ - not at all tested
+ - cannot yet deploy contracts
+
+How do we do it:
+
+ - Take regular EVM-Yul code.
+ - Split all variables into 4 (256 bit to 64 bit).
+ - Add polyfill that implements each EVM opcode using the eWasm equivalent
+ - Run regular optimizer
+
+-> Genericity of Yul is a big win, we can re-use almost all optimizer components.
+</script></section>
+<section data-markdown><script type="text/template">
+## Optimizer
+
+ - built from modules that always translate Yul to Yul
+ - more modules (25) than initially thought
+ - most module (all apart from 4-5) tiny (correctness!)
+ - Only 2-3 components really store opaque data structures
+
+Example, structural simplifier:
+
+Transform any `if c { stop() }` to `if c { stop() } c := 0`.
+
+Simple transformation and trivially correct. No need to search for this information in complicated data structure.
+
+Of course downside: Cannot (yet?) use `if gt(c, 3) { stop() }`
+
+- Optimizer already much more powerful than original optimizer, but some edge cases old one is still better.
+</script></section>
+<section data-markdown><script type="text/template">
+ - Still to do until all the "easy wins" are implemented:
+ - value constraints
+ - redundant stores
+</script></section>
+<section data-markdown><script type="text/template">
+ - Plans for the future:
+ - still memory types
+ - super optimizer (we have the time!), but maybe with shortcuts for source verification
+ -> genetic algorithm to find good order of applying steps
+</script></section>
+  
+    
+</div>
+
+		</div>
+
+		<script src="../revealjs-3.7.0/lib/js/head.min.js"></script>
+		<script src="../revealjs-3.7.0/js/reveal.js"></script>
+
+		<script>
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: false,
+
+				transition: 'none', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: '../revealjs-3.7.0/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: '../revealjs-3.7.0/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../revealjs-3.7.0/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../revealjs-3.7.0/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: '../revealjs-3.7.0/plugin/zoom-js/zoom.js', async: true },
+					{ src: '../revealjs-3.7.0/plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
