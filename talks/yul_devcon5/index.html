@@ -37,6 +37,7 @@
 	font-style: normal;
 }
 body, .reveal {
+	background-color: #fffce6;
     font-family: PTSans, Arial, sans-serif;
     font-size: 34px;
 }
@@ -50,6 +51,7 @@ body, .reveal {
     border-bottom: none;
 }
 .reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+	color: #45008b;
 	text-align: center;
 	text-transform: none;
 	font-family: PTSans, Arial, sans-serif;
@@ -103,9 +105,9 @@ function alloc(size) -> p {
 </script></section>
 <section data-markdown><script type="text/template">
 ### What happened in 2019?
- - Half way through rewrite of code generator
- - Experimental eWasm output
- - Optimizer
+ - half way through rewrite of code generator
+ - experimental eWasm output
+ - optimizer
 </script></section>
 <section data-markdown><script type="text/template">
 ### Solidity Code Generator Rewrite
@@ -120,7 +122,7 @@ function alloc(size) -> p {
 <section data-markdown><script type="text/template">
 ### How to Compile
  - ``solc --ir``
- - Feed output again into compiler:<br/>
+ - feed output again into compiler:<br/>
  ``solc --strict-assembly --optimize``
 </script></section>
 <section data-markdown><script type="text/template">
@@ -196,10 +198,10 @@ So still work to do, but on the right track!
 <section data-markdown><script type="text/template">
 ### How to Compile for eWasm
 
- - Take regular EVM-Yul code.
- - Split all variables into 4 (256 bit to 64 bit).
- - Add polyfill that implements each EVM opcode using the eWasm equivalent
- - Run regular optimizer
+ - take regular EVM-Yul code
+ - split all variables into 4 (256 bit to 64 bit)
+ - add polyfill that implements each EVM opcode using the eWasm equivalent
+ - run regular optimizer
 
 -> Genericity of Yul is a big win, we can re-use almost all optimizer components.
 </script></section>
@@ -276,11 +278,11 @@ function endian_swap(x) -> y {
 
  - built from modules that always translate Yul to Yul
  - more modules (25) than initially thought
- - most module (all apart from 4-5) tiny (correctness!)
- - Only 2-3 components really store opaque data structures
+ - most modules (all apart from 4-5) tiny (correctness!)
+ - only 2-3 components really store opaque data structures
 </script></section>
 <section data-markdown><script type="text/template">
-### Optimizer Example: "Structural simplifier"
+### Optimizer Example: "Conditional Simplifier"
 
 Transform any
 
@@ -298,10 +300,9 @@ Downside: Cannot use this for `if gt(c, 3) { stop() }`
 <section data-markdown><script type="text/template">
 ### Optimizer (2)
 - Optimizer already much more powerful than original optimizer, but some edge cases old one is still better.
-- Can "almost" perform the loop optimization shown in devcon 4 (pending PRs)
+- Can "almost" perform the loop optimization shown in devcon 4 (pending PRs).
 
-Optimizer is mostly language-agnostic and can be configured with different prepcompiles.
-This makes it also work on ewasm-flavoured yul.
+Optimizer mostly language-agnostic, can be configured with different built-ins (also works on ewasm-flavoured yul).
 </script></section>
 <section data-markdown><script type="text/template">
 ### Optimizer: Plans for the Future
