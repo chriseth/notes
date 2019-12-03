@@ -73,4 +73,6 @@ show such a confirmation dialog and avoid things like collisions in
 the four byte directory. It can even be decentralized!
 
 Read about what needs to be done (it's not much!) and by who
-(mostly all of us, unfortunately) in the next part of this series.
+(mostly all of us, unfortunately) in the [next part](./part2) of this series.
+
+Thanks to Bhargava and Mathias for review!
