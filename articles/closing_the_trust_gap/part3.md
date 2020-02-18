@@ -34,8 +34,8 @@ The source code and metadata repository consists of four components:
  - verifier: re-compiles contracts coming in from both monitor and injector and checks for 100% bytecode match
  - pinning services: Makes content available via ipfs / swarm / http
 
-The proof-of-concept version of this system is deployed at https://verification.komputing.org
-and its source code can be found at https://github.com/ethereum/source-verify/
+The proof-of-concept version of this system is deployed at [https://verification.komputing.org](https://verification.komputing.org)
+and its source code can be found at [https://github.com/ethereum/source-verify/](https://github.com/ethereum/source-verify/).
 
 #### Monitor
 
@@ -66,7 +66,7 @@ or if you are dealing with a contract that has been deployed a while ago,
 you can use the manual injector. It essentially works the same way
 as the monitor, just that it is a website where you upload your files.
 
-A proof-of-concept of the injector can be found at https://verification.komputing.org
+A proof-of-concept of the injector can be found at [https://verification.komputing.org](https://verification.komputing.org).
 
 Because you are uploading the metadata file,
 you do not have to select the compiler version, specify
@@ -127,14 +127,14 @@ the bandwidth strain on the central server.
 What can be done with the source and metadata repository?
 
 Of course, you can use it to just browse the source code of contracts.
-Just go to https://verification.komputing.org/repository/contract/mainnet/ and select the address.
+Just go to [https://verification.komputing.org/repository/contract/mainnet/](https://verification.komputing.org/repository/contract/mainnet/) and select the address.
 The list of sources is also something other services like auditing platforms,
 static analysis tools and so on can build on top.
 
 If you want to interface with some contract, you can download its ABI
 (as part of the metadata.json)
 to see how to format the parameters, for example for one of the DAI
-contracts: https://verification.komputing.org/repository/contract/mainnet/0x4D95A049d5B0b7d32058cd3F2163015747522e99/metadata.json
+contracts: [https://verification.komputing.org/repository/contract/mainnet/0x4D95A049d5B0b7d32058cd3F2163015747522e99/metadata.json](https://verification.komputing.org/repository/contract/mainnet/0x4D95A049d5B0b7d32058cd3F2163015747522e99/metadata.json)
 
 And last but not least - the main use case - wallets can use it to
 show more information about the contract a transaction goes to.
