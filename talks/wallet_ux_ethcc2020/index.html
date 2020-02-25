@@ -72,7 +72,7 @@ p { text-align: left; }
 <center>
 Christian Reitwiessner
 <br/>
-EthCC [3] - Paris - 2020-03-03/04/05
+EthCC [3] - Paris - 2020-03-04
 </center>
 
 <small>
@@ -84,6 +84,20 @@ https://chriseth.github.io/notes/talks/wallet_ux_ethcc2020/
 </small>
 
 </script></section>
+
+<section data-markdown><script type="text/template">
+Solidity Summit
+---------------
+
+29+30 April 2020, Berlin
+
+Friendly-sized single-track event with talks and working groups
+
+
+https://solidity-summit.ethereum.org
+
+</script></section>
+	
 
 <section data-background="register_1.png" data-background-size="contain">
 </section>
@@ -115,11 +129,8 @@ Trust Issues
  - Are the function arguments correct?
  - What actually is the source code and is it the one that was audited?
 
-NB: Names and comments can be faked any time, but still...
+<img src="confirm_old.png" style="width: 200px; border: none; position: absolute; right: 0px; bottom: -280px; z-index: -1;" />
 </script></section>
-    
-<section data-background="etherscan.png" data-background-size="contain">
-</section>
 
 <section data-markdown><script type="text/template">
 Enter Bytecode Metadata
@@ -196,23 +207,21 @@ Follow the Swarm/IPFS Link (2)
 ```
 </script></section>
 
-<section data-markdown><script type="text/template">
-What a Gold Mine!
------------------
-
- - exact compiler version
- - optimizer settings<!-- .element: class="fragment" -->
- - ABI<!-- .element: class="fragment" -->
- - NatSpec function documentation<!-- .element: class="fragment" -->
- - Swarm and IPFS links to source files<!-- .element: class="fragment" -->
-
-And the best thing: Retrieval and re-compilation to verify can be fully automated:<!-- .element: class="fragment" -->
-</script></section>
-
 <section>
   <img src="verify.png" style="width: 100%;" />
   https://github.com/ethereum/source-verify/blob/master/verify.js
 </section>
+
+<section data-markdown><script type="text/template">
+Use-Cases of Metadata / Sources
+-------------------------------
+
+ - Improved TX Confirmation Dialogs
+ - Instant source+debug info retrieval for TX debugging
+ - "Annotated Sources" / auditing service
+ - ...
+
+</script></section>
 
 <section data-markdown><script type="text/template">
 Single One Big Problem
@@ -230,27 +239,55 @@ Tackle (2) by the following idea.<!-- .element: class="fragment" -->
 <section data-background="diagram.png" data-background-size="contain">
 </section>
 
+<section>
+	<center><img src="verification.png" style="height: 100%; border: none;" /></center>
+</section>
+  
+<section>
+	<center><img src="repo.png" style="width: 80%; border: none;" /></center>
+</section>
+
 <section><div>
   <center>
-  <img src="confirm_old.png" style="height: 400px; border: 0px;" />
-  <img src="confirm.png" style="height: 400px; border: 0px;" />
+  <img src="confirm_old.png" style="height: 600px; border: 0px;" />
+  <img src="confirm.png" style="height: 600px; border: 0px;" />
   </center>
+</div></section>
+
+<section><div>
+<center>
+<img src="walleth.png" style="height: 800px; border: 0px;" />
+</center>
 </div></section>
 
 <section data-markdown><script type="text/template">
 Let's Make the Transparent World Computer a Reality
 ---------------------------------------------------
 
-Any help is appreciated!
-  - Deployment Tools
-  - Wallets
-  - Services
-  - Ideas
-  - ...
-
-Talk to me afterwards!
+- Developers: Use NatSpec and publish metadata and sources
+- Deployment Tools: Encourage publishing / make it the default
+- Wallets: Make use of ABI and sources
+- Organisations: Help host the data
 </script></section>
-  
+
+<section data-markdown><script type="text/template">
+Future Work
+-----------
+
+- Unify metadata with EthPM V3.
+- Extract simple re-compilation Service
+- Synchronize multiple repositories with each other
+- Move from IPNS to ENS
+- Help with wallet plugins and other tools
+- Improve NatSpec (templates, languages, ...	)
+
+Thanks to Christopher Gewecke, Edi Sinovcic, Ligi and Marc Garreau!
+
+Talk to us on https://gitter.im/ethereum/source-verify !
+</script></section>
+
+	
+	
     
 </div>
 
