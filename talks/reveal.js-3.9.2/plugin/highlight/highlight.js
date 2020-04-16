@@ -5,6 +5,366 @@
 /* Edited by Hakim for reveal.js; removed async timeout */
 !function(n,e){"use strict";function t(){var n=e.createElement("style");n.type="text/css",n.innerHTML=g(".{0}{border-collapse:collapse}.{0} td{padding:0}.{1}:before{content:attr({2})}",[v,L,b]),e.getElementsByTagName("head")[0].appendChild(n)}function r(t){"interactive"===e.readyState||"complete"===e.readyState?i(t):n.addEventListener("DOMContentLoaded",function(){i(t)})}function i(t){try{var r=e.querySelectorAll("code.hljs,code.nohighlight");for(var i in r)r.hasOwnProperty(i)&&l(r[i],t)}catch(o){n.console.error("LineNumbers error: ",o)}}function l(n,e){"object"==typeof n&&f(function(){n.innerHTML=s(n,e)})}function o(n,e){if("string"==typeof n){var t=document.createElement("code");return t.innerHTML=n,s(t,e)}}function s(n,e){e=e||{singleLine:!1};var t=e.singleLine?0:1;return c(n),a(n.innerHTML,t)}function a(n,e){var t=u(n);if(""===t[t.length-1].trim()&&t.pop(),t.length>e){for(var r="",i=0,l=t.length;i<l;i++)r+=g('<tr><td class="{0}"><div class="{1} {2}" {3}="{5}"></div></td><td class="{4}"><div class="{1}">{6}</div></td></tr>',[j,m,L,b,p,i+1,t[i].length>0?t[i]:" "]);return g('<table class="{0}">{1}</table>',[v,r])}return n}function c(n){var e=n.childNodes;for(var t in e)if(e.hasOwnProperty(t)){var r=e[t];h(r.textContent)>0&&(r.childNodes.length>0?c(r):d(r.parentNode))}}function d(n){var e=n.className;if(/hljs-/.test(e)){for(var t=u(n.innerHTML),r=0,i="";r<t.length;r++){var l=t[r].length>0?t[r]:" ";i+=g('<span class="{0}">{1}</span>\n',[e,l])}n.innerHTML=i.trim()}}function u(n){return 0===n.length?[]:n.split(y)}function h(n){return(n.trim().match(y)||[]).length}function f(e){e()}function g(n,e){return n.replace(/\{(\d+)\}/g,function(n,t){return e[t]?e[t]:n})}var v="hljs-ln",m="hljs-ln-line",p="hljs-ln-code",j="hljs-ln-numbers",L="hljs-ln-n",b="data-line-number",y=/\r\n|\r|\n/g;n.hljs?(n.hljs.initLineNumbersOnLoad=r,n.hljs.lineNumbersBlock=l,n.hljs.lineNumbersValue=o,t()):n.console.error("highlight.js not detected!")}(window,document);
 
+(function hljsDefineSolidity(hljs) {
+
+    //first: let's set up all parameterized types (bytes, int, uint, fixed, ufixed)
+    //NOTE: unparameterized versions are *not* included here, those are included
+    //manually
+    var byteSizes = [];
+    for(var i = 0; i < 32; i++) {
+        byteSizes[i] = i+1;
+    }
+    var numSizes = byteSizes.map(function(bytes) { return bytes * 8 } );
+    var precisions = [];
+    for(i = 0; i <= 80; i++) {
+        precisions[i] = i;
+    }
+
+    var bytesTypes = byteSizes.map(function(size) { return 'bytes' + size });
+    var bytesTypesString = bytesTypes.join(' ') + ' ';
+
+    var uintTypes = numSizes.map(function(size) { return 'uint' + size });
+    var uintTypesString = uintTypes.join(' ') + ' ';
+
+    var intTypes = numSizes.map(function(size) { return 'int' + size });
+    var intTypesString = intTypes.join(' ') + ' ';
+
+    var sizePrecisionPairs = [].concat.apply([],
+        numSizes.map(function(size) {
+            return precisions.map(function(precision) {
+                return size + 'x' + precision;
+            })
+        })
+    );
+
+    var fixedTypes = sizePrecisionPairs.map(function(pair) { return 'fixed' + pair });
+    var fixedTypesString = fixedTypes.join(' ') + ' ';
+
+    var ufixedTypes = sizePrecisionPairs.map(function(pair) { return 'ufixed' + pair });
+    var ufixedTypesString = ufixedTypes.join(' ') + ' ';
+
+    var SOL_KEYWORDS = {
+        keyword:
+            'var bool string ' +
+            'int uint ' + intTypesString + uintTypesString +
+            'byte bytes ' + bytesTypesString +
+            'fixed ufixed ' + fixedTypesString + ufixedTypesString +
+            'enum struct mapping address ' +
+
+            'new delete ' +
+            'if else for while continue break return throw emit try catch ' +
+            //NOTE: doesn't always act as a keyword, but seems fine to include
+            '_ ' +
+
+            'function modifier event constructor fallback receive ' +
+            'virtual override ' +
+            'constant immutable anonymous indexed ' +
+            'storage memory calldata ' +
+            'external public internal payable pure view private returns ' +
+
+            'import from as using pragma ' +
+            'contract interface library is abstract ' +
+            'assembly',
+        literal:
+            'true false ' +
+            'wei szabo finney ether ' +
+            'seconds minutes hours days weeks years',
+        built_in:
+            'self ' +   // :NOTE: not a real keyword, but a convention used in storage manipulation libraries
+            'this super selfdestruct suicide ' +
+            'now ' +
+            'msg block tx abi ' +
+            'type ' +
+            'blockhash gasleft ' +
+            'assert revert require ' +
+            'Error ' + //Not exactly a builtin? but this seems the best category for it
+            'sha3 sha256 keccak256 ripemd160 ecrecover addmod mulmod ' +
+            'log0 log1 log2 log3 log4' +
+            // :NOTE: not really toplevel, but advantageous to have highlighted as if reserved to
+            //        avoid newcomers making mistakes due to accidental name collisions.
+            'send transfer call callcode delegatecall staticcall '
+    };
+
+    var SOL_ASSEMBLY_KEYWORDS = {
+        keyword:
+            'assembly ' +
+            'let ' +
+            'if switch case default for leave ' +
+            //NOTE: We're counting most opcodes as builtins, but the following ones we're
+            //treating as keywords because they alter control flow or halt execution
+            'jump jumpi ' +
+            'stop return revert selfdestruct invalid',
+        built_in:
+            //NOTE that push1 through push32, as well as jumpdest, are not included
+            'add sub mul div sdiv mod smod exp not lt gt slt sgt eq iszero ' +
+            'and or xor byte shl shr sar ' +
+            'addmod mulmod signextend keccak256 ' +
+            'pc pop ' +
+            'dup1 dup2 dup3 dup4 dup5 dup6 dup7 dup8 dup9 dup10 dup11 dup12 dup13 dup14 dup15 dup16 ' +
+            'swap1 swap2 swap3 swap4 swap5 swap6 swap7 swap8 swap9 swap10 swap11 swap12 swap13 swap14 swap15 swap16 ' +
+            'mload mstore mstore8 sload sstore msize ' +
+            'gas address balance selfbalance caller callvalue ' +
+            'calldataload calldatasize calldatacopy codesize codecopy extcodesize extcodecopy returndatasize returndatacopy extcodehash ' +
+            'create create2 call callcode delegatecall staticcall ' +
+            'log0 log1 log2 log3 log4 ' +
+            'chainid origin gasprice blockhash coinbase timestamp number difficulty gaslimit',
+        literal:
+            'true false'
+    };
+
+    //covers the special slot/offset notation in assembly
+    var SOL_ASSEMBLY_MEMBERS = {
+        begin: /_/,
+        end: /[^A-Za-z0-9$.]/,
+        excludeBegin: true,
+        excludeEnd: true,
+        keywords: {
+            built_in: 'slot offset'
+        },
+        relevance: 2,
+    };
+
+    function isNegativeLookbehindAvailable() {
+        try {
+            new RegExp('(?<!.)');
+            return true;
+        } catch (_) {
+            return false;
+        }
+    }
+
+    //like a C number, except:
+    //1. no octal literals (leading zeroes disallowed)
+    //2. underscores (1 apiece) are allowed between consecutive digits
+    //(including hex digits)
+    //also, all instances of \b (word boundary) have been replaced with (?<!\$)\b
+    //NOTE: we use string rather than regexp in the case where negative lookbehind
+    //is allowed to avoid Firefox parse errors; sorry about the resulting double backslashes!
+    if (isNegativeLookbehindAvailable()) {
+        var SOL_NUMBER_RE = '-?((?<!\\$)\\b0[xX]([a-fA-F0-9]_?)*[a-fA-F0-9]|((?<!\\$)\\b[1-9](_?\\d)*(\\.((\\d_?)*\\d)?)?|\\.\\d(_?\\d)*)([eE][-+]?\\d(_?\\d)*)?|(?<!\\$)\\b0)';
+    } else {
+        var SOL_NUMBER_RE = /-?(\b0[xX]([a-fA-F0-9]_?)*[a-fA-F0-9]|(\b[1-9](_?\d)*(\.((\d_?)*\d)?)?|\.\d(_?\d)*)([eE][-+]?\d(_?\d)*)?|\b0)/;
+    }
+
+
+    var SOL_NUMBER = {
+        className: 'number',
+        begin: SOL_NUMBER_RE,
+        relevance: 0,
+    };
+
+    var SOL_FUNC_PARAMS = {
+        className: 'params',
+        begin: /\(/, end: /\)/,
+        excludeBegin: true,
+        excludeEnd: true,
+        keywords: SOL_KEYWORDS,
+        contains: [
+            hljs.C_LINE_COMMENT_MODE,
+            hljs.C_BLOCK_COMMENT_MODE,
+            hljs.APOS_STRING_MODE,
+            hljs.QUOTE_STRING_MODE,
+            SOL_NUMBER,
+            'self' //to account for mappings and fn variables
+        ]
+    };
+
+    var HEX_APOS_STRING_MODE = {
+      className: 'string',
+      begin: /hex'(([0-9a-fA-F]{2}_?)*[0-9a-fA-F]{2})?'/, //please also update HEX_QUOTE_STRING_MODE
+    };
+    var HEX_QUOTE_STRING_MODE = {
+      className: 'string',
+      begin: /hex"(([0-9a-fA-F]{2}_?)*[0-9a-fA-F]{2})?"/, //please also update HEX_APOS_STRING_MODE
+    };
+
+    //NOTE: including "*" as a "lexeme" because we use it as a "keyword" below
+    var SOL_LEXEMES_RE = /[A-Za-z_$][A-Za-z_$0-9]*|\*/;
+    //in assembly, identifiers can contain periods (but may not start with them)
+    var SOL_ASSEMBLY_LEXEMES_RE = /[A-Za-z_$][A-Za-z_$0-9.]*/;
+
+    var SOL_RESERVED_MEMBERS = {
+        begin: /\.\s*/,  // match any property access up to start of prop
+        end: /[^A-Za-z0-9$_\.]/,
+        excludeBegin: true,
+        excludeEnd: true,
+        keywords: {
+            built_in: 'gas value selector address send transfer call callcode delegatecall staticcall balance length push pop name creationCode runtimeCode',
+        },
+        relevance: 2,
+    };
+
+    var SOL_TITLE_MODE =
+        hljs.inherit(hljs.TITLE_MODE, {
+            begin: /[A-Za-z$_][0-9A-Za-z$_]*/,
+            lexemes: SOL_LEXEMES_RE,
+            keywords: SOL_KEYWORDS,
+        });
+
+    var SOL_SPECIAL_PARAMETERS = {
+        //special parameters (note: these aren't really handled properly, but this seems like the best compromise for now)
+        className: 'built_in',
+        begin: /(gas|value|salt):/
+    };
+
+    function makeBuiltinProps(obj, props) {
+        return {
+            begin: (isNegativeLookbehindAvailable() ? '(?<!\\$)\\b' : '\\b') + obj + '\\.\\s*',
+            end: /[^A-Za-z0-9$_\.]/,
+            excludeBegin: false,
+            excludeEnd: true,
+            lexemes: SOL_LEXEMES_RE,
+            keywords: {
+                built_in: obj + ' ' + props,
+            },
+            contains: [
+                SOL_RESERVED_MEMBERS
+            ],
+            relevance: 10,
+        };
+    }
+
+    return {
+        aliases: ['sol'],
+        keywords: SOL_KEYWORDS,
+        lexemes: SOL_LEXEMES_RE,
+        contains: [
+            // basic literal definitions
+            hljs.APOS_STRING_MODE,
+            hljs.QUOTE_STRING_MODE,
+            HEX_APOS_STRING_MODE,
+            HEX_QUOTE_STRING_MODE,
+            hljs.C_LINE_COMMENT_MODE,
+            hljs.C_BLOCK_COMMENT_MODE,
+            SOL_NUMBER,
+            SOL_SPECIAL_PARAMETERS,
+            { // functions
+                className: 'function',
+                lexemes: SOL_LEXEMES_RE,
+                beginKeywords: 'function modifier event constructor', end: /[{;]/, excludeEnd: true,
+                contains: [
+                    SOL_TITLE_MODE,
+                    SOL_FUNC_PARAMS,
+                    SOL_SPECIAL_PARAMETERS,
+                    hljs.C_LINE_COMMENT_MODE,
+                    hljs.C_BLOCK_COMMENT_MODE
+                ],
+                illegal: /%/,
+            },
+            // built-in members
+            makeBuiltinProps('msg', 'gas value data sender sig'),
+            makeBuiltinProps('block', 'blockhash coinbase difficulty gaslimit number timestamp '),
+            makeBuiltinProps('tx', 'gasprice origin'),
+            makeBuiltinProps('abi', 'decode encode encodePacked encodeWithSelector encodeWithSignature'),
+            SOL_RESERVED_MEMBERS,
+            { // contracts & libraries & interfaces
+                className: 'class',
+                lexemes: SOL_LEXEMES_RE,
+                beginKeywords: 'contract interface library', end: '{', excludeEnd: true,
+                illegal: /[:"\[\]]/,
+                contains: [
+                    { beginKeywords: 'is', lexemes: SOL_LEXEMES_RE },
+                    SOL_TITLE_MODE,
+                    SOL_FUNC_PARAMS,
+                    SOL_SPECIAL_PARAMETERS,
+                    hljs.C_LINE_COMMENT_MODE,
+                    hljs.C_BLOCK_COMMENT_MODE
+                ]
+            },
+            { // structs & enums
+                lexemes: SOL_LEXEMES_RE,
+                beginKeywords: 'struct enum', end: '{', excludeEnd: true,
+                illegal: /[:"\[\]]/,
+                contains: [
+                    SOL_TITLE_MODE,
+                    hljs.C_LINE_COMMENT_MODE,
+                    hljs.C_BLOCK_COMMENT_MODE
+                ]
+            },
+            { // imports
+                beginKeywords: 'import', end: ';',
+                lexemes: SOL_LEXEMES_RE,
+                keywords: 'import * from as',
+                contains: [
+                    SOL_TITLE_MODE,
+                    hljs.APOS_STRING_MODE,
+                    hljs.QUOTE_STRING_MODE,
+                    HEX_APOS_STRING_MODE,
+                    HEX_QUOTE_STRING_MODE,
+                    hljs.C_LINE_COMMENT_MODE,
+                    hljs.C_BLOCK_COMMENT_MODE
+                ]
+            },
+            { // using
+                beginKeywords: 'using', end: ';',
+                lexemes: SOL_LEXEMES_RE,
+                keywords: 'using * for',
+                contains: [
+                    SOL_TITLE_MODE,
+                    hljs.C_LINE_COMMENT_MODE,
+                    hljs.C_BLOCK_COMMENT_MODE
+                ]
+            },
+            { // pragmas
+                className: 'meta',
+                beginKeywords: 'pragma', end: ';',
+                lexemes: SOL_LEXEMES_RE,
+                keywords: {
+                    keyword: 'pragma solidity experimental',
+                    built_in: 'ABIEncoderV2 SMTChecker'
+                },
+                contains: [
+                    hljs.C_LINE_COMMENT_MODE,
+                    hljs.C_BLOCK_COMMENT_MODE,
+                    hljs.inherit(hljs.APOS_STRING_MODE, { className: 'meta-string' }),
+                    hljs.inherit(hljs.QUOTE_STRING_MODE, { className: 'meta-string' })
+                ]
+            },
+            { //assembly section
+                beginKeywords: 'assembly',
+                end: /\b\B/, //unsatisfiable regex; ended by endsParent instead
+                contains: [
+                    hljs.C_LINE_COMMENT_MODE,
+                    hljs.C_BLOCK_COMMENT_MODE,
+                    { //the actual *block* in the assembly section
+                        begin: '{', end: '}',
+                        endsParent: true,
+                        keywords: SOL_ASSEMBLY_KEYWORDS,
+                        lexemes: SOL_ASSEMBLY_LEXEMES_RE,
+                        contains: [
+                            hljs.APOS_STRING_MODE,
+                            hljs.QUOTE_STRING_MODE,
+                            HEX_APOS_STRING_MODE,
+                            HEX_QUOTE_STRING_MODE,
+                            hljs.C_LINE_COMMENT_MODE,
+                            hljs.C_BLOCK_COMMENT_MODE,
+                            SOL_NUMBER,
+                            SOL_ASSEMBLY_MEMBERS,
+                            { //block within assembly; note the lack of endsParent
+                                begin: '{', end: '}',
+                                keywords: SOL_ASSEMBLY_KEYWORDS,
+                                lexemes: SOL_ASSEMBLY_LEXEMES_RE,
+                                contains: [
+                                    hljs.APOS_STRING_MODE,
+                                    hljs.QUOTE_STRING_MODE,
+                                    HEX_APOS_STRING_MODE,
+                                    HEX_QUOTE_STRING_MODE,
+                                    hljs.C_LINE_COMMENT_MODE,
+                                    hljs.C_BLOCK_COMMENT_MODE,
+                                    SOL_NUMBER,
+                                    SOL_ASSEMBLY_MEMBERS,
+                                    'self'
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        illegal: /#/
+    };
+})(hljs);
+
 /**
  * This reveal.js plugin is wrapper around the highlight.js
  * syntax highlighting library.
