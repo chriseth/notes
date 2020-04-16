@@ -1,0 +1,138 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Libraries 2.0</title>
+
+		<meta name="author" content="Christian Reitwiessner">
+
+		<link rel="stylesheet" href="../../reveal.js-3.9.2/css/reset.css">
+		<link rel="stylesheet" href="../../reveal.js-3.9.2/css/reveal.css">
+		<link rel="stylesheet" href="../../reveal.js-3.9.2/css/theme/simple.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="../../reveal.js-3.9.2/lib/css/zenburn.css">
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? '../../reveal.js-3.9.2/css/print/pdf.css' : '../../reveal.js-3.9.2/css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+<style type="text/css">
+@font-face {
+	font-family: PTSans;
+	src: url('./pt-sans-regular.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+}
+body, .reveal {
+    font-family: PTSans, Arial, sans-serif;
+    font-size: 34px;
+}
+.reveal .slides {
+	text-align: left;
+}
+.reveal pre {
+  width: inherit;
+}
+.reveal table th, .reveal table td {
+    border-bottom: none;
+}
+.reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+	text-align: center;
+	text-transform: none;
+	font-family: PTSans, Arial, sans-serif;
+}
+p { text-align: left; }
+</style>
+
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<div class="slides">
+<section data-markdown><script type="text/template">
+### Libraries 2.0
+
+ - libraries and especially linked libraries not widely used
+ - extend / restrict / completely rework library mechanism?
+
+What do we want to achieve in this session?
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Current Situation: Example
+
+EXAMPLE
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Current Situation
+
+Libraries are
+ - external code with known interface
+ - at "link-time static" address
+ - can modify caller's storage if passed explicit pointer
+ - functions can be added to types with ``using A for t``
+</script></section>
+
+<section data-markdown><script type="text/template">
+### (Maybe) Negative Aspects
+
+- code is not re-used across projects
+- delegatecall is rather expensive?
+- libraries are statically-linked, cannot be upgraded
+- the "using for" mechanism might be dangerous
+- the "inline" modifier is very confusing
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Random Ideas
+
+- dynamic libraries
+- tighter coupling between libraries and data structures: library as part of contract's state variables
+- since code is not reused anyway, just group modules of a contract and delegatecall between them automatically?
+
+</script></section>
+
+			</div>
+		</div>
+
+		<script src="../../reveal.js-3.9.2/js/reveal.js"></script>
+
+		<script>
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: false,
+
+				transition: 'none', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: '../../reveal.js-3.9.2/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../../reveal.js-3.9.2/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../../reveal.js-3.9.2/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: '../../reveal.js-3.9.2/plugin/zoom-js/zoom.js', async: true },
+					{ src: '../../reveal.js-3.9.2/plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>

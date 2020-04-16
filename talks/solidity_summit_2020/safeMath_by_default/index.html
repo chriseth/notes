@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>SafeMath by Default</title>
+
+		<meta name="author" content="Christian Reitwiessner">
+
+		<link rel="stylesheet" href="../../reveal.js-3.9.2/css/reset.css">
+		<link rel="stylesheet" href="../../reveal.js-3.9.2/css/reveal.css">
+		<link rel="stylesheet" href="../../reveal.js-3.9.2/css/theme/simple.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="../../reveal.js-3.9.2/lib/css/zenburn.css">
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? '../../reveal.js-3.9.2/css/print/pdf.css' : '../../reveal.js-3.9.2/css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+<style type="text/css">
+@font-face {
+	font-family: PTSans;
+	src: url('./pt-sans-regular.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+}
+body, .reveal {
+    font-family: PTSans, Arial, sans-serif;
+    font-size: 34px;
+}
+.reveal .slides {
+	text-align: left;
+}
+.reveal pre {
+  width: inherit;
+}
+.reveal table th, .reveal table td {
+    border-bottom: none;
+}
+.reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+	text-align: center;
+	text-transform: none;
+	font-family: PTSans, Arial, sans-serif;
+}
+p { text-align: left; }
+</style>
+
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<div class="slides">
+<section data-markdown><script type="text/template">
+### SafeMath by Default
+
+- checked arithemtics is used extensively
+- has not been part of Solidity yet for the following reasons:
+  - old optimizer cannot cope well with conditionals
+  - complicated to implement for all types
+  - hidden reverts on overflow can cause their own class of bugs
+
+What do we want to achieve in this session?
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Adding Checked Arithmetics to Solidity
+
+- ``unchecked`` area
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Open Questions
+
+- revert or invalid opcode?
+- 
+The SafeMath library is commonplace among smart contracts and it makes sense to flag a runtime failure in case of arithmetic overflow as we already do for division by zero.
+Since the checks have been implemented already for the Yul code generator, we can re-use them in the legacy code generator.
+The idea is to provide a syntactic "unchecked { ... }"-area where overflow checks are not performed.
+
+Since overflow failures can lead to a denial-of-service, developers still have to be aware of the exact situations in which overflows could occur.
+The main open questions in this area are:
+ - should the error cause a revert or an invalid opcode?
+ - should there be a way to disable the checks on a whole source file?
+ - should we provide fine-grained access about which checks to disable (overflow, underflowe, division by zero, array out of bounds, ...)?
+EXAMPLE
+</script></section>
+
+
+			</div>
+		</div>
+
+		<script src="../../reveal.js-3.9.2/js/reveal.js"></script>
+
+		<script>
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: false,
+
+				transition: 'none', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: '../../reveal.js-3.9.2/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../../reveal.js-3.9.2/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../../reveal.js-3.9.2/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: '../../reveal.js-3.9.2/plugin/zoom-js/zoom.js', async: true },
+					{ src: '../../reveal.js-3.9.2/plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
