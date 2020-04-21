@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>SafeMath by Default</title>
+		<title>Solidity Summit 2020</title>
 
 		<meta name="author" content="Christian Reitwiessner">
 
@@ -61,79 +61,45 @@ p { text-align: left; }
 
 			<div class="slides">
 <section data-markdown><script type="text/template">
-### SafeMath by Default
-
-- checked arithemtics is used extensively
-- has not been part of Solidity yet for the following reasons:
-  - old optimizer cannot cope well with conditionals
-  - complicated to implement for all types
-  - hidden reverts on overflow can cause stuck contracts
-
-What do we want to achieve in this session?
-- decide on whether or not to use it
-- decide on "revert" or "invalid opcode"
-- decide on how granular the "unchecked" regions should be
-
-</script></section>
-
-<section data-markdown><script type="text/template">
-### Adding Checked Arithmetics to Solidity
+### Modifier Areas
 
     contract C {
-		function f(uint x, uint y) public pure returns (uint) {
-			uint t;
-			// does not revert on overflow
-			unchecked { t = x + y; }
-			// reverts on overflow.
-			return x + y;
-		}
-	}
+        address owner;
+        modifier onlyOwner { require(msg.sender == owner); _; }
+        using modifier onlyOwner {
+            function admin1() public {}
+            funciton admin2() public {}
+        }
+    }
 
 </script></section>
 
 <section data-markdown><script type="text/template">
-### Revert or Invalid Opcode?
+### Benefits
 
-Invalid Opcode ("assert"):
- - consumes all gas
- - used for "internal checks"
- - static analysis tools can check if it reachable at all
-
-Revert:
- - can specify error text
- - used for "invalid input"
+ - much harder to forget mentioning a modifier
+ - functions with similar purpose have to be grouped
+ - maybe easier to implement state machine:
+   ``using modifier inState(States.FirstState) { ... }``
 
 </script></section>
 
 <section data-markdown><script type="text/template">
-### Revert or Invalid Opcode?
+### Drawbacks
 
-My personal preference:
-
-Invalid opcode, bound values to sane ranges and thus make failure conditions visible!
-
-    contract C {
-		function f(uint x, uint y) public pure returns (uint) {
-			require(x <= 1e100);
-			require(y <= 1e100);
-			// Will never fail, and can be statically checked by tools.
-			return x + y;
-		}
-	}
+ - which modifier is applied is not easy to see anymore
+ - "crossing" modifier areas hard to implement
+ - nesting might make it even more complicated
 </script></section>
 
 <section data-markdown><script type="text/template">
+### Further Ideas
+
+ - could also be used to apply ``"public"``
+ - could also use ``apply modifier to fun1, fun2, fun3``?
+ - maybe just leave everything as it is and use auditing tools that
+   show a concise summary of which function uses which modifier?
 </script></section>
-
-<section data-markdown><script type="text/template">
-### Open Questions
-
-The main open questions in this area are:
- - should the error cause a revert or an invalid opcode?
- - should there be a way to disable the checks on a whole source file or is block-based region enough?
- - should we provide fine-grained access about which checks to disable (overflow, underflow, division by zero, array out of bounds, ...)?
-</script></section>
-
 
 			</div>
 		</div>

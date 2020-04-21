@@ -66,14 +66,10 @@ p { text-align: left; }
  - libraries and especially linked libraries not widely used
  - extend / restrict / completely rework library mechanism?
 
-What do we want to achieve in this session?
+Goals for this open discussion group:
+ - brainstorm usage
+ - list potential solutions
 
-</script></section>
-
-<section data-markdown><script type="text/template">
-### Current Situation: Example
-
-EXAMPLE
 </script></section>
 
 <section data-markdown><script type="text/template">
@@ -84,6 +80,28 @@ Libraries are
  - at "link-time static" address
  - can modify caller's storage if passed explicit pointer
  - functions can be added to types with ``using A for t``
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Current Situation: Example
+
+	library L {
+		function sum(uint[] storage self) public returns (uint ret) {
+			for (uint i = 0; i < self.length; ++i) ret += self[i];
+		}
+		function sum(uint[] memory self) internal returns (uint ret) {
+			for (uint i = 0; i < self.length; ++i) ret += self[i];
+		}
+	}
+	contract C {
+		using L for *;
+		uint[] x;
+		function f() public {
+			uint[] memory a;
+			uint s = a.sum();
+			uint t = x.sum();
+		}
+	}
 </script></section>
 
 <section data-markdown><script type="text/template">
@@ -100,10 +118,28 @@ Libraries are
 <section data-markdown><script type="text/template">
 ### Random Ideas
 
-- dynamic libraries
+- dynamic libraries: address stored in storage
 - tighter coupling between libraries and data structures: library as part of contract's state variables
 - since code is not reused anyway, just group modules of a contract and delegatecall between them automatically?
+- should libraries / contract modules have storage variables?
+</script></section>
 
+<section data-markdown><script type="text/template">
+### Current Situation: Example
+
+	library L {
+		...
+	}
+	contract C {
+		L l;
+		using l for *;
+		uint[] x;
+		function f() public {
+			uint[] memory a;
+			uint s = a.sum();
+			uint t = x.sum();
+		}
+	}
 </script></section>
 
 			</div>
