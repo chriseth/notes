@@ -94,33 +94,17 @@ p { text-align: left; }
 
 		<div class="reveal">
 
-<div id="hidden" style="display:none;">
-    <div id="header">
+    <div id="header" style="display: none;">
         <div id="header-left"></div>
         <div id="header-right"></div>
         <div id="footer-left"></div>
         <div id="footer-center">Open Discussion/<b>Libraries 2.0</b></div>
         <div id="footer-right">#SoliditySummit</div>
     </div>
-</div>
-
-<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
-<script type="text/javascript">
-    // 3. On Reveal.js ready event, copy header/footer <div> into each `.slide-background` <div>
-    var header = $('#header').html();
-    if ( window.location.search.match( /print-pdf/gi ) ) {
-        Reveal.addEventListener( 'ready', function( event ) {
-            $('.slide-background').append(header);
-        });
-    }
-    else {
-        $('div.reveal').append(header);
-   }
-</script>
 
 			<div class="slides">
 
-<section data-markdown><script type="text/template">
+<section data-markdown class="no-headers"><script type="text/template">
 ### Libraries 2.0
 
  - libraries and especially linked libraries not widely used
@@ -228,6 +212,17 @@ Libraries are
 				]
 			});
 
+			var showHideHeader = function() {
+				if (Reveal.isFirstSlide() || Reveal.isOverview()) {
+					document.getElementById("header").style = "display: none;";
+				} else {
+					document.getElementById("header").style = "display: block;";
+				}
+			};
+			Reveal.addEventListener('ready', showHideHeader);
+			Reveal.addEventListener('slidechanged', showHideHeader);
+			Reveal.addEventListener('overviewshown', showHideHeader);
+			Reveal.addEventListener('overviewhidden', showHideHeader);
 		</script>
 
 	</body>
