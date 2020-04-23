@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>Libraries 2.0</title>
+		<title>Fixed Point Types</title>
 
 		<meta name="author" content="Christian Reitwiessner">
 
@@ -51,9 +51,6 @@ body, .reveal {
 	font-family: PTSans, Arial, sans-serif;
 }
 p { text-align: left; }
-body {
-	background-color: #e6e7ecff;
-}
 
 #header-left {
 	position: absolute;
@@ -108,85 +105,67 @@ body {
 			<div class="slides">
 
 <section data-markdown class="no-headers"><script type="text/template">
-### Libraries 2.0
+### Fixed Point Types
 
- - libraries and especially linked libraries not widely used
- - extend / restrict / completely rework library mechanism?
-
-Goals for this open discussion group:
- - brainstorm usage
- - list potential solutions
+ - designed and almost implemented long time ago
+ - someone from community vetoed
+ - better process now to decide
 
 </script></section>
 
 <section data-markdown><script type="text/template">
-### Current Situation
+### Open Questions for Fixed Points
 
-Libraries are
- - external code with known interface
- - at "link-time static" address
- - can modify caller's storage if passed explicit pointer
- - functions can be added to types with ``using A for t``
+ - have them or not
+ - binary or decimal?
+ - all possible types or just subset
+ - defaul type
 </script></section>
 
 <section data-markdown><script type="text/template">
-### Current Situation: Example
+### To Fixed Point or not to Fixed Point
 
-	library L {
-		function sum(uint[] storage self) public returns (uint ret) {
-			for (uint i = 0; i < self.length; ++i) ret += self[i];
-		}
-		function sum(uint[] memory self) internal returns (uint ret) {
-			for (uint i = 0; i < self.length; ++i) ret += self[i];
-		}
-	}
-	contract C {
-		using L for *;
-		uint[] x;
-		function f() public {
-			uint[] memory a;
-			uint s = a.sum();
-			uint t = x.sum();
-		}
-	}
-</script></section>
-
-<section data-markdown><script type="text/template">
-### (Maybe) Negative Aspects
-
-- code is not re-used across projects
-- delegatecall is rather expensive?
-- libraries are statically-linked, cannot be upgraded
-- the "using for" mechanism might be dangerous
-- the "inline" modifier is very confusing
+ - pro: make non-integer arithmetic easier to read
+ - con: could deceive about precision
 
 </script></section>
 
 <section data-markdown><script type="text/template">
-### Random Ideas
+### Binary or Decimal
 
-- dynamic libraries: address stored in storage
-- tighter coupling between libraries and data structures: library as part of contract's state variables
-- since code is not reused anyway, just group modules of a contract and delegatecall between them automatically?
-- should libraries / contract modules have storage variables?
+``x / 10**k``` or ``x / 2**k```
+
+- decimal ensures that all literals can be stored without precision loss
+- binary is easier to implement
+- decimal as easy to implement for types that "leave space" in the upper bits
+
+</script></section>
+
+
+
+<section data-markdown><script type="text/template">
+### Which Types?
+
+``fixedMxN`` with 
+ - ``M`` number of total bits
+ - ``N`` number of fractional digits / bits
+
+ - ``M``: all multiples of 8?
+ - ``N``: all values such that ``M`` fits 256 bits?
 </script></section>
 
 <section data-markdown><script type="text/template">
-### Dynamic Libraries: Example
+### Default Type?
 
-	library L {
-		...
-	}
-	contract C {
-		L l;
-		using l for *;
-		uint[] x;
-		function f() public {
-			uint[] memory a;
-			uint s = a.sum();
-			uint t = x.sum();
-		}
-	}
+Proposal:
+ - ``fixed`` is ``fixed128x18`` - 128 bits with 18 digits
+
+Should have easy arithmetics (only 128 bits in total).
+
+18 digits is used to match the Ether multiplier.
+
+Would have 20-21 integer and 18 fractional digits .
+
 </script></section>
 
 			</div>
