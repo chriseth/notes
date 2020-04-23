@@ -105,39 +105,39 @@ p { text-align: left; }
 			<div class="slides">
 
 <section data-markdown class="no-headers"><script type="text/template">
-### Fixed Point Types
+### History of Fixed Point Types in Solidity
 
- - designed and almost implemented long time ago
- - someone from community vetoed
- - better process now to decide
+ - Have been designed and almost implemented a long time ago
+ - A community member vetoed against implementation
+ - Now we're aiming for a better decision process
 
 </script></section>
 
 <section data-markdown><script type="text/template">
 ### Open Questions for Fixed Points
 
- - have them or not
- - binary or decimal?
- - all possible types or just subset
- - defaul type
+ - Should we have them in Solidity or not?
+ - Binary vs decimal?
+ - All possible types vs just subset?
+ - Default type?
 </script></section>
 
 <section data-markdown><script type="text/template">
 ### To Fixed Point or not to Fixed Point
 
- - pro: make non-integer arithmetic easier to read
- - con: could deceive about precision
+ - Pro: make non-integer arithmetic easier to read
+ - Con: could deceive about precision
 
 </script></section>
 
 <section data-markdown><script type="text/template">
-### Binary or Decimal
+### Binary vs Decimal
 
 ``x / 10**k``` or ``x / 2**k```
 
-- decimal ensures that all literals can be stored without precision loss
-- binary is easier to implement
-- decimal as easy to implement for types that "leave space" in the upper bits
+- Decimal ensures that all literals can be stored without precision loss
+- Binary is easier to implement
+- Decimal as easy to implement for types that "leave space" in the upper bits
 
 </script></section>
 
@@ -160,11 +160,11 @@ p { text-align: left; }
 Proposal:
  - ``fixed`` is ``fixed128x18`` - 128 bits with 18 digits
 
-Should have easy arithmetics (only 128 bits in total).
+- Should have easy arithmetics (only 128 bits in total)
 
-18 digits is used to match the Ether multiplier.
+- 18 digits is used to match the Ether multiplier
 
-Would have 20-21 integer and 18 fractional digits .
+- Would have 20-21 integer and 18 fractional digits
 
 </script></section>
 
