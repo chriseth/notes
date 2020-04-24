@@ -66,12 +66,53 @@ p { text-align: left; }
 - full coverage of Yul IR (currently 50%)
 - almost full coverage of SMTChecker
 - 0.7.0 and maybe 0.8.0 released
-  - better copy and mutability semantics (-> discussion at ...)
-  - improved library and update support (-> discussions at ... and ...)
-  - checked arithmetics (-> discussion at ...)
+  - better copy and mutability semantics (-> "Immutable and Explicit Copies" - day 2 19:00 CEST)
+  - checked arithmetics (-> "SafeMath by Default" - day 1, 15:40 CEST)
+  - Language Server (-> day 2 16:30 CEST)
+  - debug output (-> day 1 20:50 CEST)
+  - and more
 - improved Yul optimizer
 - improved ewasm output
 
+</script></section>
+<section data-markdown><script type="text/template">
+### Yul IR
+
+Extensible typed intermediate language intended to be human-readable,
+ever after optimization. Try it: ``solc --ir``
+
+  - audit code very close to bytecode
+  - understand what is happening behind the scenes
+  - target different backends
+  - improved optimizer support through special types and built-in functions
+    (lifetime tracking, overflow tracking, out-of-bounds access, ...)
+
+Progress: Arithmetics, internal library functions, constructors, arrays, ...
+
+Next steps: Libraries, structs, modifiers, fine-grained access to optimizer
+</script></section>
+<section data-markdown><script type="text/template">
+### SMT Checker
+
+ - support is pretty far, of course devil in the details
+ - function abstraction
+ - invariants
+ - see session an "Acting Formal", day 2 18:00 CEST
+
+</script></section>
+<section data-markdown><script type="text/template">
+### Improved Yul Optimizer
+
+Make use of Yul's types:
+
+    let x:mobj := allocate(0x20)
+	let y:mobj := allocate(0x40)
+	mobj_store(x, 0, 7)
+	mobj_store(y, 0, 8)
+	let z:mobj := f(x)
+
+ - overlapping writes are not an issue anymore
+ - allocations can be swapped, retargeted to scratch space or eliminated altogether.
 </script></section>
 
 			</div>
