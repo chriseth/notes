@@ -49,8 +49,52 @@ body, .reveal {
 	text-align: center;
 	text-transform: none;
 	font-family: PTSans, Arial, sans-serif;
+	font-weight: bold;
 }
 p { text-align: left; }
+body {
+	background-color: #e6e7ecff;
+}
+
+#header-left {
+	position: absolute;
+	top: 0%;
+	left: 0%;
+	padding: 10px;
+}
+#header-right {
+	position: absolute;
+	top: 0%;
+	right: 0%;
+	padding: 10px;
+}
+#footer-left {
+	position: absolute;
+	bottom: 0%;
+	left: 0%;
+	padding: 20px;
+}
+
+#footer-center {
+	position: fixed;
+	left: 50%;
+	bottom: 0%;
+	transform: translate(-50%, 0);
+	margin: 0 auto;
+	padding: 40px;
+}
+#footer-right {
+	position: absolute;
+	bottom: 0%;
+	right: 0%;
+	padding: 40px;
+	padding-right: 120px;
+}
+
+.reveal section img {
+	border: none;
+	box-shadow: none;
+}
 </style>
 
 	</head>
@@ -59,7 +103,25 @@ p { text-align: left; }
 
 		<div class="reveal">
 
+    <div id="header" style="display: none;">
+        <div id="header-left"></div>
+        <div id="header-right"></div>
+        <div id="footer-left"><img src="../logo_small.png" width="100"/></div>
+        <div id="footer-center">Talk<b>Solidity's Roadmap for 2020</b></div>
+        <div id="footer-right">#SoliditySummit</div>
+    </div>
+
 			<div class="slides">
+
+
+<section>
+<div style="position: fixed; top: 50px; left: 0px;">Talk<br/><b>Solidity's Roadmap for 2020</b></div>
+<div style="position: fixed; top: 150px; left: 50%; margin-left: -100px;"><img src="../logo_swarming.gif" height="300"/></div>
+<div style="position: fixed; top: 230px; left: 50%; margin-left: -100px; transform: rotate(-20deg);">
+<b><span style="background-color: #fce96a;">Solidity</span><br/><div style="padding-top: 20px; padding-left: 70px;"><span style="background-color: #fce96a;">Summit</span></div></b></div>
+<div style="position: fixed; top: 600px; right: -0px;">Christian Reitwiessner</div>
+</section>
+
 <section data-markdown><script type="text/template">
 ### Solidity's Roadmap for 2020
 
