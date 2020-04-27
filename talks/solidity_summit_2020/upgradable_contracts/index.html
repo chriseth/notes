@@ -124,14 +124,34 @@ body {
 <section data-markdown><script type="text/template">
 ### Upgradable Contracts
 
-Upgradability is a common topic for smart contracts. Yet there is no real support by the Solidity language or compiler. 
-This working group will be mostly concerned with gathering feedback about the various techniques currently used for upgradable and proxy contracts and how this could be streamlined by the Solidity language or supported by the Solidity compiler. 
-There might be some overlap with the "Libraries 2.0" working group.
+Aspects:
 
  - storage compatibility
  - proxy contracts
  - splitting code into multiple contracts
 
+</script></section>
+<section data-markdown><script type="text/template">
+### Storage compatibility
+
+Checking storage compatibility:
+ - generic "is_updated_version_of" for contracts problematic, because of Solidity versions
+ - dump storage layout to json and let the compiler check?
+ - do we only check storage or also the ABI?
+
+Ensuring storage compatibility:
+ - completely out-of-place storage
+ - "fillers"
+ - complications through inheritance
+
+</script></section>
+<section data-markdown><script type="text/template">
+### Proxy Contracts, Splitting Code and Construtors
+
+ - proxy contract as language feature?
+ - what about constructors?
+ - access to ``.delegatecall()``?
+ - how can we split code into modules?
 </script></section>
 
 			</div>

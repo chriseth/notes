@@ -148,6 +148,7 @@ What do we want to achieve in this session?
 			unchecked { t = x + y; }
 			// reverts on overflow.
 			return x + y;
+			// Would be "return x.add(y);" without language support.
 		}
 	}
 
@@ -185,15 +186,18 @@ Invalid opcode, bound values to sane ranges and thus make failure conditions vis
 </script></section>
 
 <section data-markdown><script type="text/template">
-</script></section>
+### (Un)checks
 
-<section data-markdown><script type="text/template">
-### Open Questions
+Where do we want to check?
+Do we want to disable specific failure conditions?
 
-The main open questions in this area are:
- - should the error cause a revert or an invalid opcode?
- - should there be a way to disable the checks on a whole source file or is block-based region enough?
- - should we provide fine-grained access about which checks to disable (overflow, underflow, division by zero, array out of bounds, ...)?
+ - division and mod by zero
+ - arithmetical overflow, underflow
+ - overflow during narrowing type conversions
+ - bit shifts?
+
+Probably not offer option to disable checks for out of bounds access to arrays.
+
 </script></section>
 
 
@@ -223,6 +227,17 @@ The main open questions in this area are:
 				]
 			});
 
+			var showHideHeader = function() {
+				if (Reveal.isFirstSlide() || Reveal.isOverview()) {
+					document.getElementById("header").style = "display: none;";
+				} else {
+					document.getElementById("header").style = "display: block;";
+				}
+			};
+			Reveal.addEventListener('ready', showHideHeader);
+			Reveal.addEventListener('slidechanged', showHideHeader);
+			Reveal.addEventListener('overviewshown', showHideHeader);
+			Reveal.addEventListener('overviewhidden', showHideHeader);
 		</script>
 
 	</body>

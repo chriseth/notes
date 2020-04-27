@@ -107,7 +107,7 @@ body {
         <div id="header-left"></div>
         <div id="header-right"></div>
         <div id="footer-left"><img src="../logo_small.png" width="100"/></div>
-        <div id="footer-center">Talk<b>Solidity's Roadmap for 2020</b></div>
+        <div id="footer-center">Talk/<b>Solidity's Roadmap for 2020</b></div>
         <div id="footer-right">#SoliditySummit</div>
     </div>
 
@@ -128,11 +128,12 @@ body {
 - full coverage of Yul IR (currently 50%)
 - almost full coverage of SMTChecker
 - 0.7.0 and maybe 0.8.0 released
-  - better copy and mutability semantics (-> "Immutable and Explicit Copies" - day 2 19:00 CEST)
-  - checked arithmetics (-> "SafeMath by Default" - day 1, 15:40 CEST)
-  - Language Server (-> day 2 16:30 CEST)
-  - debug output (-> day 1 20:50 CEST)
-  - and more
+  - "Immutable and Explicit Copies" (-> day 2 19:00 CEST)
+  - "SafeMath by Default" (-> day 1, 15:40 CEST)
+  - calldata variables
+  - ...
+- Language Server (-> day 2 16:30 CEST)
+- debug output (-> day 1 20:50 CEST)
 - improved Yul optimizer
 - improved ewasm output
 
@@ -141,7 +142,9 @@ body {
 ### Yul IR
 
 Extensible typed intermediate language intended to be human-readable,
-ever after optimization. Try it: ``solc --ir``
+ever after optimization.
+
+Yul+ / New Yul features: day 1, 17:10 / 17:40 CEST
 
   - audit code very close to bytecode
   - understand what is happening behind the scenes
@@ -149,7 +152,15 @@ ever after optimization. Try it: ``solc --ir``
   - improved optimizer support through special types and built-in functions
     (lifetime tracking, overflow tracking, out-of-bounds access, ...)
 
+</script></section>
+<section data-markdown><script type="text/template">
+### Yul IR Code Generation
+
 Progress: Arithmetics, internal library functions, constructors, arrays, ...
+
+Try it:
+ - ``solc --ir``
+ - ``solc --optimize --ir-optimized``
 
 Next steps: Libraries, structs, modifiers, fine-grained access to optimizer
 </script></section>
@@ -159,22 +170,8 @@ Next steps: Libraries, structs, modifiers, fine-grained access to optimizer
  - support is pretty far, of course devil in the details
  - function abstraction
  - invariants
- - see session an "Acting Formal", day 2 18:00 CEST
+ - session "Acting Formal", day 2 18:00 CEST
 
-</script></section>
-<section data-markdown><script type="text/template">
-### Improved Yul Optimizer
-
-Make use of Yul's types:
-
-    let x:mobj := allocate(0x20)
-	let y:mobj := allocate(0x40)
-	mobj_store(x, 0, 7)
-	mobj_store(y, 0, 8)
-	let z:mobj := f(x)
-
- - overlapping writes are not an issue anymore
- - allocations can be swapped, retargeted to scratch space or eliminated altogether.
 </script></section>
 
 			</div>
@@ -203,6 +200,17 @@ Make use of Yul's types:
 				]
 			});
 
+			var showHideHeader = function() {
+				if (Reveal.isFirstSlide() || Reveal.isOverview()) {
+					document.getElementById("header").style = "display: none;";
+				} else {
+					document.getElementById("header").style = "display: block;";
+				}
+			};
+			Reveal.addEventListener('ready', showHideHeader);
+			Reveal.addEventListener('slidechanged', showHideHeader);
+			Reveal.addEventListener('overviewshown', showHideHeader);
+			Reveal.addEventListener('overviewhidden', showHideHeader);
 		</script>
 
 	</body>

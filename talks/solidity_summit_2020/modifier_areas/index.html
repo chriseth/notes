@@ -127,7 +127,14 @@ body {
 
     contract C {
         address owner;
-        modifier onlyOwner { require(msg.sender == owner); _; }
+		
+		function regular() public {}
+
+        modifier onlyOwner {
+			require(msg.sender == owner);
+			_;
+		}
+
         using modifier onlyOwner {
             function admin1() public {}
             funciton admin2() public {}
@@ -142,7 +149,14 @@ body {
  - much harder to forget mentioning a modifier
  - functions with similar purpose have to be grouped
  - maybe easier to implement state machine:
-   ``using modifier inState(States.FirstState) { ... }``
+
+
+    using modifier inState(States.FirstState) {
+		// all functions for first state
+    }
+    using modifier inState(States.SecondState) {
+		// all functions for second state
+	}
 
 </script></section>
 
@@ -158,7 +172,10 @@ body {
 ### Further Ideas
 
  - could also be used to apply ``"public"``
- - could also use ``apply modifier to fun1, fun2, fun3``?
+ - could also use
+
+     ``apply modifier to fun1, fun2, fun3;``
+
  - maybe just leave everything as it is and use auditing tools that
    show a concise summary of which function uses which modifier?
 </script></section>
@@ -189,6 +206,17 @@ body {
 				]
 			});
 
+			var showHideHeader = function() {
+				if (Reveal.isFirstSlide() || Reveal.isOverview()) {
+					document.getElementById("header").style = "display: none;";
+				} else {
+					document.getElementById("header").style = "display: block;";
+				}
+			};
+			Reveal.addEventListener('ready', showHideHeader);
+			Reveal.addEventListener('slidechanged', showHideHeader);
+			Reveal.addEventListener('overviewshown', showHideHeader);
+			Reveal.addEventListener('overviewhidden', showHideHeader);
 		</script>
 
 	</body>

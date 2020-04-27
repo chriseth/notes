@@ -124,35 +124,39 @@ body {
 <section data-markdown><script type="text/template">
 ### Functional Solidity
 
-    library L {
-		function reduce(
-			uint[] memory _array,
-			function(uint, uint) pure internal returns (uint) _f,
-			uint _initial
-		) pure internal returns (uint r) {
-			r = _initial;
-			for (uint i = 0; i < _array.length; i++) {
-				r = _f(r, _array[i]);
-			}
+<code class="solidity"><pre>
+library L {
+	function reduce(
+		uint[] memory _array,
+		function(uint, uint) pure internal returns (uint) _f,
+		uint _initial
+	) pure internal returns (uint r) {
+		r = _initial;
+		for (uint i = 0; i < _array.length; i++) {
+			r = _f(r, _array[i]);
 		}
 	}
+}
+</pre></code>
 </script></section>
 
 <section data-markdown class="no-headers"><script type="text/template">
 ### Templates / Generics?
 
-    library L {
-		function reduce(
-			T[] memory _array,
-			function(V, T) pure internal returns (V) _f,
-			V _initial
-		) internal pure returns (V r) {
-			r = _initial;
-			for (V i = 0; i < _array.length; i++) {
-				r = _f(r, _array[i]);
-			}
+<code class="solidity"><pre>
+library L {
+	function reduce(
+		T[] memory _array,
+		function(V, T) pure internal returns (V) _f,
+		V _initial
+	) pure internal returns (V r) {
+		r = _initial;
+		for (V i = 0; i < _array.length; i++) {
+			r = _f(r, _array[i]);
 		}
 	}
+}
+</pre></code>
 
 </script></section>
 
