@@ -1,0 +1,378 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Solidity's Yul-Based Compilation Pipeline</title>
+
+		<meta name="author" content="Christian Reitwiessner">
+
+		<link rel="stylesheet" href="../reveal.js-3.9.2/css/reset.css">
+		<link rel="stylesheet" href="../reveal.js-3.9.2/css/reveal.css">
+		<link rel="stylesheet" href="../reveal.js-3.9.2/css/theme/simple.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="../reveal.js-3.9.2/lib/css/zenburn.css">
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? '../reveal.js-3.9.2/css/print/pdf.css' : '../reveal.js-3.9.2/css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+<style type="text/css">
+@font-face {
+	font-family: PTSans;
+	src: url('./pt-sans-regular.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+}
+body, .reveal {
+	background-color: #fffce6;
+    font-family: PTSans, Arial, sans-serif;
+    font-size: 34px;
+}
+.reveal .slides {
+	text-align: left;
+}
+.reveal pre {
+  width: inherit;
+}
+.reveal table th, .reveal table td {
+    border-bottom: none;
+}
+.reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+	color: #45008b;
+	text-align: center;
+	text-transform: none;
+	font-family: PTSans, Arial, sans-serif;
+	font-weight: bold;
+}
+p { text-align: left; }
+
+#header-left {
+	position: absolute;
+	top: 0%;
+	left: 0%;
+	padding: 10px;
+}
+#header-right {
+	position: absolute;
+	top: 0%;
+	right: 0%;
+	padding: 10px;
+}
+#footer-left {
+	position: absolute;
+	bottom: 0%;
+	left: 0%;
+	padding: 20px;
+}
+
+#footer-center {
+	position: fixed;
+	left: 50%;
+	bottom: 0%;
+	transform: translate(-50%, 0);
+	margin: 0 auto;
+	padding: 40px;
+}
+#footer-right {
+	position: absolute;
+	bottom: 0%;
+	right: 0%;
+	padding: 40px;
+	padding-right: 120px;
+}
+
+.reveal section img {
+	border: none;
+	box-shadow: none;
+}
+</style>
+
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+    <div id="header" style="display: none;">
+        <div id="header-left"></div>
+        <div id="header-right"></div>
+        <div id="footer-left"><img src="logo.svg" width="100"/></div>
+        <div id="footer-center">Solidity's Yul-Based Compilation Pipeline</div>
+        <div id="footer-right"></div>
+    </div>
+
+			<div class="slides">
+
+
+<section>
+<div style="position: fixed; top: 50px; left: 0px;">Solidity's Yul-Based Compilation Pipeline</div>
+<div style="position: fixed; top: 120px; left: 50%; margin-left: -320px;"><div style="max-height: 399px; overflow: hidden;"><img src="ethvr.png" height="400"/></div></div>
+<div style="position: fixed; top: 600px; right: -0px;">Christian Reitwiessner</div>
+</section>
+
+<section data-markdown><script type="text/template">
+## What is Yul?
+
+- intermediate language close to assembly / bytecode
+- different dialects with and without types
+- easy to read due to structured syntax
+- easy for global optimization because of functions
+- to be read by auditors
+
+```
+let x := 7
+mstore(x, 10)
+for { let i := 0 } lt(i, 10) { i := add(i, 1) } {
+	mstore(add(x, i), i)
+}
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+## How far is Compilation via Yul?
+
+- at least 472 out of 742 test files pass.
+- main missing features:
+  - public functions of libraries
+  - structs and arrays
+  - some operators
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Show us an Example!
+
+	contract C {
+		uint counter;
+		function inc() public {
+			counter++;
+		}
+	}
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+``solc --ir``
+
+	object "C_10" {
+		code { ... }
+		object "C_10_deployed" {
+			code {
+				mstore(64, 128)
+
+				if iszero(lt(calldatasize(), 4))
+				{
+					let selector := shift_right_224_unsigned(calldataload(0))
+					switch selector
+					case 0x371303c0
+					{
+						// inc()
+						if callvalue() { revert(0, 0) }
+						abi_decode_tuple_(4, calldatasize())
+						fun_inc_9()
+						let memPos := allocateMemory(0)
+						let memEnd := abi_encode_tuple__to__fromStack(memPos  )
+						return(memPos, sub(memEnd, memPos))
+					}
+					default {}
+				}
+				if iszero(calldatasize()) {  }
+				revert(0, 0)
+
+				function abi_decode_tuple_(headStart, dataEnd)   {
+					if slt(sub(dataEnd, headStart), 0) { revert(0, 0) }
+				}
+
+				function abi_encode_tuple__to__fromStack(headStart ) -> tail {
+					tail := add(headStart, 0)
+				}
+
+				function allocateMemory(size) -> memPtr {
+					memPtr := mload(64)
+					let newFreePtr := add(memPtr, size)
+					// protect against overflow
+					if or(gt(newFreePtr, 0xffffffffffffffff), lt(newFreePtr, memPtr)) { revert(0, 0) }
+					mstore(64, newFreePtr)
+				}
+
+				function cleanup_from_storage_t_uint256(value) -> cleaned {
+					cleaned := value
+				}
+
+				function extract_from_storage_value_offset_0t_uint256(slot_value) -> value {
+					value := cleanup_from_storage_t_uint256(shift_right_0_unsigned(slot_value))
+				}
+
+				function fun_inc_9()  {
+					let _2 := read_from_storage_offset_0_t_uint256(0x00)
+					let _1 := increment_t_uint256(_2)
+					update_storage_value_offset_0t_uint256(0x00, _1)
+					let expr_6 := _2
+
+				}
+
+				function increment_t_uint256(value) -> ret {
+					if gt(value, 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe) { revert(0,0) }
+					ret := add(value, 1)
+				}
+
+				function prepare_store_t_uint256(value) -> ret {
+					ret := value
+				}
+
+				function read_from_storage_offset_0_t_uint256(slot) -> value {
+					value := extract_from_storage_value_offset_0t_uint256(sload(slot))
+				}
+
+				function shift_left_0(value) -> newValue {
+					newValue := shl(0, value)
+				}
+
+				function shift_right_0_unsigned(value) -> newValue {
+					newValue := shr(0, value)
+				}
+
+				function shift_right_224_unsigned(value) -> newValue {
+					newValue := shr(224, value)
+				}
+
+				function update_byte_slice_32_shift_0(value, toInsert) -> result {
+					let mask := 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+					toInsert := shift_left_0(toInsert)
+					value := and(value, not(mask))
+					result := or(value, and(toInsert, mask))
+				}
+
+				function update_storage_value_offset_0t_uint256(slot, value) {
+					sstore(slot, update_byte_slice_32_shift_0(sload(slot), prepare_store_t_uint256(value)))
+				}
+			}
+		}
+	}
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+``solc --optimize --ir-optimized``
+
+	object "C_10" {
+		code {
+			mstore(64, 128)
+			if callvalue() { revert(0, 0) }
+			let _1 := datasize("C_10_deployed")
+			codecopy(0, dataoffset("C_10_deployed"), _1)
+			return(0, _1)
+		}
+		object "C_10_deployed" {
+			...
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+
+	code {
+		mstore(64, 128)
+		if iszero(lt(calldatasize(), 4))
+		{
+			let _1 := 0
+			if eq(0x371303c0, shr(224, calldataload(_1)))
+			{
+				if callvalue() { revert(_1, _1) }
+				if slt(add(calldatasize(), not(3)), _1) { revert(_1, _1) }
+				let _2 := sload(_1)
+				if gt(_2, not(1)) { revert(_1, _1) }
+				sstore(_1, add(_2, 1)) // "i++"
+				mstore(64, 128)
+				return(128, _1)
+			}
+		}
+		revert(0, 0)
+	}
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+### Yul for Auditors
+
+ - claim: possible to understand Yul code of contract
+ - assembly from Yul to bytecode is trivial
+ - essentially manual audit of bytecode!
+</script></section>
+
+<section data-markdown><script type="text/template">
+### WebAssembly
+
+``solc --ewasm``
+
+- start with regular EVM-targeted Yul code
+- add "ewasm shim": 256-bit add functions etc.
+- run same optimizer
+</script></section>
+
+<section data-markdown><script type="text/template">
+### WebAssembly (2)
+
+- very flexible approach
+- optimization more powerful than llvm for whole-contract-optimization
+</script></section>
+
+<section data-markdown><script type="text/template">
+### When WebAssembly?
+
+- main blocker is good testnet and runtime
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Questions?
+</script></section>
+
+			</div>
+		</div>
+
+		<script src="../reveal.js-3.9.2/js/reveal.js"></script>
+
+		<script>
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: false,
+
+				transition: 'none', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: '../reveal.js-3.9.2/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../reveal.js-3.9.2/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../reveal.js-3.9.2/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: '../reveal.js-3.9.2/plugin/zoom-js/zoom.js', async: true },
+					{ src: '../reveal.js-3.9.2/plugin/notes/notes.js', async: true }
+				]
+			});
+
+			var showHideHeader = function() {
+				if (Reveal.isFirstSlide() || Reveal.isOverview()) {
+					document.getElementById("header").style = "display: none;";
+				} else {
+					document.getElementById("header").style = "display: block;";
+				}
+			};
+			Reveal.addEventListener('ready', showHideHeader);
+			Reveal.addEventListener('slidechanged', showHideHeader);
+			Reveal.addEventListener('overviewshown', showHideHeader);
+			Reveal.addEventListener('overviewhidden', showHideHeader);
+		</script>
+
+	</body>
+</html>
