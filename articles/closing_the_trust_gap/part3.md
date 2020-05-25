@@ -134,7 +134,7 @@ static analysis tools and so on can build on top.
 If you want to interface with some contract, you can download its ABI
 (as part of the metadata.json)
 to see how to format the parameters, for example for one of the DAI
-contracts: [https://verification.komputing.org/repository/contract/mainnet/0x4D95A049d5B0b7d32058cd3F2163015747522e99/metadata.json](https://verification.komputing.org/repository/contract/mainnet/0x4D95A049d5B0b7d32058cd3F2163015747522e99/metadata.json)
+contracts: [https://contractrepo.komputing.org/contract/mainnet/0x4D95A049d5B0b7d32058cd3F2163015747522e99/metadata.json](https://contractrepo.komputing.org/contract/mainnet/0x4D95A049d5B0b7d32058cd3F2163015747522e99/metadata.json)
 
 And last but not least - the main use case - wallets can use it to
 show more information about the contract a transaction goes to.
@@ -167,8 +167,8 @@ of the contract.
 ### Takeaway
 
 As a takeaway, note that there is so much more data out there
-that we could use to improve the user experince.
-Smart Contarct source code, documentation and front-ends
+that we could use to improve the user experience.
+Smart Contract source code, documentation and front-ends
 should be better interleaved to reduce the required trust
 in the front-end authors and in the way the front-end is
 retrieved over the web.

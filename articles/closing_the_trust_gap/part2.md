@@ -159,7 +159,7 @@ all in the metadata file. It can even be
 done in a way such that you do not
 have to specify the contract address!
 
-It gets better: In part 3 I will show you a system
+It gets better: In [part 3](./part3) I will show you a system
 where you only have to upload the metadata file
 and the source files to ipfs and the
 contract will be source-verified automatically,
