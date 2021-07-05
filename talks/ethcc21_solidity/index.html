@@ -1,0 +1,425 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Solidity in 2021</title>
+
+		<meta name="author" content="Christian Reitwiessner">
+
+		<link rel="stylesheet" href="../reveal.js-4.1.3/dist/reset.css">
+		<link rel="stylesheet" href="../reveal.js-4.1.3/dist/reveal.css">
+		<link rel="stylesheet" href="../reveal.js-4.1.3/dist/theme/black.css">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="../reveal.js-4.1.3/plugin/highlight/zenburn.css">
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+<!--
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? '../reveal.js-4.1.3/css/print/pdf.css' : '../reveal.js-4.1.3/css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>-->
+<style type="text/css">
+@font-face {
+	font-family: PTSans;
+	src: url('./pt-sans-regular.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+}
+body, .reveal {
+    font-family: PTSans, Arial, sans-serif;
+    font-size: 34px;
+}
+.reveal .slides {
+	text-align: left;
+}
+.reveal pre {
+  width: inherit;
+}
+.reveal table th, .reveal table td {
+    border-bottom: none;
+}
+.reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+	color: #5b5eff;
+	text-align: center;
+	text-transform: none;
+	font-family: PTSans, Arial, sans-serif;
+	font-weight: bold;
+}
+.reveal h1 { font-size: 2em; }
+.reveal h2 { font-size: 1.3em; }
+.reveal h3 { font-size: 1em; }
+.reveal h4 { font-size: 0.8em; }
+
+p { text-align: left; }
+
+#header-left {
+	position: absolute;
+	top: 0%;
+	left: 0%;
+	padding: 10px;
+}
+#header-right {
+	position: absolute;
+	top: 0%;
+	right: 0%;
+	padding: 10px;
+}
+#footer-left {
+	position: absolute;
+	bottom: 0%;
+	left: 0%;
+	padding: 20px;
+}
+
+#footer-center {
+	position: fixed;
+	left: 50%;
+	bottom: 0%;
+	transform: translate(-50%, 0);
+	margin: 0 auto;
+	padding: 40px;
+}
+#footer-right {
+	position: absolute;
+	bottom: 0%;
+	right: 0%;
+	padding: 40px;
+	padding-right: 120px;
+}
+
+.reveal section img {
+	border: none;
+	box-shadow: none;
+}
+</style>
+
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+    <div id="header" style="display: none;">
+        <div id="header-left"></div>
+        <div id="header-right"></div>
+        <div id="footer-left"><img src="logo.svg" width="100"/></div>
+        <div id="footer-center">Solidity in 2021</div>
+        <div id="footer-right"></div>
+    </div>
+
+			<div class="slides">
+
+
+<section data-markdown><script type="text/template">
+# Solidity in 2021
+</script></section>
+
+<section data-markdown><script type="text/template">
+# Core Team / How to Reach Us
+
+Leonardo Alt (leonardoalt)
+Alexander Arlt (aarlt)
+Mathias Baumann (marenz)
+Alex Beregszaszi (axic)
+Franziska Heintel (franzihei)
+Daniel Kirchner (ekpyron)
+Đorđe Mijović (mijovic)
+Harikrishnan Mulackal (hrkrshnn)
+Christian Parpart (christianparpart)
+Christian Reitwiessner (chriseth)
+Bhargava Shastry (bshastry)
+Kamil Śliwak (cameel)
+
+Matrix: TODO
+Forum: TODO
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+Solidity Portal: soliditylang.org
+
+- Forum
+- Summit
+- 1-on-1 feedback sessions
+</script></section>
+
+<section data-markdown><script type="text/template">
+# Reasons to upgrade (Features you might not know about)
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+## User-Defined Errors
+<pre><code>
+
+
+function buy() public payable {
+  require(msg.value >= price);
+  ...
+
+}
+</code></pre>
+Information: 1 / 10  
+Code size: s  
+Execution cost: c  
+Revert data: ""  
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+## User-Defined Errors
+<pre><code>
+
+
+function buy() public payable {
+  require(msg.value >= price, "Need to provide more Ether.")
+  ...
+
+}
+</code></pre>
+Information: 8 / 10  
+Code size: s + 71 bytes  
+Execution cost: c + 95 gas  
+Revert data: 100 bytes [ sig("Error(string)") + 0x20 + length + "Need to provide more Ether." ]  
+</script></section>
+
+<section data-markdown><script type="text/template">
+## User-Defined Errors
+<pre><code>
+/// Need to provide more Ether.
+error TooCheap();
+function buy() public payable {
+  if (msg.value < price)
+    revert TooCheap();
+  ...
+}
+</code></pre>
+Information: 8 / 10  
+Code size: s + 22 bytes  
+Execution cost: c + 44 gas  
+Revert data: 4 bytes [ sig("TooCheap()") ]  
+</script></section>
+
+<section data-markdown><script type="text/template">
+## User-Defined Errors
+<pre><code>/// Need to provide more Ether.
+/// Provided `provided`, but needs `needed` Ether.
+error TooCheap(uint provided, uint needed);
+function buy() public payable {
+  if (msg.value < price)
+    revert TooCheap(msg.value, price);
+  ...
+}
+</code></pre>
+Information: 10 / 10  
+Code size: s + 35 bytes  
+Execution cost: c + 82 gas  
+Revert data: 68 bytes [ sig("TooCheap(uint256,uint256)") + provided + needed ]  
+</script></section>
+
+<section data-markdown><script type="text/template">
+## User-Defined Errors: Cost Summary
+
+|                         | info| size | cost | data |
+|-------------------------|----:|-----:|-----:|-----:|
+| `require(cond)`         |  1  |   +0 |   +0 |    0 |
+| `require(cond, "...")`  |  8  |  +71 |  +95 |  100 |
+| `revert TooCheap()`     |  8  |  +22 |  +44 |    4 |
+| `revert TooCheap(p, n)` | 10  |  +35 |  +82 |   82 |
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+## User-Defined Errors
+
+- User-Defined errors can be very cheap.
+- Arbitrary runtime data can be added to the error.
+- NatSpec can provide extensive error text at no cost.
+- Catching custom errors in Solidity code is planned.
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Elements at File-Level
+
+Unnatural to require declarations inside contracts.
+
+// since 0.6.0
+struct Participant { uint id; string name; }
+// since 0.7.1
+function nameOf(Participant storage _p) view { return _p.name; }
+// since 0.7.4
+constant uint MAX_PARTICIPANTS = 20;
+
+// planned, allows `p.nameOf()`
+using { nameOf } for Participant;
+</script></section>
+
+<section data-markdown><script type="text/template">
+## bytes
+
+New operators, functions and conversions:
+
+- calldata slices (`x[3:]`), planned for memory
+- conversion `bytes` to `bytesNN` (truncates): `bytes4(msg.data)`
+- `bytes.concat()`: `bytes.concat(msg.data, "abc", f.signature)`
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+Topics refined:
+ - team
+ - Community: website change, forum, summit, 1-on-1 feedback, etc.
+
+Features you might not know about (reasons to upgrade):
+ X custom errors
+ - invalid opcode is not used anymore
+ - immutable
+ X declarations at file level
+ X bytes.concat
+ - natspec everywhere
+ - calldata everywhere
+ X calldata slices
+ - "verbatim"
+ X conversion from bytes to bytesNN
+ - fallback function with arguments and return value (and split into receive)
+ - type(T).max / type(T).min
+ - type(C).interfaceId
+
+
+Safety checks:
+ - checked arithmetics
+ - no ambiguous conversions (bytes2 -> uint128)
+ - uninitialized storage/calldata pointer (allow returning storgae pointers)
+
+Debugging features:
+ - verbose revert reasons
+ - "stop after parsing" (import resolution!)
+
+Recent bugs?
+
+Upcoming:
+ - IR pipeline
+ - stack to memory mover and improved codegen
+ - fixed point types
+ - extend "using for" to functions at file level (good-bye internal library functions)
+ - optimizer, optimizer, optimizer (simple smt solver)
+ - value-type "aliases"
+ - templates / traits
+
+------------------------------------------
+
+Topics:
+ - solidity team members
+ - custom errors (plus panic)
+ - IR pipeline (how to use (audit!), some gas results, some IR itself)
+ - community relations, 1-on-1 feedback sessions, forum, summit
+ - improved EVM code generation from yul (ABI coder!) - stack layout
+ - stack to memory mover (bye-bye "stack too deep")
+ - EthereumObjectFormat? -> designated data areas for costructor params, deployed bytecode, creation code of other contracts, tables, ....
+ - immutable
+ - declarations at file level (and how to import them)
+ - conversion from bytes to bytesNN
+ - "verbatim" builtin
+ - "functionDebugData": entry point bytecode offsets, potentially more in the future (your ideas!)
+ - small function inlining in old codegen
+ - bytes.concat
+ - natspec everywhere plus allow `@custom:...` tags, exported via the AST => formal verification tools
+
+0.8.0:
+ - invalid -> panic
+ - checked arithmetics
+ - disallow ambiguous conversions (e.g. uint16 -> bytes31)
+
+
+older:
+ - calldata slices
+ - fallback functions with argument and return value
+ - `.offset` and `.length` in inline assembly to access dynmaic calldata arrays (can also be assigned to)
+ - calldata variables everywhere
+ - constants at file level
+ - stop-after-parsing (is this "stop after import resolution?")
+ - functions at file level (0.7.1 - 2020-09-02) (when did we allow structs at file level -> 0.6.0, 2019-12-17?)
+
+0.6.x:
+ - @inheritdoc for natspec (automatic if no natspec)
+ - type(T).min / type(T).max
+ - type(C).interfaceId (EIP165)
+ - allow returning storage pointers
+ - "immutable"
+ - `f{value: ..., gas: ...}()`
+ - more verbose revert strings for compiler-generated errors `settings.debug.revertStrings` - disabled by default
+
+
+ 
+
+planned:
+ - simple SMT solver to remove redundant checks
+ - planned features: user-defined value types, replacing libraries by free functions ("using"), templates, traits,
+   data enums?
+   fixed point types (preliminary implementation plus your ideas)
+
+
+talk about critical bugs and exlpain how hard they are to come across?
+Especially talk about critical bugs in the optimizer!
+  - abi decoding from memory can read from locations outside the serialized string
+  - optimizer: incorrect keccak256 caching (was this yul or legacy?)
+  - data corruption when copying empty byte arrays from memory or calldata to storage
+  - cleanup after copying dynamic array to storage for packed types
+  - free function clash in type checker.
+  - internal library funciton calldata and "using for"
+  - some more bugs
+
+how to reach out about features, how to give feedback, the summit
+the forum, 1-on-1 sessions
+
+</script></section>
+
+			</div>
+		</div>
+
+		<script src="../reveal.js-4.1.3/dist/reveal.js"></script>
+		<script src="../reveal.js-4.1.3/plugin/markdown/markdown.js"></script>
+		<script src="../reveal.js-4.1.3/plugin/highlight/highlight.js"></script>
+		<script src="../reveal.js-4.1.3/plugin/highlight/solidity.js"></script>
+
+		<script>
+			RevealHighlight().hljs.registerLanguage('solidity', hljsDefineSolidity);
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: false,
+
+				transition: 'none', // none/fade/slide/convex/concave/zoom
+
+				plugins: [ RevealMarkdown, RevealHighlight ]
+			});
+
+			var showHideHeader = function() {				
+				document.querySelectorAll('pre code').forEach(function(el) {
+					el.className = 'language-solidity';
+				});
+				if (Reveal.isFirstSlide() || Reveal.isOverview()) {
+					document.getElementById("header").style = "display: none;";
+				} else {
+					document.getElementById("header").style = "display: block;";
+				}
+			};
+			Reveal.addEventListener('ready', showHideHeader);
+			Reveal.addEventListener('slidechanged', showHideHeader);
+			Reveal.addEventListener('overviewshown', showHideHeader);
+			Reveal.addEventListener('overviewhidden', showHideHeader);
+		</script>
+
+	</body>
+</html>
