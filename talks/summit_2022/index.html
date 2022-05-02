@@ -225,12 +225,12 @@ contract C {
 
 ```solidity
 contract Token is ERC20 {
-	string public immutable name = "MyToken";
 	uint public immutable totalSupply = 10**80;
 	address immutable owner;
 
 	// Not yet possible, but soon!
 	ERC20[] immutable subTokens;
+	string public immutable name = "MyToken";
 
 	constructor(ERC20[] memory _subtokens) {		
 		owner = msg.sender;
