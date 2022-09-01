@@ -1,0 +1,310 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Multi-Hop Transfers in the Circles UBI - DappCon 2022</title>
+
+		<meta name="author" content="Christian Reitwiessner">
+
+		<link rel="stylesheet" href="../reveal.js-4.1.3/dist/reset.css">
+		<link rel="stylesheet" href="../reveal.js-4.1.3/dist/reveal.css">
+		<link rel="stylesheet" href="../reveal.js-4.1.3/dist/theme/black.css">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="../reveal.js-4.1.3/plugin/highlight/zenburn.css">
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+<!--
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? '../reveal.js-4.1.3/css/print/pdf.css' : '../reveal.js-4.1.3/css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>-->
+<style type="text/css">
+@font-face {
+	font-family: WorkSans;
+	src: url('./worksans.ttf') format('ttf');
+	font-weight: normal;
+	font-style: normal;
+}
+body, .reveal {
+    font-family: WorkSans, Arial, sans-serif;
+    font-size: 34px;
+}
+.reveal .slides {
+	text-align: left;
+}
+.reveal pre {
+  width: inherit;
+}
+.reveal table th, .reveal table td {
+    border-bottom: none;
+}
+.reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+	color: #5b5eff;
+	text-align: center;
+	text-transform: none;
+	font-family: PTSans, Arial, sans-serif;
+	font-weight: bold;
+}
+.reveal h1 { font-size: 2em; }
+.reveal h2 { font-size: 1.3em; }
+.reveal h3 { font-size: 1em; }
+.reveal h4 { font-size: 0.8em; }
+
+p { text-align: left; }
+
+#header-left {
+	position: absolute;
+	top: 0%;
+	left: 0%;
+	padding: 10px;
+}
+#header-right {
+	position: absolute;
+	top: 0%;
+	right: 0%;
+	padding: 10px;
+}
+#footer-left {
+	position: absolute;
+	bottom: 0%;
+	left: 0%;
+	padding: 20px;
+}
+
+#footer-center {
+	position: fixed;
+	left: 50%;
+	bottom: 0%;
+	transform: translate(-50%, 0);
+	margin: 0 auto;
+	padding: 40px;
+}
+#footer-right {
+	position: absolute;
+	bottom: 0%;
+	right: 0%;
+	padding: 40px;
+	padding-right: 120px;
+}
+
+.reveal section img {
+	border: none;
+	box-shadow: none;
+}
+</style>
+
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+    <div id="header" style="display: none;">
+        <div id="header-left"></div>
+        <div id="header-right"></div>
+        <div id="footer-left">@chriseth</div>
+        <div id="footer-center">Multi-Hop Transfers in the Circles UBI</div>
+        <div id="footer-right">DappCon 2022</div>
+    </div>
+
+			<div class="slides">
+
+
+<section data-markdown><script type="text/template">
+# Multi-Hop Transfers in the Circles UBI
+
+&nbsp;  
+
+DappCon 2022, Berlin
+
+Christian Reitwiessner  
+@chriseth / @ethchris  
+chris@ethereum.org
+
+Slides: https://chriseth.github.io/notes/talks/dappcon_pathfinder_2022/
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Outline
+
+- Circles UBI Token Mechanism
+- Multi-Hop Transfers
+- Implementation Challenges
+- Current State and Outlook
+</script></section>
+	
+<section data-markdown><script type="text/template">
+## UBI
+
+UBI: Universal Basic Income
+
+- Everyone gets same unconditional income per month.
+- Spend it on whatever you want and can earn money on top.
+- Form of social welfare.
+- Boosts creative and high-risk projects.
+
+Best way: Implement on national level.
+
+Second best way:
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Circles UBI
+
+Just build your own!
+
+Biggest Problem: Sybil attacks.
+
+Circles avoids centralized "unique human" registry and instead asks the user.
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Circles UBI Token Mechanism
+
+Every account has its own kind of ERC20 token,
+and can mint some of its tokens each month.
+
+If nobody "accepts" the tokens, they are worthless.
+
+Accounts can "trust" each other. If B trusts A,
+it means anyone can "convert" (a certain amount of) A-tokens into B-tokens.
+
+This is how tokens obtain value.
+
+In practice: Multi-hop transfers.
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Multi-Hop Transfers
+
+Tokens are regular ERC20 tokens, you can send what you have anywhere.
+
+If multi-hop mechanism is used, certain amount of "A tokens"
+can be sent to B and continue using same amount of B tokens.
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Multi-Hop Transfers: Example
+
+A wants to send 1 token to C.
+
+A is trusted by B, B is trusted by C.
+
+Before:
+A: 1 A token
+B: 1 B token
+C: 1 C token
+
+- send 1 A token from A to B (B now has 1 A token)
+- send 1 B token from B to C (C now has 1 B token)
+
+After:
+A: 0 tokens
+B: 1 A token
+C: 1 C token, 1 B token
+
+Note: No actual "token conversion" is performed.
+</script></section>
+	
+	
+<section data-markdown><script type="text/template">
+## Pathfinding
+
+Circes Graph is highly connected:
+Roughly 20 trust connections per node, 5 hops to get anywhere.
+
+Many fake accounts.
+
+800k edges.
+
+Implemented as "Max Flow" problem on multigraph (one edge per token).
+</script></section>
+	
+<section data-markdown><script type="text/template">
+## Pathfinding (2)
+
+Edge set is: `(from, to, token) -> capacity`
+
+Reduce to regular flow problem by introcuding two node types: Account and (Account, Token).
+
+Capacity of edge A -> (A, T): T.balance_of(A)
+
+Capacity of edge (A, T) -> B: Trust-capacity of (A, B, T)
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Implementation
+
+Implemented in `C++`, compiles via emscripten to javascript.
+
+Graph: 30 MB compressed binary.
+
+Search takes about 1-5 seconds to find optimal solution (max capacity).
+
+Snapshot every two hours. Update to current state using ethereum-json-rpc.
+
+Everything client-side!
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Future Plans
+
+- Re-implement in Rust
+- multithreaded
+- respond with non-optimal solution quickly and improve
+</script></section>
+
+<!-- 54 transfers -->
+	
+<section><center><img src="./transfers.png" style="height: 700px; margin: 0;" /></center></section>
+
+			</div>
+		</div>
+
+		<script src="../reveal.js-4.1.3/dist/reveal.js"></script>
+		<script src="../reveal.js-4.1.3/plugin/markdown/markdown.js"></script>
+		<script src="../reveal.js-4.1.3/plugin/highlight/highlight.js"></script>
+		<script src="../reveal.js-4.1.3/plugin/highlight/solidity.js"></script>
+
+		<script>
+			RevealHighlight().hljs.registerLanguage('solidity', hljsDefineSolidity);
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: false,
+
+				transition: 'none', // none/fade/slide/convex/concave/zoom
+
+				plugins: [ RevealMarkdown, RevealHighlight ]
+			});
+
+			var showHideHeader = function() {				
+				document.querySelectorAll('pre code').forEach(function(el) {
+					el.className = 'language-solidity';
+					RevealHighlight().hljs.highlightElement(el);
+				});
+				if (Reveal.isFirstSlide() || Reveal.isOverview()) {
+					document.getElementById("header").style = "display: none;";
+				} else {
+					document.getElementById("header").style = "display: block;";
+				}
+			};
+			Reveal.addEventListener('ready', showHideHeader);
+			Reveal.addEventListener('slidechanged', showHideHeader);
+			Reveal.addEventListener('overviewshown', showHideHeader);
+			Reveal.addEventListener('overviewhidden', showHideHeader);
+		</script>
+
+	</body>
+</html>
