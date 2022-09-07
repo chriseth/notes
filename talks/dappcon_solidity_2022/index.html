@@ -350,10 +350,11 @@ Main goal: as little "magic" in the compiler as possible
 Make built-in functions importable and implement them in Solidity / inline assembly.
 
 ```solidity
-import {addmod} from "std/math";
+pragma stdlib;
+import {addmod} from "std/math.sol";
 ```
 
-"std/math":
+"std/math.sol":
 ```solidity
 function addmod(uint x, uint y, uint modulus) pure returns (uint result) {
 	require(modulus != 0);
