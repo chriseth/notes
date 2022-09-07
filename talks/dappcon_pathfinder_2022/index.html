@@ -169,17 +169,15 @@ Circles avoids centralized "unique human" registry and instead asks the user.
 <section data-markdown><script type="text/template">
 ## Circles UBI Token Mechanism
 
-Every account has its own kind of ERC20 token,
-and can mint some of its tokens each month.
+Everyone has their own kind of ERC20 token, new tokens are created every month.
 
-If nobody "accepts" the tokens, they are worthless.
+If nobody "accepts" the tokens, they are worthless. <!-- .element: class="fragment" -->
 
 Accounts can "trust" each other. If B trusts A,
-it means anyone can "convert" (a certain amount of) A-tokens into B-tokens.
+it means anyone can "convert" (a certain amount of) A-tokens into B-tokens. <!-- .element: class="fragment" -->
 
-This is how tokens obtain value.
-
-In practice: Multi-hop transfers.
+This is how tokens obtain value.<br/>
+In practice: Multi-hop transfers. <!-- .element: class="fragment" -->
 </script></section>
 
 <section data-markdown><script type="text/template">
@@ -213,7 +211,8 @@ C: 1 C token, 1 B token
 
 Note: No actual "token conversion" is performed.
 </script></section>
-	
+
+<section><center><img src="./transfers.png" style="height: 700px; margin: 0;" /></center></section>
 	
 <section data-markdown><script type="text/template">
 ## Pathfinding
@@ -245,13 +244,13 @@ Capacity of edge (A, T) -> B: Trust-capacity of (A, B, T)
 
 Implemented in `C++`, compiles via emscripten to javascript.
 
-Graph: 30 MB compressed binary.
+Decentralized - everything works client-side!
 
-Search takes about 1-5 seconds to find optimal solution (max capacity).
+Graph: 30 MB compressed binary.
 
 Snapshot every two hours. Update to current state using ethereum-json-rpc.
 
-Everything client-side!
+Search takes about 1-5 seconds to find optimal solution (max capacity).
 </script></section>
 
 <section data-markdown><script type="text/template">
