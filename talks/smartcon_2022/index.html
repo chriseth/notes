@@ -1,0 +1,436 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Modern Solidity - SmartCon 2022</title>
+
+		<meta name="author" content="Christian Reitwiessner">
+
+		<link rel="stylesheet" href="../reveal.js-4.1.3/dist/reset.css">
+		<link rel="stylesheet" href="../reveal.js-4.1.3/dist/reveal.css">
+		<link rel="stylesheet" href="../reveal.js-4.1.3/dist/theme/black.css">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="../reveal.js-4.1.3/plugin/highlight/zenburn.css">
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+<!--
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? '../reveal.js-4.1.3/css/print/pdf.css' : '../reveal.js-4.1.3/css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>-->
+<style type="text/css">
+@font-face {
+	font-family: WorkSans;
+	src: url('./worksans.ttf') format('ttf');
+	font-weight: normal;
+	font-style: normal;
+}
+body, .reveal {
+    font-family: WorkSans, Arial, sans-serif;
+    font-size: 34px;
+}
+.reveal .slides {
+	text-align: left;
+}
+.reveal pre {
+  width: inherit;
+}
+.reveal table th, .reveal table td {
+    border-bottom: none;
+}
+.reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+	color: #5b5eff;
+	text-align: center;
+	text-transform: none;
+	font-family: PTSans, Arial, sans-serif;
+	font-weight: bold;
+}
+.reveal h1 { font-size: 2em; }
+.reveal h2 { font-size: 1.3em; }
+.reveal h3 { font-size: 1em; }
+.reveal h4 { font-size: 0.8em; }
+
+p { text-align: left; }
+
+#header-left {
+	position: absolute;
+	top: 0%;
+	left: 0%;
+	padding: 10px;
+}
+#header-right {
+	position: absolute;
+	top: 0%;
+	right: 0%;
+	padding: 10px;
+}
+#footer-left {
+	position: absolute;
+	bottom: 0%;
+	left: 0%;
+	padding: 20px;
+}
+
+#footer-center {
+	position: fixed;
+	left: 50%;
+	bottom: 0%;
+	transform: translate(-50%, 0);
+	margin: 0 auto;
+	padding: 40px;
+}
+#footer-right {
+	position: absolute;
+	bottom: 0%;
+	right: 0%;
+	padding: 40px;
+	padding-right: 120px;
+}
+
+.reveal section img {
+	border: none;
+	box-shadow: none;
+}
+</style>
+
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+    <div id="header" style="display: none;">
+        <div id="header-left"></div>
+        <div id="header-right"></div>
+        <div id="footer-left"><img src="logo.svg" width="100" style="background: white; border-radius: 100px;"/></div>
+        <div id="footer-center">Modern Solidity - SmartCon 2022</div>
+        <div id="footer-right"></div>
+    </div>
+
+			<div class="slides">
+
+
+<!--
+outline:
+
+Intro + lsp + doc: 4 minutes
+Yul IR: 2 minutes
+custom errors + encodecall + bytes.concat: 4 minutes
+immutables: 4 minutes
+types  using: 4 minutes
+stdlib: 4 minutes
+generics: 2 minutes
+smt: 4 minutes
+memory: 2 minutes
+data enums: 4 minutes
+
+-->
+
+<section data-markdown><script type="text/template">
+# Modern Solidity
+
+&nbsp;  
+
+<center><img src="logo.svg" style="width: 160px; margin: auto; background: white; border-radius: 50%;" /></center>
+
+SmartCon 2022
+
+Christian Reitwiessner  
+@chriseth / @ethchris  
+chris@ethereum.org
+
+Slides: https://chriseth.github.io/notes/talks/smartcon_solidity_2022/
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Outline
+
+- IR Pipeline
+- Errors and Encoding
+- Immutable
+- User Defined Value Types
+- Generics
+- Standard Library
+- Reference Checking
+</script></section>
+	
+<section data-markdown><script type="text/template">
+## The Solidity Yul IR Pipeline
+
+Considered stable since 0.8.13 (2022-03-16)
+
+<span style="font-size: 80%;">``solc --via-ir --bin --asm file.sol``  
+``solc --ir file.sol``  
+``solc --ir-optimized --optimize file.sol``</span>
+
+- flexibility + auditability
+- cross-function optimization
+- comparative or even better gas costs
+
+Please give us feedback!
+
+Use with optimizer! Still a bit slow - working on it!
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Errors and Encoding
+
+```solidity
+error Unauthorized(uint authLevelRequired, uint authLevelPresent);
+
+interface I {
+	function fun(uint value, bytes memory input) external;
+}
+
+contract C {
+	address target;
+	bytes callDataStored;
+	function f(bytes calldata input) public payable {
+		if (!authorized(msg.sender))
+			revert Unauthorized(10, authLevel(msg.sender));
+		bytes memory forward = bytes.concat("msg", input[4:]);
+		// Perform type checking, abi-encoding and
+		// prefix function selector.
+		callDataStored = abi.encodeCall(I.fun, (msg.value, forward));
+	}
+	...
+```
+</script></section>
+	
+<section data-markdown><script type="text/template">
+## Immutable
+
+```solidity
+contract Token is ERC20 {
+	uint public immutable totalSupply = 10**80;
+	address immutable owner;
+
+	// Not yet possible, but soon!
+	ERC20[] immutable subTokens;
+	string public immutable name = "MyToken";
+
+	constructor(ERC20[] memory _subtokens) {		
+		owner = msg.sender;
+		subtokens = _subtokens;
+	}
+
+	function faucet(uint subTokenIndex) public {
+		require(msg.sender == owner);
+		subTokens[subTokenIndex].transfer(msg.sender, 10);
+	}
+}
+```	
+</script></section>
+
+<section data-markdown><script type="text/template">
+## User-Defined Value Types (1)
+
+No compiler support to avoid parameter ordering confusion:
+```solidity
+function approve(uint tokenID, uint amount, uint startDate) public ...
+// ...
+c.approve(amount, startDate, tokenID);
+```
+
+Better:
+```solidity
+function approve(TokenID tokenID, DAIAmount amount, Date startDate) public ...
+// ...
+c.approve(amount, startDate, tokenID); // !!! type error
+```
+But is it also cheap?
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+## User-Defined Value Types (2)
+
+```solidity
+// Introduces new type without any properties or implicit conversions,
+// based on an underlying built-in value type.
+// T.wrap / T.unwrap to convert from/to underlying type.
+// Uses the underlying type in the ABI.
+type TokenID is uint;
+type Fixed is uint128; // no implicit conversion from literals!
+uint128 constant FixedMultiplier = 10**18;
+function uintToFixed(uint128 a) pure returns (Fixed) {
+	return Fixed.wrap(a * FixedMultiplier);
+}
+...
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+## User-Defined Value Types (3)
+
+```solidity
+...
+// Add functions to the new type globally (only for types defined in same file).
+// No need to repeat "using".
+using {add, mul} for Fixed global;
+function add(Fixed a, Fixed b) pure returns (Fixed) {
+	return Fixed.wrap(Fixed.unwrap(a) + Fixed.unwrap(b));
+}
+function mul(Fixed a, Fixed b) pure returns (Fixed) {
+	uint result = (uint(Fixed.unwrap(a)) * uint(Fixed.unwrap(b))) /
+		uint(FixedMultiplier);
+	require(result <= type(uint128).max);
+	return Fixed.wrap(uint128(result));
+}
+// In a different file:
+function square(Fixed x) pure returns (Fixed) {
+	return x.mul(x);
+}
+```
+</script></section>
+	
+	
+<section data-markdown><script type="text/template">
+## User-Defined Operators and Literals
+Not yet, but soon:
+
+```solidity
+...
+using {add as +, mul as *} for Fixed global;
+function square(Fixed value) pure returns (Fixed) {
+	return value * value;
+}
+
+// special "literal suffix" function
+function _f(uint128 val, uint8 exp) pure returns (Fixed) {
+	return Fixed.wrap(val * 10**(18 - exp));
+}
+
+function addVAT(Fixed value) pure returns (Fixed) {
+	// Same as mul(value, _f(115, 2))
+	return value * 1.15_f;
+}
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Standard Library
+
+Main goal: as little "magic" in the compiler as possible
+
+Make built-in functions importable and implement them in Solidity / inline assembly.
+
+```solidity
+pragma stdlib;
+import {addmod} from "std/math.sol";
+```
+
+"std/math.sol":
+```solidity
+function addmod(uint x, uint y, uint modulus) pure returns (uint result) {
+	require(modulus != 0);
+	assembly { result := addmod(x, y, modulus) }
+}
+```
+No cluttering of global namespace and ability to look up behaviour.
+</script></section>
+	
+		
+<section data-markdown><script type="text/template">
+## Generics
+
+Very useful for stdlib and user-defined types.  
+Powerful type-checking instead of pseudo-generics using ``uint``.  
+Still needs more research, but Rust's generics look good.
+
+```solidity
+function max<T: Comparable>(T x, T y) pure returns (T) {
+	return x > y ? x : y;
+}
+struct ResizableArray<T> {
+	uint capacity;
+	T[] data;
+}
+function append<T>(ResizableArray<T> memory self, T memory item) {
+	if (self.capacity <= self.data.length)
+		self.data = reallocate.<T>(self.data, self.data.length * 2;)
+	self.data[self.capacity] = item;
+	self.capacity++;
+}
+```
+</script></section>
+	
+<section data-markdown><script type="text/template">
+## Memory is Expensive and Tricky
+
+Want to improve compiler's knowledge about lifetimes and references.  
+Allows deallocation and and improves safety.  
+
+```solidity
+for (uint i = 0; i < storage_array.length; i++) {
+	// Allocates a new struct in memory for each iteration.
+	// Never de-allocates.
+	storage_array[i] = MyStruct(1, 2, 3);
+}
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Participate in Language Design!
+
+- https://docs.soliditylang.org/en/latest/contributing.html
+- Weekly Meetings
+- 1-on-1 Feedback Sessions
+- User Survey
+- Forum (https://forum.soliditylang.org)
+- Chat (https://matrix.to/#/#ethereum_solidity-dev:gitter.im)
+- Twitter: @solidity_lang  
+
+</script></section>
+
+
+			</div>
+		</div>
+
+		<script src="../reveal.js-4.1.3/dist/reveal.js"></script>
+		<script src="../reveal.js-4.1.3/plugin/markdown/markdown.js"></script>
+		<script src="../reveal.js-4.1.3/plugin/highlight/highlight.js"></script>
+		<script src="../reveal.js-4.1.3/plugin/highlight/solidity.js"></script>
+
+		<script>
+			RevealHighlight().hljs.registerLanguage('solidity', hljsDefineSolidity);
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: false,
+
+				transition: 'none', // none/fade/slide/convex/concave/zoom
+
+				plugins: [ RevealMarkdown, RevealHighlight ]
+			});
+
+			var showHideHeader = function() {				
+				document.querySelectorAll('pre code').forEach(function(el) {
+					el.className = 'language-solidity';
+					RevealHighlight().hljs.highlightElement(el);
+				});
+				if (Reveal.isFirstSlide() || Reveal.isOverview()) {
+					document.getElementById("header").style = "display: none;";
+				} else {
+					document.getElementById("header").style = "display: block;";
+				}
+			};
+			Reveal.addEventListener('ready', showHideHeader);
+			Reveal.addEventListener('slidechanged', showHideHeader);
+			Reveal.addEventListener('overviewshown', showHideHeader);
+			Reveal.addEventListener('overviewhidden', showHideHeader);
+		</script>
+
+	</body>
+</html>
