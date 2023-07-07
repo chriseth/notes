@@ -120,35 +120,35 @@ participant, it is impossible to include an incorrect computation/transaction, b
 correct computations/transactions to be included.
 
 This article wants to specifically address the Dogecoin-Ethereum bridge, which requires blocks from the Dogecoin
-blockchain to be verified inside an Ethereum smart contract. This verification is too expensive to be done directly,
-and because of that, we utilize TrueBit to take the computation off-chain.
+blockchain to be verified inside an Ethereum smart contract. This verification is expensive when done directly,
+and because of that, it is beneficial to utilize TrueBit to take the computation off-chain.
 
 Having said that, all analyses are equally applicable to bridges between blockchains where the availability of blocks
 can be reasonably assumed. This means that it can be used to e.g.\ offload processing volume from the main Ethereum
 chain to another blockchain (which might even be a proof-of-authority chain) as long as all participants in that chain
 rightfully assume that block data is available to all potential challengers.
 
-We call TrueBit-light the protocol that does not make an effort to bring honest participants to the network.
+We call the version of the protocol that does not make an effort to bring honest participants to the network TrueBit-light.
 We assume that an honest participant is present who is altruistic to a certain degree. This includes keeping up
 with the Ethereum network, paying the gas fee and having a certain amount of money to pay for an initial deposit.
 
 We also simplify the system to a degree to only allow one parallel task. This might be extended to a constant amount
 of tasks but would also make the presentation here more complex.
 
-All timeouts are lower bounds and have to be extended in case of Ethereum network congestion. This means that if you want
-to claim a timeout to take effect, you have to provide a proof that several previous blocks had enough capacity to
+All timeouts are extended automatically in the case of network congestion unless it is proven that network congestion did not exist. This means that if you want
+to a timeout to take effect, you have to provide a proof that several previous blocks had enough capacity to
 include a potential response by the other party. Since TrueBit never makes a claim that state transitions take effect
 in a finite amount of time, this is still consistent with the theory presented below.
 
 The TrueBit contract has the following properties:
 
-TrueBit consists of the fact claiming component and the verification game. In both cases, we fix a mathematical function
+TrueBit consists of both a fact claiming component and a verification game. In both cases, we fix a mathematical function
 $f \colon \Sigma^n \mapsto \Sigma^n$ which can be implemented on a given machine in $s$ elementary computation steps.
-This is not a big limitation, since $f$ can be an interpreter for another machine, thus allowing to run arbitrary programs,
+This is not a big limitation, since $f$ can be an interpreter for another machine, thus allowing it to run arbitrary programs,
 which have a certain finite running time. Limiting the running time is a crucial component, although this limit can be
 magnitudes higher than what is possible to compute in a single block of the underlying blockchain.
 
-We will start with describing a language that helps us treat the smart contract systems.
+We will start by defining terms to help us deal with smart contract systems.
 
 \begin{definition}
 Let $\mathcal{A}$ be the set of all accounts and $\mathcal{T}$ the set of timestamps (e.g. the natural numbers).
