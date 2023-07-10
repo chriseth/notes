@@ -154,6 +154,14 @@ that is more in line with an algorithm that tries to solve the system step by st
 instead of performing global reasoning.
 
 \begin{definition}
+Let $C$ be a polynomial constraint system and $a, a' \colon \{1,\dots,n\} \to \ff$ be partial functions.
+We say that $a,a'$ \emph{satisfies} $C$ on row $j$ if there is a function
+$s = \ff^{n\times m}$ that satisfies $C$ and $s(\cdot,j)$ coincides with $a(\cdot)$ where it is defined
+and $s(\cdot,j+1)$ coincides with $a'(\cdot)$ where it is defined (and again, we assume $m+1 = 1$).
+In this case, we say that $s$ is a \emph{satisfying extension} of $a,a'$.
+\end{definition}
+
+\begin{definition}
 A polynomial constraint system admits \emph{unambiguous directed progress} if
 (informally), any 
 
