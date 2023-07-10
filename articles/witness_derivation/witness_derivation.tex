@@ -1,0 +1,185 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{latexsym,amsbsy,amssymb,amsmath,amsfonts}
+\usepackage{amsthm}
+\usepackage{epsfig}
+\usepackage{euscript}
+\usepackage{fullpage}
+\usepackage{multirow,multicol,booktabs}
+\usepackage[bf]{caption}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{mathtools}
+\usepackage{hyperref}
+\usepackage{todonotes}
+\hypersetup{
+    pdfauthor={Christian Reitwießner},
+    pdftitle={STARKs}
+    unicode,
+    breaklinks,
+    colorlinks=false,
+    pdfborder={0 0 0}
+}
+
+\date{}
+
+\renewcommand{\captionfont}{\small}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\hfuzz=0mm
+\tolerance=10000
+\hbadness=1000
+
+
+\setlength{\parindent}{0mm}
+\setlength{\parskip}{2ex plus0.5ex minus0.5ex}
+
+
+\newcommand{\Sum}{\sum\limits}
+\newcommand{\Prod}{\prod\limits}
+
+
+\newtheorem{dummytheorem}{Dummy-Theorem}[section]
+\newtheorem{definition}[dummytheorem]{Definition}
+\newtheorem{lemma}[dummytheorem]{Lemma}
+\newtheorem{theorem}[dummytheorem]{Theorem}
+\newtheorem{proposition}[dummytheorem]{Proposition}
+\newtheorem{property}[dummytheorem]{Property}
+\newtheorem{corollary}[dummytheorem]{Corollary}
+\newtheorem{example}[dummytheorem]{Example}
+\newtheorem{remark}[dummytheorem]{Remark}
+\newtheorem{fact}[dummytheorem]{Fact}
+\newtheorem{claim}[dummytheorem]{Claim}
+\newtheorem{subclaim}{Subclaim}[dummytheorem]
+\newtheorem{conjecture}[dummytheorem]{Conjecture}
+
+\newcommand{\uint}{\mathbb{N}}
+\newcommand{\rational}{\mathbb{Q}}
+\newcommand{\ff}{\mathbb{F}}
+
+\newcommand{\oli}[1]{\overline{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\newcommand{\eps}{\varepsilon}
+\newcommand{\card}[1]{\##1}
+\newcommand{\length}[1]{\mathrm{length}({#1})}
+
+\newcommand{\pn}[1]{\textnormal{#1}}
+
+\newcommand{\norm}[1]{||{#1}||}
+\newcommand{\Norm}[1]{\left|\left|{#1}\right|\right|}
+
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+\selectlanguage{english}
+
+
+\title{Automated Witness Derivation for Polynomial Constraint Systems}
+
+\author{Christian Reitwießner \\ 
+{\tt chris@ethereum.org}}
+
+
+\maketitle
+
+
+Let $\ff$ be a fixed prime field of some order larger than two. Unless stated otherwise,
+numbers are considered to be elements of that field.
+
+\section{Definitions}
+
+We are dealing the polynomial constraint system that can be seen as a table where some
+cells are pre-filled with input numbers and this initial content has to be extended to the whole
+table such that constraint polynomials evaluate to zero on every pair of adjacent rows.
+The formal definition follows.
+
+\begin{definition}
+The tuple $(\ff, n, m, P, F, I, O)$ is called a \emph{polynomial constraint system}, where
+\begin{itemize}
+\item $\ff$ is a finite field of prime order (which is often omitted),
+\item $n \in \uint$ is called the \emph{number of columns},
+\item $m \in \uint$ is an integer (usually a power of two), called the \emph{number of rows},
+\item $P$ is a set of polynomials in $2 n$ variables over $\ff$, called \emph{the constraints},
+\item $F$ is a partial function $\{1,\dots,n\} \to \ff^m$, with values denoted as $F_i$, the \emph{fixed columns} and
+\item $I, O \subseteq \{1,\dots,n\}\times\{1,\dots,m\}$ are called the \emph{input} and \emph{output} cells.
+\end{itemize}
+\todo{Do we also want to allow individual cell constraints?}
+\todo{lookups}
+We often omit the field $\ff$.
+\end{definition}
+
+\begin{definition}
+A mapping $s = \ff^{n\times m}$ \emph{satisfies} the polynomial constraint system $(\ff$, $n$, $m$, $P$, $F$, $I$, $O)$
+on the input $\iota \colon I \to \ff$ and \emph{computes the output} $o \colon O \to \ff$ if it 
+\begin{itemize}
+\item satisfies the inputs: $\iota(x) = s(x)$ for all $x \in I$,
+\item satisfies the output: $o(x) = s(x)$ for all $x \in O$,
+\item coincides with the fixed columns: $s(i, j) = F_i(j)$, for all $i$ where $F_i$ is defined and all $j \in \{1,\dots,m\}$, and 
+\item satisfies the constraints: for every $p \in P$ and every $j \in \{1,\dots,m\}$:\[p(w_1,\dots,w_n,w'_1,\dots,w'_n) = 0,\]
+with $w_i = s(i, j)$ and $w'_i = s(i, j + 1)$, where $m + 1$ is understood to be $1$.
+\end{itemize}
+\end{definition}
+
+A common danger with polynomial constraint systems is that they are underconstrained, meaning that
+one input can lead to different outputs depending on how the rest of the table is filled.
+This is mainly problematic since there usually is a canonical way to fill the table that is provided together
+with the constraint system. The following definition captures what we mean when we say that a polynomial
+constraint system is not underconstrained.
+\begin{definition}
+A polynomial constraint system $C = (\ff, n, m, P, F, I, O)$ has \emph{unique solutions} if
+for every function $\iota \colon I \to \ff$, all mappings $s$ that satisfy $C$ on the input $\iota$,
+compute the same output.
+\end{definition}
+
+While this is the correct definition, we will be dealing with a much stricter definition
+that is more in line with an algorithm that tries to solve the system step by step
+instead of performing global reasoning.
+
+\begin{definition}
+Let $C$ be a polynomial constraint system and $a, a' \colon \{1,\dots,n\} \to \ff$ be partial functions.
+We say that $a,a'$ \emph{satisfies} $C$ on row $j$ if there is a function
+$s = \ff^{n\times m}$ that satisfies $C$ and $s(\cdot,j)$ coincides with $a(\cdot)$ where it is defined
+and $s(\cdot,j+1)$ coincides with $a'(\cdot)$ where it is defined (and again, we assume $m+1 = 1$).
+In this case, we say that $s$ is a \emph{satisfying extension} of $a,a'$.
+\end{definition}
+
+\begin{definition}
+A polynomial constraint system admits \emph{unambiguous directed progress} if
+(informally), any 
+
+define one-row progress, which includes "unknown" variables.
+
+Should we also define progress according to a specific algorithm? This could be useful
+for the case where there is a unique solution but we just can't find it.
+\end{definition}
+
+\begin{property}
+A polynomial constraint system $(P, I)$ is \emph{}
+
+express the condition that the system is not underconstrained in the sense that there are multiple solutions,
+but setting some values do not influence the next - what does that mean? What is the output?
+
+Also define if a constraint system admits directed progress
+\end{property}
+
+
+
+\end{document}
