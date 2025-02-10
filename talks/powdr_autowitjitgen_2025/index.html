@@ -1,0 +1,381 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Auto-witjitgen</title>
+
+		<meta name="author" content="Christian Reitwiessner">
+
+		<link rel="stylesheet" href="../reveal.js-5.1.0/dist/reset.css">
+		<link rel="stylesheet" href="../reveal.js-5.1.0/dist/reveal.css">
+		<link rel="stylesheet" href="../reveal.js-5.1.0/dist/theme/black.css">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="../reveal.js-5.1.0/plugin/highlight/zenburn.css">
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+<!--
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? '../reveal.js-5.1.0/css/print/pdf.css' : '../reveal.js-5.1.0/css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>-->
+<style type="text/css">
+body, .reveal {
+    font-family: WorkSans, Arial, sans-serif;
+    font-size: 34px;
+}
+.reveal .slides {
+	text-align: left;
+}
+.reveal pre {
+  width: inherit;
+}
+.reveal table th, .reveal table td {
+    border-bottom: none;
+}
+.reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+	color: #5b5eff;
+	text-align: center;
+	text-transform: none;
+	font-family: PTSans, Arial, sans-serif;
+	font-weight: bold;
+}
+.reveal h1 { font-size: 2em; }
+.reveal h2 { font-size: 1.3em; }
+.reveal h3 { font-size: 1em; }
+.reveal h4 { font-size: 0.8em; }
+
+p { text-align: left; }
+
+#header-left {
+	position: absolute;
+	top: 0%;
+	left: 0%;
+	padding: 10px;
+}
+#header-right {
+	position: absolute;
+	top: 0%;
+	right: 0%;
+	padding: 10px;
+}
+#footer-left {
+	position: absolute;
+	bottom: 0%;
+	left: 0%;
+	padding: 20px;
+}
+
+#footer-center {
+	position: fixed;
+	left: 50%;
+	bottom: 0%;
+	transform: translate(-50%, 0);
+	margin: 0 auto;
+	padding: 40px;
+}
+#footer-right {
+	position: absolute;
+	bottom: 0%;
+	right: 0%;
+	padding: 40px;
+	padding-right: 120px;
+}
+
+.reveal section img {
+	border: none;
+	box-shadow: none;
+}
+</style>
+
+	</head>
+
+<body>
+
+	<div class="reveal">
+
+<div id="header" style="display: none;">
+	<div id="header-left"></div>
+	<div id="header-right"></div>
+	<div id="footer-left"></div>
+	<div id="footer-center"></div>
+	<div id="footer-right"></div>
+</div>
+
+		<div class="slides">
+
+
+<section data-markdown><script type="text/template">
+## Auto-witjitgen
+
+Getting from
+```rust
+pc' = pc + 1;
+B' = B;
+[pc, instr_add, instr_mul] in [LINE, INSTR_ADD, INSTR_MUL];
+0 = instr_add * (A' - (A + B)) +
+	instr_mul * (A' - A * B) +
+	(1 - instr_add - instr_mul) * (A' - A);
+```
+to
+```rust
+B[1] = B[0];
+pc[1] = pc[0] + 1;
+machine_call(1, [pc[1], instr_add[1], instr_mul[1]]);
+if instr_add[0] == 1 {
+	A[1] = A[0] + B[0];
+} else if instr_mul[0] == 1 {
+	A[1] = A[0] * B[0];
+} else {
+	A[1] = A[0];
+}
+```
+
+</script></section>
+<section data-markdown><script type="text/template">
+
+## Machine Extraction
+
+Machine gets called trough lookup / bus send.
+
+- No distinction between input and output columns. Same machine can be used in different ways.
+- Start with "main machine" using runtime solver and follow submachine calls.
+- For fixed combination of "known inputs" and "unknown outputs", we try to synthesize code. If it works, we compile and store it.\
+(`KnownMachine::can_process_call_fully`)
+
+</script></section>
+<section data-markdown><script type="text/template">
+
+## Solving Strategies
+
+For each `Variable` (cell in trace, input parameter, etc), we store and keep updated:
+- a range constraint (`min`, `max`, `bitmask`)
+- if its value is (symbolically) known or not
+
+We gradually generate code to compute each variable.
+
+</script></section>
+<section data-markdown><script type="text/template">
+
+### How to obtain range constraints?
+
+- `[ X ] in [ Y ]`, where `Y` is a fixed column
+- `X = 10 * Y + 3`, where `Y` has a known range constraint and `10 * Y + 3` does not wrap
+- `(1 - X) * X = 0` -> `X` is either `0` or `1`
+
+We can perform (limited) computations with range constraints.
+If `min` = `max`, we know the concrete value!
+
+Let $R(X)$ be the currently known range constraint of expression $X$.
+
+</script></section>
+<section data-markdown><script type="text/template">
+
+### Affine Solving (1)
+
+Evaluate polynomial identity into \$\sum_{i=1}^n a_i x_i + c\$, where
+- $x_i$ are unknown `Variable`s,
+- $a_i$ and $c$ are symbolic expressions with only known `Variable`s.
+
+`A = (1 - X) * T + B * 0x100`\
+Known: `A`, `X`\
+Unknown: `T`, `B`\
+$R(X) = \{\text{min}\colon 1, \text{max}\colon 1, \text{mask}\colon 1\}$
+
+
+=> `A = 0 * T + B * 0x100`\
+=> `B * 0x100 - A = 0`
+
+</script></section>
+<section data-markdown><script type="text/template">
+
+### Affine Solving (2)
+
+
+Evaluate polynomial identity into $\sum_{i=1}^n a_i x_i + c$, where
+- $x_i$ are unknown `Variable`s,
+- $a_i$ and $c$ are symbolic expressions with only known `Variable`s.
+
+If $n=0$ and $0 \notin R(c)$ we have a conflict. This means there is no solution
+and the algorithm returns an error. See later in "branching" how it can be recovered.
+</script></section>
+<section data-markdown><script type="text/template">
+
+### Affine Solving (3)
+
+
+Evaluate polynomial identity into $\sum_{i=1}^n a_i x_i + c$, where
+- $x_i$ are unknown `Variable`s,
+- $a_i$ and $c$ are symbolic expressions with only known `Variable`s.
+
+If $n=1$ and $0 \notin R(a_1)$, we can solve:
+$x_1 = -c\cdot a_1^{-1}$
+
+`B * 0x100 - A = 0`\
+=> `B = A / 0x100`
+
+</script></section>
+<section data-markdown><script type="text/template">
+
+### Bit Decomposition
+
+If in
+$\sum_{i=1}^n a_i x_i + c$
+- all the $a_i$ are concrete numbers,
+- bit masks $R(a_i x_i).\text{mask}$ are pairwise disjoint and
+- union of masks is not the full field
+
+then we can solve
+
+$ x_i = ((-c) $ & $ R(a_ix_i).\text{mask}) / a_i $
+
+for all $i$.
+
+</script></section>
+<section data-markdown><script type="text/template">
+
+### Range Constraint Transfer
+
+If we have
+
+$X = \sum_{i=1}^n a_i x_i + c$
+
+then
+
+$R(X) \subseteq R(\sum_{i=1}^n a_i x_i + c)$
+
+In the code, we use the least constrained variable $x_i$ in the affine expression
+where $a_i \in \\{-1, 1\\}$.
+
+</script></section>
+<section data-markdown><script type="text/template">
+
+### Submachine Calls
+
+In contrast to runtime solving, we need to know at compile time, if a submachine call can always succeed or not.
+
+=> We cannot call runtime solver from JIT, but we can call JIT from runtime solver.
+
+
+</script></section>
+<section data-markdown><script type="text/template">
+
+## Branching
+
+If we cannot progress but are not finished yet, we choose a **known** variable $v$ with
+- $R(v)$ small
+- $R(v)$ is not a single value.
+
+Create copies of solving algorithm and set $R(v)$ to different values in each copy
+
+
+</script></section>
+<section data-markdown><script type="text/template">
+
+## Branch Joining
+
+Solving algorithm terminated on branches $b_1$, $b_2$.
+
+- If one of them terminated with a conflict, we only use the other one (e.g. two instructions are never active at the same time).
+- If they generated the same code, we remove the branch decision and only use $b_1$.
+- Otherwise, use both and branch at runtime.
+
+
+</script></section>
+<section data-markdown><script type="text/template">
+
+### Prover Functions
+
+Need to know at compile time when a call to a prover function will succeed.
+
+```rust
+query |i| std::prover::compute_from_multi_if(
+	operation_id = 1, // condition: algebraic constraint
+	[y, x],           // array of target columns
+	i,                // row
+	[A, B, C, D],     // array of source columns
+	// arbitrary PIL code, returns values of target columns
+	|values| match values {
+	// values of source columns in row i
+	[a, b, c, d] =>
+		if a == 0 { [b, c] }
+		else { [2 * c + d, b] },
+	_ => panic("Unexpected number of values")
+	}
+);
+```
+
+Call prover function if all source columns are known and all target columns are unknown.
+
+</script></section>
+<section data-markdown><script type="text/template">
+
+## Processing Queue (Items)
+
+- assignments
+- polynomial identities and bus sends (submachine calls)
+- prover functions
+
+Sorted in this order, re-processed when a contained variable gets updated.
+
+
+</script></section>
+<section data-markdown><script type="text/template">
+
+## Execution / Interpretation
+
+Resulting code is sequence of assignments, submachine calls and branches.
+
+- compile to Rust code, load and execute, or
+- run through interpreter
+</script></section>
+
+
+			</div>
+		</div>
+
+		<script src="../reveal.js-5.1.0/dist/reveal.js"></script>
+		<script src="../reveal.js-5.1.0/plugin/markdown/markdown.js"></script>
+		<script src="../reveal.js-5.1.0/plugin/math/math.js"></script>
+		<script src="../reveal.js-5.1.0/plugin/highlight/highlight.js"></script>
+		<script src="../reveal.js-5.1.0/plugin/highlight/solidity.js"></script>
+
+		<script>  
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: false,
+
+				transition: 'none', // none/fade/slide/convex/concave/zoom
+
+				plugins: [ RevealMarkdown, RevealHighlight, RevealMath.KaTeX ]
+			});
+
+			var showHideHeader = function() {				
+				document.querySelectorAll('pre code').forEach(function(el) {
+					el.className = 'language-solidity';
+					RevealHighlight().hljs.highlightElement(el);
+				});
+				if (Reveal.isFirstSlide() || Reveal.isOverview()) {
+					document.getElementById("header").style = "display: none;";
+				} else {
+					document.getElementById("header").style = "display: block;";
+				}
+			};
+			Reveal.addEventListener('ready', showHideHeader);
+			Reveal.addEventListener('slidechanged', showHideHeader);
+			Reveal.addEventListener('overviewshown', showHideHeader);
+			Reveal.addEventListener('overviewhidden', showHideHeader);
+		</script>
+
+	</body>
+</html>
